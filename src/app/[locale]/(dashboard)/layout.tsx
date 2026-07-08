@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 
 export default async function DashboardLayout({
@@ -22,6 +23,9 @@ export default async function DashboardLayout({
         <nav className="flex flex-col gap-2 text-sm text-[var(--color-muted-foreground)]">
           <span>Produits</span>
           <span>Inventaire</span>
+          <Link href={`/${locale}/suppliers`} className="hover:text-[var(--color-foreground)]">
+            Fournisseurs
+          </Link>
           <span>Point de vente</span>
           <span>Achats</span>
           <span>Finances</span>

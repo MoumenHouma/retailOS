@@ -29,5 +29,63 @@
   "dashboard": {
     "welcome": "مرحباً، {name}",
     "tenant": "المؤسسة: {tenantName}"
+  },
+  "suppliers": {
+    "title": "الموردون",
+    "newSupplier": "مورد جديد",
+    "searchPlaceholder": "البحث عن مورد...",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لم يتم العثور على أي مورد.",
+    "loadError": "تعذر تحميل قائمة الموردين.",
+    "filter": {
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "sort": {
+      "nameAsc": "الاسم (أ→ي)",
+      "nameDesc": "الاسم (ي→أ)",
+      "createdAtDesc": "الأحدث",
+      "createdAtAsc": "الأقدم"
+    },
+    "table": {
+      "name": "الاسم",
+      "city": "المدينة",
+      "wilaya": "الولاية",
+      "phone": "الهاتف",
+      "leadTime": "مدة التوريد (أيام)",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "pagination": {
+      "pageInfo": "الصفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} مورد"
+    },
+    "delete": {
+      "confirm": "هل تريد حذف هذا المورد؟",
+      "success": "تم حذف المورد.",
+      "error": "تعذر حذف هذا المورد."
+    },
+    "form": {
+      "title": "مورد جديد",
+      "description": "أضف مورداً إلى دليلك.",
+      "name": "الاسم *",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "city": "المدينة",
+      "wilaya": "الولاية",
+      "leadTimeDays": "مدة التوريد (أيام)",
+      "notes": "ملاحظات",
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء المورد بنجاح.",
+      "error": "تعذر إنشاء هذا المورد."
+    }
   }
 }

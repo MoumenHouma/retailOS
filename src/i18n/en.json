@@ -29,5 +29,63 @@
   "dashboard": {
     "welcome": "Welcome, {name}",
     "tenant": "Business: {tenantName}"
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "newSupplier": "New supplier",
+    "searchPlaceholder": "Search suppliers...",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No suppliers found.",
+    "loadError": "Unable to load suppliers.",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "sort": {
+      "nameAsc": "Name (A→Z)",
+      "nameDesc": "Name (Z→A)",
+      "createdAtDesc": "Newest",
+      "createdAtAsc": "Oldest"
+    },
+    "table": {
+      "name": "Name",
+      "city": "City",
+      "wilaya": "Wilaya",
+      "phone": "Phone",
+      "leadTime": "Lead time (d)",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} supplier(s)"
+    },
+    "delete": {
+      "confirm": "Delete this supplier?",
+      "success": "Supplier deleted.",
+      "error": "Unable to delete this supplier."
+    },
+    "form": {
+      "title": "New supplier",
+      "description": "Add a supplier to your directory.",
+      "name": "Name *",
+      "phone": "Phone",
+      "email": "Email",
+      "city": "City",
+      "wilaya": "Wilaya",
+      "leadTimeDays": "Lead time (days)",
+      "notes": "Notes",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Supplier created successfully.",
+      "error": "Unable to create this supplier."
+    }
   }
 }

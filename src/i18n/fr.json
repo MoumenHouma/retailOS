@@ -29,5 +29,63 @@
   "dashboard": {
     "welcome": "Bienvenue, {name}",
     "tenant": "Entreprise : {tenantName}"
+  },
+  "suppliers": {
+    "title": "Fournisseurs",
+    "newSupplier": "Nouveau fournisseur",
+    "searchPlaceholder": "Rechercher un fournisseur...",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucun fournisseur trouvé.",
+    "loadError": "Impossible de charger les fournisseurs.",
+    "filter": {
+      "all": "Tous",
+      "active": "Actifs",
+      "inactive": "Inactifs"
+    },
+    "sort": {
+      "nameAsc": "Nom (A→Z)",
+      "nameDesc": "Nom (Z→A)",
+      "createdAtDesc": "Plus récents",
+      "createdAtAsc": "Plus anciens"
+    },
+    "table": {
+      "name": "Nom",
+      "city": "Ville",
+      "wilaya": "Wilaya",
+      "phone": "Téléphone",
+      "leadTime": "Délai (j)",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} fournisseur(s)"
+    },
+    "delete": {
+      "confirm": "Supprimer ce fournisseur ?",
+      "success": "Fournisseur supprimé.",
+      "error": "Impossible de supprimer ce fournisseur."
+    },
+    "form": {
+      "title": "Nouveau fournisseur",
+      "description": "Ajoutez un fournisseur à votre répertoire.",
+      "name": "Nom *",
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "city": "Ville",
+      "wilaya": "Wilaya",
+      "leadTimeDays": "Délai de livraison (jours)",
+      "notes": "Notes",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Fournisseur créé avec succès.",
+      "error": "Impossible de créer ce fournisseur."
+    }
   }
 }

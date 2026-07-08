@@ -4,6 +4,7 @@ import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 export function Providers({
   children,
@@ -19,7 +20,10 @@ export function Providers({
   return (
     <NextIntlClientProvider locale={locale} messages={messages}>
       <SessionProvider>
-        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <Toaster />
+        </QueryClientProvider>
       </SessionProvider>
     </NextIntlClientProvider>
   );
