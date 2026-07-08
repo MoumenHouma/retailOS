@@ -24,7 +24,9 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const user = await prismaSuperuser.user.findUnique({
           where: { email, deletedAt: null },
           include: {
-            userRoles: { include: { role: true } },
+            userRoles: {
+              include: { role: { include: { rolePermissions: { include: { permission: true } } } } },
+            },
             userStores: true,
           },
         });
@@ -56,12 +58,21 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           data: { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
         });
 
+        const permissions = Array.from(
+          new Set(
+            user.userRoles.flatMap((ur) =>
+              ur.role.rolePermissions.map((rp) => rp.permission.name),
+            ),
+          ),
+        );
+
         return {
           id: user.id,
           email: user.email,
           name: `${user.firstName} ${user.lastName}`,
           tenantId: user.tenantId,
           roles: user.userRoles.map((ur) => ur.role.name),
+          permissions,
           storeId: user.userStores[0]?.storeId ?? null,
         };
       },

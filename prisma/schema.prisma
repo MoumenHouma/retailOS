@@ -61,9 +61,19 @@ model Tenant {
   updatedAt           DateTime           @updatedAt @map("updated_at")
   deletedAt           DateTime?          @map("deleted_at")
 
-  stores      Store[]
-  users       User[]
-  roles       Role[]
+  stores           Store[]
+  users            User[]
+  roles            Role[]
+  productCategories ProductCategory[]
+  brands           Brand[]
+  units            Unit[]
+  products         Product[]
+  productBarcodes  ProductBarcode[]
+  stockMovements   StockMovement[]
+  stockLevels      StockLevel[]
+  suppliers        Supplier[]
+  supplierContacts SupplierContact[]
+  supplierProducts SupplierProduct[]
 
   @@map("tenants")
 }
@@ -85,9 +95,11 @@ model Store {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  tenant     Tenant      @relation(fields: [tenantId], references: [id])
-  userRoles  UserRole[]
-  userStores UserStore[]
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  userRoles      UserRole[]
+  userStores     UserStore[]
+  stockMovements StockMovement[]
+  stockLevels    StockLevel[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -112,9 +124,12 @@ model User {
   updatedAt            DateTime  @updatedAt @map("updated_at")
   deletedAt             DateTime? @map("deleted_at")
 
-  tenant     Tenant      @relation(fields: [tenantId], references: [id])
-  userRoles  UserRole[]
-  userStores UserStore[]
+  tenant          Tenant      @relation(fields: [tenantId], references: [id])
+  userRoles       UserRole[]
+  userStores      UserStore[]
+  productsCreated       Product[]       @relation("ProductCreatedBy")
+  productsUpdated       Product[]       @relation("ProductUpdatedBy")
+  stockMovementsCreated StockMovement[] @relation("StockMovementCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -189,4 +204,299 @@ model UserStore {
 
   @@id([userId, storeId])
   @@map("user_stores")
+}
+
+// --- Phase 1: Product Management ---------------------------------------
+
+/// Hierarchical category tree (adjacency list via parentId). A product
+/// belongs to at most one category (DATABASE.md §5.1 / ARCHITECTURE.md §4.2).
+/// Uniqueness of (tenantId, name) is soft-delete-aware (partial index,
+/// WHERE deletedAt IS NULL) — hand-appended in migration.sql, not expressible
+/// via @@unique here (would block name reuse after a soft delete).
+model ProductCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  parentId    String?   @map("parent_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  nameAr      String?   @map("name_ar") @db.VarChar(255)
+  nameEn      String?   @map("name_en") @db.VarChar(255)
+  description String?
+  imageUrl    String?   @map("image_url") @db.VarChar(500)
+  sortOrder   Int       @default(0) @map("sort_order")
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  tenant   Tenant            @relation(fields: [tenantId], references: [id])
+  parent   ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children ProductCategory[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@index([tenantId])
+  @@index([parentId])
+  @@map("product_categories")
+}
+
+model Brand {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  country     String?   @db.VarChar(100)
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  products Product[]
+
+  @@index([tenantId])
+  @@map("brands")
+}
+
+model Unit {
+  id           String    @id @default(uuid()) @db.Uuid
+  tenantId     String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name         String    @db.VarChar(50)
+  abbreviation String    @db.VarChar(10)
+  isBaseUnit   Boolean   @default(false) @map("is_base_unit")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  products Product[]
+
+  @@index([tenantId])
+  @@map("units")
+}
+
+model Product {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  sku            String?   @db.VarChar(50)
+  name           String    @db.VarChar(500)
+  nameAr         String?   @map("name_ar") @db.VarChar(500)
+  nameEn         String?   @map("name_en") @db.VarChar(500)
+  description    String?
+  categoryId     String?   @map("category_id") @db.Uuid
+  brandId        String?   @map("brand_id") @db.Uuid
+  unitId         String    @map("unit_id") @db.Uuid
+  barcode        String?   @db.VarChar(20)
+  costPrice      Int?      @map("cost_price")
+  sellingPrice   Int       @map("selling_price")
+  wholesalePrice Int?      @map("wholesale_price")
+  minPrice       Int?      @map("min_price")
+  tvaRate        Int       @default(19) @map("tva_rate") @db.SmallInt
+  isTaxable      Boolean   @default(true) @map("is_taxable")
+  isTrackable    Boolean   @default(true) @map("is_trackable")
+  isExpirable    Boolean   @default(false) @map("is_expirable")
+  shelfLifeDays  Int?      @map("shelf_life_days")
+  minStockLevel  Int       @default(0) @map("min_stock_level")
+  maxStockLevel  Int?      @map("max_stock_level")
+  // reorderPoint/safetyStock stay null in Phase 1 — computed by the AI/
+  // optimization engine, which doesn't exist until Phase 5.
+  reorderPoint Int?      @map("reorder_point")
+  safetyStock  Int?      @map("safety_stock")
+  imageUrl     String?   @map("image_url") @db.VarChar(500)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdBy    String?   @map("created_by") @db.Uuid
+  updatedBy    String?   @map("updated_by") @db.Uuid
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+
+  tenant        Tenant            @relation(fields: [tenantId], references: [id])
+  category      ProductCategory?  @relation(fields: [categoryId], references: [id])
+  brand         Brand?            @relation(fields: [brandId], references: [id])
+  unit          Unit              @relation(fields: [unitId], references: [id])
+  createdByUser  User?            @relation("ProductCreatedBy", fields: [createdBy], references: [id])
+  updatedByUser  User?            @relation("ProductUpdatedBy", fields: [updatedBy], references: [id])
+  barcodes         ProductBarcode[]
+  stockMovements   StockMovement[]
+  stockLevels      StockLevel[]
+  supplierProducts SupplierProduct[]
+
+  @@index([tenantId])
+  @@index([barcode])
+  @@index([sku])
+  @@index([categoryId])
+  @@index([brandId])
+  @@map("products")
+  // name GIN trgm index hand-appended in migration.sql — pg_trgm has no
+  // Prisma-native index-type syntax, same "hand-append what Prisma can't
+  // express" rule already used for RLS/CHECK constraints project-wide.
+}
+
+model ProductBarcode {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  productId   String    @map("product_id") @db.Uuid
+  barcode     String    @db.VarChar(20)
+  barcodeType String    @default("EAN13") @map("barcode_type") @db.VarChar(20)
+  isPrimary   Boolean   @default(false) @map("is_primary")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([productId])
+  @@map("product_barcodes")
+}
+
+// --- Phase 1: Inventory Core ---------------------------------------------
+
+/// All 9 values modeled since stock_movements is a shared table future
+/// phases will insert into (POS sales, purchasing, transfers) — only
+/// ADJUSTMENT_IN/ADJUSTMENT_OUT are reachable via UI in Phase 1.
+enum StockMovementType {
+  PURCHASE_IN
+  SALE_OUT
+  TRANSFER_OUT
+  TRANSFER_IN
+  ADJUSTMENT_IN
+  ADJUSTMENT_OUT
+  RETURN_IN
+  RETURN_OUT
+  WRITE_OFF
+
+  @@map("stock_movement_type_enum")
+}
+
+/// Immutable log — the application only ever INSERTs here. A database
+/// trigger (fn_apply_stock_movement, hand-appended in migration.sql)
+/// maintains `stock_levels` and rejects movements that would make on-hand
+/// quantity negative (ARCHITECTURE.md §4.3).
+model StockMovement {
+  id            String            @id @default(uuid()) @db.Uuid
+  tenantId      String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  productId     String            @map("product_id") @db.Uuid
+  storeId       String            @map("store_id") @db.Uuid
+  movementType  StockMovementType @map("movement_type")
+  quantity      Int
+  referenceId   String?           @map("reference_id") @db.Uuid
+  referenceType String?           @map("reference_type") @db.VarChar(50)
+  // No FK — product_batches doesn't exist until Phase 3; always null for now.
+  batchId   String?  @map("batch_id") @db.Uuid
+  notes     String?
+  createdBy String?  @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  tenant        Tenant  @relation(fields: [tenantId], references: [id])
+  product       Product @relation(fields: [productId], references: [id])
+  store         Store   @relation(fields: [storeId], references: [id])
+  createdByUser User?   @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([productId])
+  @@index([storeId])
+  @@index([movementType])
+  @@index([createdAt])
+  @@index([productId, storeId, createdAt])
+  @@map("stock_movements")
+}
+
+/// Denormalized, trigger-maintained — the application never writes here
+/// directly, only ever INSERTs into StockMovement. `quantityAvailable` is a
+/// Postgres GENERATED ALWAYS AS (quantity_on_hand - quantity_reserved)
+/// STORED column; Prisma has no syntax for this, hand-patched in
+/// migration.sql — re-check any future migration touching this table since
+/// `prisma migrate dev --create-only` may try to "fix" it back to a plain column.
+model StockLevel {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  productId         String    @map("product_id") @db.Uuid
+  storeId           String    @map("store_id") @db.Uuid
+  quantityOnHand    Int       @default(0) @map("quantity_on_hand")
+  quantityReserved  Int       @default(0) @map("quantity_reserved")
+  quantityAvailable Int       @map("quantity_available")
+  lastMovementAt    DateTime? @map("last_movement_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  store   Store   @relation(fields: [storeId], references: [id])
+
+  @@unique([tenantId, productId, storeId])
+  @@map("stock_levels")
+}
+
+// --- Phase 1: Supplier Management ----------------------------------------
+
+model Supplier {
+  id            String    @id @default(uuid()) @db.Uuid
+  tenantId      String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name          String    @db.VarChar(255)
+  nif           String?   @db.VarChar(20)
+  rc            String?   @db.VarChar(30)
+  contactPerson String?   @map("contact_person") @db.VarChar(255)
+  phone         String?   @db.VarChar(20)
+  email         String?   @db.VarChar(255)
+  address       String?
+  city          String?   @db.VarChar(100)
+  wilaya        String?   @db.VarChar(100)
+  bankName      String?   @map("bank_name") @db.VarChar(255)
+  bankAccount   String?   @map("bank_account") @db.VarChar(100)
+  paymentTerms  Int       @default(0) @map("payment_terms")
+  leadTimeDays  Int       @default(3) @map("lead_time_days")
+  // MCDA composite score — stays null in Phase 1, no AI/optimization engine
+  // until Phase 5.
+  rating    Decimal?  @db.Decimal(3, 2)
+  notes     String?
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  tenant           Tenant            @relation(fields: [tenantId], references: [id])
+  contacts         SupplierContact[]
+  supplierProducts SupplierProduct[]
+
+  @@index([tenantId])
+  @@map("suppliers")
+}
+
+/// No deletedAt — matches DATABASE.md §8.2 verbatim; hard delete is fine
+/// here, nothing depends on a soft-delete-aware partial index for contacts.
+model SupplierContact {
+  id         String  @id @default(uuid()) @db.Uuid
+  tenantId   String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  supplierId String  @map("supplier_id") @db.Uuid
+  name       String  @db.VarChar(255)
+  role       String? @db.VarChar(100)
+  phone      String? @db.VarChar(20)
+  email      String? @db.VarChar(255)
+  isPrimary  Boolean @default(false) @map("is_primary")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  @@index([tenantId])
+  @@index([supplierId])
+  @@map("supplier_contacts")
+}
+
+model SupplierProduct {
+  id                  String   @id @default(uuid()) @db.Uuid
+  tenantId            String   @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  supplierId          String   @map("supplier_id") @db.Uuid
+  productId           String   @map("product_id") @db.Uuid
+  supplierSku         String?  @map("supplier_sku") @db.VarChar(100)
+  supplierProductName String?  @map("supplier_product_name") @db.VarChar(500)
+  unitPrice           Int?     @map("unit_price")
+  minOrderQuantity    Int      @default(1) @map("min_order_quantity")
+  deliveryTimeDays    Int?     @map("delivery_time_days")
+  isPreferred         Boolean  @default(false) @map("is_preferred")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@unique([tenantId, supplierId, productId])
+  @@map("supplier_products")
 }

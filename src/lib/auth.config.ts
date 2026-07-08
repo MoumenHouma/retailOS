@@ -36,6 +36,7 @@ export const authConfig = {
       if (user) {
         token.tenantId = user.tenantId;
         token.roles = user.roles;
+        token.permissions = user.permissions;
         token.storeId = user.storeId;
       }
       return token;
@@ -44,6 +45,7 @@ export const authConfig = {
       session.user.id = token.sub!;
       session.user.tenantId = token.tenantId as string;
       session.user.roles = token.roles as string[];
+      session.user.permissions = token.permissions as string[];
       session.user.storeId = token.storeId as string | null;
       return session;
     },

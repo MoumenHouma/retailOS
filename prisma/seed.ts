@@ -13,13 +13,14 @@ const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
 // keys) come back as `string[] | undefined`. An explicit key union avoids
 // that since these are named properties, not an index signature.
 const PERMISSION_CATALOG: Record<
-  "products" | "inventory" | "pos" | "purchases" | "customers" | "finance" | "employees" | "reports" | "ai",
+  "products" | "inventory" | "pos" | "purchases" | "suppliers" | "customers" | "finance" | "employees" | "reports" | "ai",
   string[]
 > = {
   products: ["products:read", "products:create", "products:update", "products:delete"],
   inventory: ["inventory:read", "inventory:adjust", "inventory:count", "inventory:transfer"],
   pos: ["pos:operate", "pos:refund", "pos:discount", "pos:open_drawer"],
   purchases: ["purchases:read", "purchases:create", "purchases:approve"],
+  suppliers: ["suppliers:read", "suppliers:create", "suppliers:update", "suppliers:delete"],
   customers: ["customers:read"],
   finance: ["finance:read", "finance:invoice", "finance:report"],
   employees: ["employees:read", "employees:manage"],
@@ -36,8 +37,13 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
   BUSINESS_OWNER: ALL_PERMISSIONS,
   STORE_MANAGER: ALL_PERMISSIONS.filter((p) => p !== "employees:manage"),
   CASHIER: [...PERMISSION_CATALOG.pos, "products:read", "customers:read"],
-  INVENTORY_CLERK: [...PERMISSION_CATALOG.inventory, "products:read"],
-  ACCOUNTANT: [...PERMISSION_CATALOG.finance, ...PERMISSION_CATALOG.reports, "products:read"],
+  INVENTORY_CLERK: [...PERMISSION_CATALOG.inventory, "products:read", "suppliers:read"],
+  ACCOUNTANT: [
+    ...PERMISSION_CATALOG.finance,
+    ...PERMISSION_CATALOG.reports,
+    "products:read",
+    "suppliers:read",
+  ],
 };
 
 interface DemoTenantSpec {
