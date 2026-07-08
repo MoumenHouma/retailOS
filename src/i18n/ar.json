@@ -1,0 +1,33 @@
+{
+  "common": {
+    "appName": "RetailOS",
+    "loading": "...جارٍ التحميل",
+    "cancel": "إلغاء",
+    "save": "حفظ"
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "submit": "دخول",
+      "error": "البريد الإلكتروني أو كلمة المرور غير صحيحة."
+    },
+    "register": {
+      "title": "إنشاء حساب مؤسستك",
+      "businessName": "اسم المؤسسة",
+      "nif": "الرقم الجبائي",
+      "nis": "الرقم الإحصائي",
+      "rc": "السجل التجاري",
+      "ownerFirstName": "الاسم",
+      "ownerLastName": "اللقب",
+      "email": "البريد الإلكتروني",
+      "password": "كلمة المرور",
+      "submit": "إنشاء الحساب"
+    }
+  },
+  "dashboard": {
+    "welcome": "مرحباً، {name}",
+    "tenant": "المؤسسة: {tenantName}"
+  }
+}

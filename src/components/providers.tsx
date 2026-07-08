@@ -1,0 +1,26 @@
+"use client";
+
+import { SessionProvider } from "next-auth/react";
+import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useState, type ReactNode } from "react";
+
+export function Providers({
+  children,
+  messages,
+  locale,
+}: {
+  children: ReactNode;
+  messages: AbstractIntlMessages;
+  locale: string;
+}) {
+  const [queryClient] = useState(() => new QueryClient());
+
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <SessionProvider>
+        <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+      </SessionProvider>
+    </NextIntlClientProvider>
+  );
+}

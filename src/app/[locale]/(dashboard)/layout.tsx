@@ -1,0 +1,41 @@
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
+
+export default async function DashboardLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const session = await auth();
+
+  if (!session?.user) {
+    redirect(`/${locale}/login`);
+  }
+
+  return (
+    <div className="flex min-h-screen">
+      <aside className="w-56 shrink-0 border-e border-[var(--color-border)] bg-[var(--color-muted)] p-4">
+        <div className="mb-6 text-lg font-semibold">RetailOS</div>
+        <nav className="flex flex-col gap-2 text-sm text-[var(--color-muted-foreground)]">
+          <span>Produits</span>
+          <span>Inventaire</span>
+          <span>Point de vente</span>
+          <span>Achats</span>
+          <span>Finances</span>
+          <span>Rapports</span>
+        </nav>
+      </aside>
+      <div className="flex-1">
+        <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
+          <span className="text-sm text-[var(--color-muted-foreground)]">
+            {session.user.email}
+          </span>
+        </header>
+        <main className="p-6">{children}</main>
+      </div>
+    </div>
+  );
+}

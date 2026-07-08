@@ -1,0 +1,42 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+build/
+
+# env
+.env
+.env*.local
+
+# prisma
+prisma/migrations/**/migration_lock.toml.bak
+
+# obsidian workspace (local UI state, not shared)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+# obsidian-local-rest-api plugin: contains a live API key + TLS private key
+.obsidian/plugins/obsidian-local-rest-api/data.json
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# editor
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# os
+Thumbs.db
+.DS_Store
+
+# testing
+coverage/
+
+# misc
+*.tsbuildinfo
+next-env.d.ts

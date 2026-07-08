@@ -1,0 +1,33 @@
+{
+  "common": {
+    "appName": "RetailOS",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save"
+  },
+  "auth": {
+    "login": {
+      "title": "Sign in",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Sign in",
+      "error": "Incorrect email or password."
+    },
+    "register": {
+      "title": "Create your business account",
+      "businessName": "Business name",
+      "nif": "Tax ID (NIF)",
+      "nis": "Statistical ID (NIS)",
+      "rc": "Trade Register (RC)",
+      "ownerFirstName": "First name",
+      "ownerLastName": "Last name",
+      "email": "Email address",
+      "password": "Password",
+      "submit": "Create account"
+    }
+  },
+  "dashboard": {
+    "welcome": "Welcome, {name}",
+    "tenant": "Business: {tenantName}"
+  }
+}

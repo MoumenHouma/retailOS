@@ -1,0 +1,192 @@
+// RetailOS — Phase 0 schema (Auth & Tenancy foundation).
+//
+// Conventions (see DATABASE.md §1):
+// - All ids are UUID v4.
+// - Tenant-scoped tables have `tenantId` (indexed) and are protected by a
+//   PostgreSQL Row-Level Security policy (added by hand in the first
+//   migration's SQL — Prisma has no native RLS/CHECK/GRANT syntax).
+// - Soft delete only: `deletedAt`, never a hard DELETE.
+// - Monetary values (introduced in later phases) are always Int in centimes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Used by the Prisma CLI only (generate/migrate/seed), connects as the
+  // `postgres` superuser. The running app connects separately as `app_user`
+  // via DATABASE_APP_URL — see src/lib/prisma.ts.
+  url      = env("DATABASE_URL")
+}
+
+enum SubscriptionStatus {
+  trial
+  active
+  suspended
+  cancelled
+
+  @@map("subscription_status_enum")
+}
+
+/// Platform-level table — no tenant_id (it *is* the tenant). RLS is
+/// deliberately left off; the app layer restricts access to the session's
+/// own tenant row (`WHERE id = session.tenantId`).
+model Tenant {
+  id                  String             @id @default(uuid()) @db.Uuid
+  name                String             @db.VarChar(255)
+  slug                String             @unique @db.VarChar(100)
+  logoUrl             String?            @map("logo_url") @db.VarChar(500)
+  nif                 String             @unique @db.VarChar(20)
+  nis                 String             @db.VarChar(20)
+  rc                  String             @db.VarChar(30)
+  ai                  String?            @db.VarChar(30)
+  formeJuridique      String?            @map("forme_juridique") @db.VarChar(50)
+  address             String?
+  city                String?            @db.VarChar(100)
+  wilaya              String?            @db.VarChar(100)
+  phone               String?            @db.VarChar(20)
+  email               String?            @db.VarChar(255)
+  website             String?            @db.VarChar(500)
+  activitySector      String?            @map("activity_sector") @db.VarChar(100)
+  tvaDefaultRate      Int                @default(19) @map("tva_default_rate") @db.SmallInt
+  currency            String             @default("DZD") @db.VarChar(3)
+  locale              String             @default("fr-DZ") @db.VarChar(5)
+  subscriptionPlan    String             @default("starter") @map("subscription_plan") @db.VarChar(50)
+  subscriptionStatus  SubscriptionStatus @default(active) @map("subscription_status")
+  subscriptionEndsAt  DateTime?          @map("subscription_ends_at")
+  settings            Json               @default("{}")
+  isActive            Boolean            @default(true) @map("is_active")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+  deletedAt           DateTime?          @map("deleted_at")
+
+  stores      Store[]
+  users       User[]
+  roles       Role[]
+
+  @@map("tenants")
+}
+
+model Store {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @map("tenant_id") @db.Uuid
+  name      String    @db.VarChar(255)
+  address   String?
+  city      String?   @db.VarChar(100)
+  wilaya    String?   @db.VarChar(100)
+  phone     String?   @db.VarChar(20)
+  email     String?   @db.VarChar(255)
+  isMain    Boolean   @default(false) @map("is_main")
+  posPrefix String    @default("POS") @map("pos_prefix") @db.VarChar(5)
+  settings  Json      @default("{}")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  userRoles  UserRole[]
+  userStores UserStore[]
+
+  @@index([tenantId])
+  @@index([tenantId, isMain])
+  @@map("stores")
+}
+
+model User {
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @map("tenant_id") @db.Uuid
+  email                String    @unique @db.VarChar(255)
+  passwordHash         String    @map("password_hash") @db.VarChar(255)
+  firstName            String    @map("first_name") @db.VarChar(100)
+  lastName             String    @map("last_name") @db.VarChar(100)
+  phone                String?   @db.VarChar(20)
+  avatarUrl            String?   @map("avatar_url") @db.VarChar(500)
+  isActive             Boolean   @default(true) @map("is_active")
+  emailVerifiedAt      DateTime? @map("email_verified_at")
+  lastLoginAt          DateTime? @map("last_login_at")
+  failedLoginAttempts  Int       @default(0) @map("failed_login_attempts")
+  lockedUntil          DateTime? @map("locked_until")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  deletedAt             DateTime? @map("deleted_at")
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id])
+  userRoles  UserRole[]
+  userStores UserStore[]
+
+  @@index([tenantId])
+  @@map("users")
+}
+
+model Role {
+  id          String   @id @default(uuid()) @db.Uuid
+  tenantId    String   @map("tenant_id") @db.Uuid
+  name        String   @db.VarChar(50)
+  description String?
+  isSystem    Boolean  @default(false) @map("is_system")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  rolePermissions RolePermission[]
+  userRoles       UserRole[]
+
+  @@unique([tenantId, name])
+  @@map("roles")
+}
+
+/// Global permission catalog — no tenantId, shared across all tenants.
+model Permission {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String   @unique @db.VarChar(100)
+  description String?
+  module      String   @db.VarChar(50)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  rolePermissions RolePermission[]
+
+  @@index([module])
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String @map("role_id") @db.Uuid
+  permissionId String @map("permission_id") @db.Uuid
+
+  role       Role       @relation(fields: [roleId], references: [id])
+  permission Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+  @@map("role_permissions")
+}
+
+/// storeId is nullable ("role applies to all stores in tenant" per
+/// DATABASE.md §4.7). A composite PK with a nullable column is awkward in
+/// Postgres, so this table gets its own surrogate id plus a regular unique
+/// index instead of `@@id([userId, roleId, storeId])`.
+model UserRole {
+  id       String  @id @default(uuid()) @db.Uuid
+  userId   String  @map("user_id") @db.Uuid
+  roleId   String  @map("role_id") @db.Uuid
+  storeId  String? @map("store_id") @db.Uuid
+
+  user  User   @relation(fields: [userId], references: [id])
+  role  Role   @relation(fields: [roleId], references: [id])
+  store Store? @relation(fields: [storeId], references: [id])
+
+  @@unique([userId, roleId, storeId])
+  @@map("user_roles")
+}
+
+model UserStore {
+  userId  String @map("user_id") @db.Uuid
+  storeId String @map("store_id") @db.Uuid
+
+  user  User  @relation(fields: [userId], references: [id])
+  store Store @relation(fields: [storeId], references: [id])
+
+  @@id([userId, storeId])
+  @@map("user_stores")
+}

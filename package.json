@@ -1,0 +1,56 @@
+{
+  "name": "retailos",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:seed": "tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "next": "16.0.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "next-auth": "5.0.0-beta.25",
+    "@prisma/client": "6.2.1",
+    "bcryptjs": "^2.4.3",
+    "zod": "^3.24.1",
+    "next-intl": "^3.26.3",
+    "zustand": "^5.0.2",
+    "@tanstack/react-query": "^5.62.11",
+    "tailwindcss": "^4.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.6.0",
+    "lucide-react": "^0.469.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.2",
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.4",
+    "@types/react-dom": "^19.0.2",
+    "@types/bcryptjs": "^2.4.6",
+    "prisma": "6.2.1",
+    "tsx": "^4.19.2",
+    "eslint": "^9.17.0",
+    "eslint-config-next": "16.0.0",
+    "prettier": "^3.4.2",
+    "eslint-config-prettier": "^9.1.0",
+    "vitest": "^2.1.8"
+  }
+}
