@@ -916,5 +916,59 @@
       "error": "تعذر إنشاء هذا الجرد.",
       "loadStoresError": "تعذر تحميل المتاجر."
     }
+  },
+  "procurementReports": {
+    "title": "تقارير المشتريات",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "reorder": {
+      "title": "اقتراحات إعادة الطلب",
+      "empty": "لا يوجد شيء يحتاج إلى إعادة طلب حالياً.",
+      "noSupplier": "لا يوجد مورد مرتبط",
+      "table": {
+        "product": "المنتج",
+        "store": "المتجر",
+        "onHand": "المتوفر",
+        "minLevel": "الحد الأدنى",
+        "supplier": "المورد المفضل",
+        "suggestedQuantity": "الكمية المقترحة"
+      }
+    },
+    "spendBySupplier": {
+      "title": "الإنفاق حسب المورد",
+      "empty": "لا توجد أوامر شراء ملتزم بها بعد.",
+      "table": { "supplier": "المورد", "total": "المجموع" }
+    },
+    "spendByCategory": {
+      "title": "الإنفاق حسب الفئة",
+      "empty": "لا توجد أوامر شراء ملتزم بها بعد.",
+      "table": { "category": "الفئة", "total": "المجموع" }
+    },
+    "deliveryPerformance": {
+      "title": "أداء التسليم",
+      "empty": "لا توجد تسليمات بتاريخ متوقع بعد.",
+      "table": { "supplier": "المورد", "onTime": "في الوقت المحدد", "total": "المجموع", "rate": "المعدل" }
+    }
+  },
+  "supplierCatalog": {
+    "title": "كتالوج الموردين",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لم يتم العثور على أي منتج مورد.",
+    "loadError": "تعذر تحميل كتالوج الموردين.",
+    "preferredBadge": "مفضل",
+    "filter": { "allSuppliers": "كل الموردين" },
+    "table": {
+      "product": "المنتج",
+      "supplier": "المورد",
+      "supplierSku": "رمز المورد",
+      "unitPrice": "سعر الوحدة (دج)",
+      "minOrderQuantity": "الحد الأدنى للطلب",
+      "preferred": "مفضل"
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} سطر"
+    }
   }
 }

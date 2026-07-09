@@ -4,6 +4,30 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-09 — Phase 3 Chunk D: Procurement Polish — Phase 3 (all 4 chunks) complete
+
+**Done (per [[PHASE3_PURCHASING_PLAN]] Chunk D), continuing directly from Chunk C the same day:**
+- No new schema — pure read-only aggregation over Chunks A-C's data, exactly as the plan called for. `procurement-reports.ts`: `getReorderSuggestions` (threshold on `Product.minStockLevel`, not `reorderPoint`/`safetyStock` which stay null until Phase 5 — cross-column `StockLevel.quantityOnHand <= Product.minStockLevel` comparison filtered in JS, same pattern `getStockLevels`' `isLowStock` already uses; suggested quantity defaults to the preferred `SupplierProduct.minOrderQuantity`, falling back to any linked supplier if none is marked preferred), `getSupplierCatalog` (global, filterable browser across every `SupplierProduct` row — distinct from the existing per-supplier `LinkedProductsDialog`), `getPurchaseAnalytics` (spend by supplier and by category, aggregated in JS from committed POs only — `ordered`/`partially_received`/`received`, excluding drafts/pending/cancelled since those aren't real spend yet), `getDeliveryPerformance` (on-time rate per supplier from `PurchaseDelivery.deliveredAt` vs. the parent PO's `expectedDeliveryDate`, correctly excluding deliveries with no expected date to compare against rather than miscounting them).
+- Routes: `/api/procurement-reports/{reorder-suggestions,supplier-catalog,purchase-analytics,delivery-performance}`, all gated on `purchases:read` (same permission that already gates PO visibility, since these are purchasing decision-support views).
+- Frontend: single `/procurement-reports` page bundling all four views as plain tables (per the plan's own explicit "plain tables are sufficient for a first pass" — deliberately skipped a chart library for this chunk), `/supplier-catalog` as the separate route the plan calls for, filterable by supplier. Two new sidebar links replace the long-inert "Rapports" placeholder `<span>`. i18n `procurementReports.*`/`supplierCatalog.*` added to all three of `fr/en/ar.json`.
+
+**No app bugs found during verification this time** — Chunk D's own code was correct on the first pass; every failure during verification traced back to the *test script's* assumptions, not the product:
+- `api-delivery-performance-has-data` initially failed with an empty array — correct behavior, not a bug: none of Chunks A-C's verification-generated POs ever set `expectedDeliveryDate` (optional, always omitted by those scripts), so `getDeliveryPerformance`'s `WHERE po.expectedDeliveryDate IS NOT NULL` correctly excluded all of them. Fixed by having Chunk D's own verification script create one PO with an explicit future `expectedDeliveryDate`, submit/approve/order/receive it, and check the resulting on-time rate came back exactly `1.0` (confirmed).
+- `api-supplier-catalog-has-data` initially failed with zero rows — also correct, confirmed via direct `SELECT count(*) FROM supplier_products` returning 0: no prior chunk's verification script (nor, apparently, any manual testing session) ever exercised the Phase 1 supplier-product-linking UI for any of the many test products created today. Fixed the same way — created one link via `POST /api/suppliers/[id]/products` as part of this chunk's own fixture setup.
+- Two UI-render assertions (`spend-by-supplier`, `delivery-performance`) failed transiently on an overloaded container (same by-now-familiar "dev server degrades after repeated hot-reload cycles" gotcha) with a fixed 2s wait; switched to the same polling-loop pattern established in Chunks B/C and they passed cleanly on a freshly restarted container.
+
+**Verification-harness notes:**
+- Same "new route files 404 until the container restarts" gotcha hit again on the very first attempt (`/fr/login` itself timed out — turned out to be the *whole dev server* needing a restart to pick up the 6 new Chunk D route files, not `/fr/login` specifically). `docker compose restart app` fixed it, as always.
+- This was the leanest of the four chunks' verification runs by far (pure read-only aggregation, no lifecycle state machine to drive) — 4 attempts total vs. Chunk B/C's much longer iteration counts, and every failure was a test-assumption bug rather than an environment fight once the two data-fixture gaps above were identified.
+
+**Phase 3 is now genuinely complete** (all four chunks — Purchasing Core, Delivery & Receiving, Warehousing, Procurement Polish — shipped and verified the same day). See [[PHASE3_PURCHASING_PLAN]] for the full chunk breakdown and the decisions recorded across all four entries. Next per [[ROADMAP]] is Phase 4.
+
+**Open items for later phases:**
+- `getPurchaseAnalytics`/`getDeliveryPerformance` have no date-range filtering — they aggregate over *all* historical data unconditionally. Fine at current data volumes; worth adding a from/to filter once a tenant has enough purchase history for "spend this quarter" to matter.
+- Reorder suggestions has no acknowledgement/dismissal mechanism — the same low-stock product reappears on every page load until it's actually restocked. Not a gap the roadmap's "basic" framing for Week 13 asked to close.
+
+---
+
 ## 2026-07-09 — Phase 3 Chunk C: Warehousing — Phase 3 complete
 
 **Done (per [[PHASE3_PURCHASING_PLAN]] Chunk C), continuing directly from Chunk B the same day:**

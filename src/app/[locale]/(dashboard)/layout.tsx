@@ -54,7 +54,12 @@ export default async function DashboardLayout({
           <Link href={`/${locale}/warehouses`} className="hover:text-[var(--color-foreground)]">
             Entrepôts
           </Link>
-          <span>Rapports</span>
+          <Link href={`/${locale}/procurement-reports`} className="hover:text-[var(--color-foreground)]">
+            Rapports achats
+          </Link>
+          <Link href={`/${locale}/supplier-catalog`} className="hover:text-[var(--color-foreground)]">
+            Catalogue fournisseurs
+          </Link>
         </nav>
       </aside>
       <div className="flex-1">

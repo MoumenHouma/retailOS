@@ -104,3 +104,13 @@ export const CreatePurchaseReturnSchema = z.object({
   items: z.array(CreatePurchaseReturnItemInputSchema).min(1),
 });
 export type CreatePurchaseReturnInput = z.infer<typeof CreatePurchaseReturnSchema>;
+
+// --- Phase 3 Chunk D: Procurement Polish ----------------------------------
+
+export const SupplierCatalogQuerySchema = z.object({
+  supplierId: z.string().uuid().optional(),
+  productId: z.string().uuid().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+export type SupplierCatalogQuery = z.infer<typeof SupplierCatalogQuerySchema>;

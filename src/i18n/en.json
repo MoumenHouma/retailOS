@@ -916,5 +916,59 @@
       "error": "Unable to create this stock count.",
       "loadStoresError": "Unable to load stores."
     }
+  },
+  "procurementReports": {
+    "title": "Purchasing Reports",
+    "forbidden": "You don't have permission to access this page.",
+    "reorder": {
+      "title": "Reorder Suggestions",
+      "empty": "Nothing needs reordering right now.",
+      "noSupplier": "No supplier linked",
+      "table": {
+        "product": "Product",
+        "store": "Store",
+        "onHand": "On hand",
+        "minLevel": "Min. level",
+        "supplier": "Preferred supplier",
+        "suggestedQuantity": "Suggested qty"
+      }
+    },
+    "spendBySupplier": {
+      "title": "Spend by Supplier",
+      "empty": "No committed purchase orders yet.",
+      "table": { "supplier": "Supplier", "total": "Total" }
+    },
+    "spendByCategory": {
+      "title": "Spend by Category",
+      "empty": "No committed purchase orders yet.",
+      "table": { "category": "Category", "total": "Total" }
+    },
+    "deliveryPerformance": {
+      "title": "Delivery Performance",
+      "empty": "No deliveries with an expected date yet.",
+      "table": { "supplier": "Supplier", "onTime": "On time", "total": "Total", "rate": "Rate" }
+    }
+  },
+  "supplierCatalog": {
+    "title": "Supplier Catalog",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No supplier products found.",
+    "loadError": "Unable to load the supplier catalog.",
+    "preferredBadge": "Preferred",
+    "filter": { "allSuppliers": "All suppliers" },
+    "table": {
+      "product": "Product",
+      "supplier": "Supplier",
+      "supplierSku": "Supplier SKU",
+      "unitPrice": "Unit price (DA)",
+      "minOrderQuantity": "Min. order qty",
+      "preferred": "Preferred"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} row(s)"
+    }
   }
 }

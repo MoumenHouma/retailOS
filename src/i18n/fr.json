@@ -916,5 +916,59 @@
       "error": "Impossible de créer cet inventaire.",
       "loadStoresError": "Impossible de charger les magasins."
     }
+  },
+  "procurementReports": {
+    "title": "Rapports d'achats",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "reorder": {
+      "title": "Suggestions de réapprovisionnement",
+      "empty": "Rien à réapprovisionner pour le moment.",
+      "noSupplier": "Aucun fournisseur lié",
+      "table": {
+        "product": "Produit",
+        "store": "Magasin",
+        "onHand": "En stock",
+        "minLevel": "Niveau min.",
+        "supplier": "Fournisseur préféré",
+        "suggestedQuantity": "Qté suggérée"
+      }
+    },
+    "spendBySupplier": {
+      "title": "Dépenses par fournisseur",
+      "empty": "Aucun bon de commande engagé pour le moment.",
+      "table": { "supplier": "Fournisseur", "total": "Total" }
+    },
+    "spendByCategory": {
+      "title": "Dépenses par catégorie",
+      "empty": "Aucun bon de commande engagé pour le moment.",
+      "table": { "category": "Catégorie", "total": "Total" }
+    },
+    "deliveryPerformance": {
+      "title": "Performance des livraisons",
+      "empty": "Aucune livraison avec une date prévue pour le moment.",
+      "table": { "supplier": "Fournisseur", "onTime": "À temps", "total": "Total", "rate": "Taux" }
+    }
+  },
+  "supplierCatalog": {
+    "title": "Catalogue fournisseurs",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucun produit fournisseur trouvé.",
+    "loadError": "Impossible de charger le catalogue fournisseurs.",
+    "preferredBadge": "Préféré",
+    "filter": { "allSuppliers": "Tous les fournisseurs" },
+    "table": {
+      "product": "Produit",
+      "supplier": "Fournisseur",
+      "supplierSku": "Réf. fournisseur",
+      "unitPrice": "Prix unitaire (DA)",
+      "minOrderQuantity": "Qté min. commande",
+      "preferred": "Préféré"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} ligne(s)"
+    }
   }
 }
