@@ -94,6 +94,13 @@ model Tenant {
   productBatches         ProductBatch[]
   purchaseReturns        PurchaseReturn[]
   purchaseReturnItems    PurchaseReturnItem[]
+  stockTransfers         StockTransfer[]
+  stockTransferItems     StockTransferItem[]
+  stockCounts            StockCount[]
+  stockCountItems        StockCountItem[]
+  warehouses             Warehouse[]
+  warehouseZones         WarehouseZone[]
+  warehouseBins          WarehouseBin[]
 
   @@map("tenants")
 }
@@ -118,6 +125,10 @@ model Store {
   // style purchase order numbering (purchase orders are store-scoped, not
   // tenant-wide, so this fits better than an InvoiceSequence-style table).
   poCounter Int       @default(0) @map("po_counter")
+  // Same pattern again, for TRF-000001/CNT-000001 stock-transfer and
+  // stock-count numbering (Phase 3 Chunk C).
+  transferCounter Int @default(0) @map("transfer_counter")
+  countCounter    Int @default(0) @map("count_counter")
   settings  Json      @default("{}")
   isActive  Boolean   @default(true) @map("is_active")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -135,6 +146,10 @@ model Store {
   purchaseOrders PurchaseOrder[]
   productBatches ProductBatch[]
   purchaseReturns PurchaseReturn[]
+  stockTransfersFrom StockTransfer[] @relation("StockTransferFromStore")
+  stockTransfersTo   StockTransfer[] @relation("StockTransferToStore")
+  stockCounts        StockCount[]
+  warehouses         Warehouse[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -174,6 +189,11 @@ model User {
   purchaseOrdersApproved    PurchaseOrder[]   @relation("PurchaseOrderApprovedBy")
   purchaseDeliveriesReceived PurchaseDelivery[] @relation("PurchaseDeliveryReceivedBy")
   purchaseReturnsCreated     PurchaseReturn[]   @relation("PurchaseReturnCreatedBy")
+  stockTransfersCreated  StockTransfer[] @relation("StockTransferCreatedBy")
+  stockTransfersApproved StockTransfer[] @relation("StockTransferApprovedBy")
+  stockTransfersReceived StockTransfer[] @relation("StockTransferReceivedBy")
+  stockCountsCreated     StockCount[]    @relation("StockCountCreatedBy")
+  stockCountsApproved    StockCount[]    @relation("StockCountApprovedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -370,6 +390,8 @@ model Product {
   batches                ProductBatch[]
   purchaseDeliveryItems  PurchaseDeliveryItem[]
   purchaseReturnItems    PurchaseReturnItem[]
+  stockTransferItems     StockTransferItem[]
+  stockCountItems        StockCountItem[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -435,15 +457,21 @@ model StockMovement {
   // product_batches now exists (Phase 3 Chunk B) — FK added below. Still
   // null on every movement type except PURCHASE_IN lines that carry a batch.
   batchId   String?  @map("batch_id") @db.Uuid
+  // Nullable FK-for-future-detail, same pattern as batchId — records
+  // *where physically* a delivery was put away or a count line was found,
+  // without being load-bearing for on-hand-quantity math (StockLevel's
+  // aggregation key stays (tenant_id, product_id, store_id) unchanged).
+  binId     String?  @map("bin_id") @db.Uuid
   notes     String?
   createdBy String?  @map("created_by") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
 
-  tenant        Tenant        @relation(fields: [tenantId], references: [id])
-  product       Product       @relation(fields: [productId], references: [id])
-  store         Store         @relation(fields: [storeId], references: [id])
-  createdByUser User?         @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
-  batch         ProductBatch? @relation(fields: [batchId], references: [id])
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id])
+  store         Store          @relation(fields: [storeId], references: [id])
+  createdByUser User?          @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
+  batch         ProductBatch?  @relation(fields: [batchId], references: [id])
+  bin           WarehouseBin?  @relation(fields: [binId], references: [id])
 
   @@index([tenantId])
   @@index([productId])
@@ -1190,4 +1218,202 @@ model PurchaseReturnItem {
   @@index([returnId])
   @@index([deliveryItemId])
   @@map("purchase_return_items")
+}
+
+// --- Phase 3 Chunk C: Warehousing ----------------------------------------
+
+/// per DATABASE.md §6.3/§14 verbatim.
+enum TransferStatus {
+  draft
+  pending
+  in_transit
+  received
+  cancelled
+
+  @@map("transfer_status_enum")
+}
+
+model StockTransfer {
+  id             String         @id @default(uuid()) @db.Uuid
+  tenantId       String         @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  transferNumber String         @map("transfer_number") @db.VarChar(50)
+  fromStoreId    String         @map("from_store_id") @db.Uuid
+  toStoreId      String         @map("to_store_id") @db.Uuid
+  status         TransferStatus @default(draft)
+  notes          String?
+  createdBy      String?        @map("created_by") @db.Uuid
+  approvedBy     String?        @map("approved_by") @db.Uuid
+  receivedBy     String?        @map("received_by") @db.Uuid
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+  deletedAt      DateTime?      @map("deleted_at")
+
+  tenant         Tenant              @relation(fields: [tenantId], references: [id])
+  fromStore      Store               @relation("StockTransferFromStore", fields: [fromStoreId], references: [id])
+  toStore        Store               @relation("StockTransferToStore", fields: [toStoreId], references: [id])
+  createdByUser  User?               @relation("StockTransferCreatedBy", fields: [createdBy], references: [id])
+  approvedByUser User?               @relation("StockTransferApprovedBy", fields: [approvedBy], references: [id])
+  receivedByUser User?               @relation("StockTransferReceivedBy", fields: [receivedBy], references: [id])
+  items          StockTransferItem[]
+
+  @@unique([tenantId, transferNumber])
+  @@index([tenantId])
+  @@index([fromStoreId])
+  @@index([toStoreId])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id                String  @id @default(uuid()) @db.Uuid
+  tenantId          String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  transferId        String  @map("transfer_id") @db.Uuid
+  productId         String  @map("product_id") @db.Uuid
+  quantityRequested Int     @map("quantity_requested")
+  quantitySent      Int     @default(0) @map("quantity_sent")
+  quantityReceived  Int     @default(0) @map("quantity_received")
+  notes             String?
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id])
+  transfer StockTransfer @relation(fields: [transferId], references: [id])
+  product  Product       @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([transferId])
+  @@index([productId])
+  @@map("stock_transfer_items")
+}
+
+/// per DATABASE.md §6.5/§14 verbatim.
+enum CountStatus {
+  in_progress
+  pending_review
+  approved
+  cancelled
+
+  @@map("count_status_enum")
+}
+
+model StockCount {
+  id          String      @id @default(uuid()) @db.Uuid
+  tenantId    String      @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId     String      @map("store_id") @db.Uuid
+  countNumber String      @map("count_number") @db.VarChar(50)
+  status      CountStatus @default(in_progress)
+  startedAt   DateTime    @default(now()) @map("started_at")
+  completedAt DateTime?   @map("completed_at")
+  notes       String?
+  createdBy   String?     @map("created_by") @db.Uuid
+  approvedBy  String?     @map("approved_by") @db.Uuid
+
+  tenant         Tenant           @relation(fields: [tenantId], references: [id])
+  store          Store            @relation(fields: [storeId], references: [id])
+  createdByUser  User?            @relation("StockCountCreatedBy", fields: [createdBy], references: [id])
+  approvedByUser User?            @relation("StockCountApprovedBy", fields: [approvedBy], references: [id])
+  items          StockCountItem[]
+
+  @@unique([tenantId, countNumber])
+  @@index([tenantId])
+  @@index([storeId])
+  @@map("stock_counts")
+}
+
+/// per DATABASE.md §6.6/§14 verbatim.
+enum AdjustmentStatus {
+  pending
+  approved
+  rejected
+
+  @@map("adjustment_status_enum")
+}
+
+model StockCountItem {
+  id               String           @id @default(uuid()) @db.Uuid
+  tenantId         String           @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  countId          String           @map("count_id") @db.Uuid
+  productId        String           @map("product_id") @db.Uuid
+  systemQuantity   Int              @map("system_quantity")
+  countedQuantity  Int              @map("counted_quantity")
+  // Postgres GENERATED ALWAYS AS (counted_quantity - system_quantity)
+  // STORED — Prisma has no syntax for this, hand-patched in migration.sql.
+  // Must be @default(dbgenerated(...)), not a plain @default(0): a plain
+  // client-side default still gets materialized into the INSERT's column
+  // list, which Postgres rejects outright for a GENERATED column ("cannot
+  // insert a non-DEFAULT value"). dbgenerated() is what actually tells
+  // Prisma to omit the column from the insert and defer to the database —
+  // the same signal already used tenant-wide for the dbgenerated tenantId
+  // default just above.
+  difference       Int              @default(dbgenerated("0"))
+  adjustmentStatus AdjustmentStatus @default(pending) @map("adjustment_status")
+
+  tenant Tenant     @relation(fields: [tenantId], references: [id])
+  count  StockCount @relation(fields: [countId], references: [id])
+  product Product   @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([countId])
+  @@index([productId])
+  @@map("stock_count_items")
+}
+
+/// Net-new — DATABASE.md has zero schema for a warehouse/zone/bin hierarchy
+/// anywhere (a genuine gap, not a documented-but-unbuilt table like Chunk
+/// A/B's net-new tables were). Deliberately scoped down to a plain labeling
+/// hierarchy, not real bin-level inventory accounting: building that would
+/// mean reworking fn_apply_stock_movement and every stock-writing caller
+/// from Phases 1-2 to track on-hand quantity per bin instead of per store —
+/// disproportionate to this chunk's scope, and nothing else in the app is
+/// ready to consume that granularity yet. StockLevel's aggregation key
+/// stays exactly (tenant_id, product_id, store_id), unchanged.
+model Warehouse {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId   String    @map("store_id") @db.Uuid
+  name      String    @db.VarChar(255)
+  address   String?
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  tenant Tenant          @relation(fields: [tenantId], references: [id])
+  store  Store           @relation(fields: [storeId], references: [id])
+  zones  WarehouseZone[]
+
+  @@index([tenantId])
+  @@index([storeId])
+  @@map("warehouses")
+}
+
+model WarehouseZone {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  warehouseId String    @map("warehouse_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  code        String    @db.VarChar(20)
+  deletedAt   DateTime? @map("deleted_at")
+
+  tenant    Tenant        @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse     @relation(fields: [warehouseId], references: [id])
+  bins      WarehouseBin[]
+
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@map("warehouse_zones")
+}
+
+model WarehouseBin {
+  id        String    @id @default(uuid()) @db.Uuid
+  tenantId  String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  zoneId    String    @map("zone_id") @db.Uuid
+  code      String    @db.VarChar(20)
+  notes     String?
+  deletedAt DateTime? @map("deleted_at")
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  zone           WarehouseZone   @relation(fields: [zoneId], references: [id])
+  stockMovements StockMovement[]
+
+  @@index([tenantId])
+  @@index([zoneId])
+  @@map("warehouse_bins")
 }

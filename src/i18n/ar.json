@@ -725,5 +725,196 @@
       "success": "تم تعديل المخزون بنجاح.",
       "error": "تعذر تعديل المخزون."
     }
+  },
+  "warehouses": {
+    "title": "المستودعات",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "tabs": { "warehouses": "المستودعات", "zones": "المناطق", "bins": "الصناديق" },
+    "warehouses": {
+      "newWarehouse": "مستودع جديد",
+      "empty": "لا توجد مستودعات بعد.",
+      "loadError": "تعذر تحميل المستودعات.",
+      "table": { "name": "الاسم", "store": "المتجر", "address": "العنوان", "actions": "إجراءات" },
+      "delete": {
+        "confirm": "حذف هذا المستودع؟",
+        "success": "تم حذف المستودع.",
+        "error": "تعذر حذف هذا المستودع."
+      },
+      "form": {
+        "title": "مستودع جديد",
+        "description": "ينتمي المستودع إلى متجر واحد — يمكن أن يكون للمتجر أكثر من مستودع (مثل غرفة خلفية ومستودع خارجي).",
+        "store": "المتجر",
+        "selectStore": "اختر متجراً",
+        "name": "الاسم",
+        "address": "العنوان",
+        "submit": "إنشاء",
+        "submitting": "جارٍ الإنشاء...",
+        "success": "تم إنشاء المستودع بنجاح.",
+        "error": "تعذر إنشاء هذا المستودع."
+      }
+    },
+    "zones": {
+      "newZone": "منطقة جديدة",
+      "selectWarehouse": "اختر مستودعاً",
+      "selectWarehouseFirst": "اختر مستودعاً لعرض مناطقه.",
+      "empty": "لا توجد مناطق بعد.",
+      "loadError": "تعذر تحميل المناطق.",
+      "table": { "name": "الاسم", "code": "الرمز", "actions": "إجراءات" },
+      "delete": {
+        "confirm": "حذف هذه المنطقة؟",
+        "success": "تم حذف المنطقة.",
+        "error": "تعذر حذف هذه المنطقة."
+      },
+      "form": {
+        "title": "منطقة جديدة",
+        "description": "تنتمي المنطقة إلى المستودع المحدد.",
+        "name": "الاسم",
+        "code": "الرمز",
+        "submit": "إنشاء",
+        "submitting": "جارٍ الإنشاء...",
+        "success": "تم إنشاء المنطقة بنجاح.",
+        "error": "تعذر إنشاء هذه المنطقة."
+      }
+    },
+    "bins": {
+      "newBin": "صندوق جديد",
+      "selectWarehouse": "المستودع",
+      "selectZone": "المنطقة",
+      "selectZoneFirst": "اختر مستودعاً ثم منطقة لعرض صناديقها.",
+      "empty": "لا توجد صناديق بعد.",
+      "loadError": "تعذر تحميل الصناديق.",
+      "table": { "code": "الرمز", "notes": "ملاحظات", "actions": "إجراءات" },
+      "delete": {
+        "confirm": "حذف هذا الصندوق؟",
+        "success": "تم حذف الصندوق.",
+        "error": "تعذر حذف هذا الصندوق."
+      },
+      "form": {
+        "title": "صندوق جديد",
+        "description": "ينتمي الصندوق إلى المنطقة المحددة.",
+        "code": "الرمز",
+        "notes": "ملاحظات",
+        "submit": "إنشاء",
+        "submitting": "جارٍ الإنشاء...",
+        "success": "تم إنشاء الصندوق بنجاح.",
+        "error": "تعذر إنشاء هذا الصندوق."
+      }
+    }
+  },
+  "stockTransfers": {
+    "title": "تحويلات المخزون",
+    "newTransfer": "تحويل جديد",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لم يتم العثور على أي تحويل.",
+    "loadError": "تعذر تحميل التحويلات.",
+    "loading": "جارٍ التحميل...",
+    "actionError": "حدث خطأ ما.",
+    "filter": { "all": "الكل" },
+    "status": {
+      "draft": "مسودة",
+      "pending": "قيد الانتظار",
+      "in_transit": "قيد النقل",
+      "received": "تم الاستلام",
+      "cancelled": "ملغى"
+    },
+    "table": {
+      "transferNumber": "رقم التحويل",
+      "from": "من",
+      "to": "إلى",
+      "date": "التاريخ",
+      "items": "العناصر",
+      "status": "الحالة",
+      "requested": "المطلوب",
+      "sent": "المرسل",
+      "received": "المستلم"
+    },
+    "actions": {
+      "approve": "موافقة",
+      "approveSuccess": "تمت الموافقة على التحويل.",
+      "send": "إرسال",
+      "sendSuccess": "تم إرسال التحويل.",
+      "receive": "استلام",
+      "receiveSuccess": "تم استلام التحويل.",
+      "cancel": "إلغاء",
+      "cancelSuccess": "تم إلغاء التحويل."
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} تحويل"
+    },
+    "form": {
+      "fromStore": "من متجر",
+      "toStore": "إلى متجر",
+      "selectStore": "اختر متجراً",
+      "notes": "ملاحظات",
+      "items": "العناصر",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "storesRequired": "اختر متجر المصدر ومتجر الوجهة.",
+      "sameStoreError": "يجب أن يكون متجر المصدر والوجهة مختلفين.",
+      "itemsRequired": "أضف عنصراً واحداً على الأقل.",
+      "submit": "إنشاء التحويل",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء التحويل بنجاح.",
+      "error": "تعذر إنشاء هذا التحويل.",
+      "loadStoresError": "تعذر تحميل المتاجر."
+    }
+  },
+  "stockCounts": {
+    "title": "الجرد المادي",
+    "newCount": "جرد جديد",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لم يتم العثور على أي جرد.",
+    "loadError": "تعذر تحميل عمليات الجرد.",
+    "loading": "جارٍ التحميل...",
+    "actionError": "حدث خطأ ما.",
+    "countEntryError": "تعذر حفظ هذه الكمية المعدودة.",
+    "filter": { "all": "الكل" },
+    "status": {
+      "in_progress": "جارٍ",
+      "pending_review": "بانتظار المراجعة",
+      "approved": "تمت الموافقة",
+      "cancelled": "ملغى"
+    },
+    "table": {
+      "countNumber": "رقم الجرد",
+      "store": "المتجر",
+      "date": "التاريخ",
+      "items": "العناصر",
+      "status": "الحالة",
+      "product": "المنتج",
+      "system": "النظام",
+      "counted": "المعدود",
+      "difference": "الفرق"
+    },
+    "actions": {
+      "submit": "إرسال للمراجعة",
+      "submitSuccess": "تم إرسال الجرد للمراجعة.",
+      "approve": "الموافقة على التعديلات",
+      "approveSuccess": "تمت الموافقة على الجرد — تم تعديل المخزون.",
+      "cancel": "إلغاء",
+      "cancelSuccess": "تم إلغاء الجرد."
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} جرد"
+    },
+    "form": {
+      "store": "المتجر",
+      "selectStore": "اختر متجراً",
+      "notes": "ملاحظات",
+      "productsToCount": "المنتجات المراد جردها",
+      "storeRequired": "اختر متجراً.",
+      "itemsRequired": "أضف منتجاً واحداً على الأقل.",
+      "submit": "بدء الجرد",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم بدء الجرد بنجاح.",
+      "error": "تعذر إنشاء هذا الجرد.",
+      "loadStoresError": "تعذر تحميل المتاجر."
+    }
   }
 }

@@ -725,5 +725,196 @@
       "success": "Stock ajusté avec succès.",
       "error": "Impossible d'ajuster le stock."
     }
+  },
+  "warehouses": {
+    "title": "Entrepôts",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "tabs": { "warehouses": "Entrepôts", "zones": "Zones", "bins": "Emplacements" },
+    "warehouses": {
+      "newWarehouse": "Nouvel entrepôt",
+      "empty": "Aucun entrepôt pour le moment.",
+      "loadError": "Impossible de charger les entrepôts.",
+      "table": { "name": "Nom", "store": "Magasin", "address": "Adresse", "actions": "Actions" },
+      "delete": {
+        "confirm": "Supprimer cet entrepôt ?",
+        "success": "Entrepôt supprimé.",
+        "error": "Impossible de supprimer cet entrepôt."
+      },
+      "form": {
+        "title": "Nouvel entrepôt",
+        "description": "Un entrepôt appartient à un seul magasin — un magasin peut en avoir plusieurs (par ex. une arrière-boutique et un dépôt externe).",
+        "store": "Magasin",
+        "selectStore": "Sélectionner un magasin",
+        "name": "Nom",
+        "address": "Adresse",
+        "submit": "Créer",
+        "submitting": "Création...",
+        "success": "Entrepôt créé avec succès.",
+        "error": "Impossible de créer cet entrepôt."
+      }
+    },
+    "zones": {
+      "newZone": "Nouvelle zone",
+      "selectWarehouse": "Sélectionner un entrepôt",
+      "selectWarehouseFirst": "Sélectionnez un entrepôt pour voir ses zones.",
+      "empty": "Aucune zone pour le moment.",
+      "loadError": "Impossible de charger les zones.",
+      "table": { "name": "Nom", "code": "Code", "actions": "Actions" },
+      "delete": {
+        "confirm": "Supprimer cette zone ?",
+        "success": "Zone supprimée.",
+        "error": "Impossible de supprimer cette zone."
+      },
+      "form": {
+        "title": "Nouvelle zone",
+        "description": "Une zone appartient à l'entrepôt sélectionné.",
+        "name": "Nom",
+        "code": "Code",
+        "submit": "Créer",
+        "submitting": "Création...",
+        "success": "Zone créée avec succès.",
+        "error": "Impossible de créer cette zone."
+      }
+    },
+    "bins": {
+      "newBin": "Nouvel emplacement",
+      "selectWarehouse": "Entrepôt",
+      "selectZone": "Zone",
+      "selectZoneFirst": "Sélectionnez un entrepôt puis une zone pour voir ses emplacements.",
+      "empty": "Aucun emplacement pour le moment.",
+      "loadError": "Impossible de charger les emplacements.",
+      "table": { "code": "Code", "notes": "Notes", "actions": "Actions" },
+      "delete": {
+        "confirm": "Supprimer cet emplacement ?",
+        "success": "Emplacement supprimé.",
+        "error": "Impossible de supprimer cet emplacement."
+      },
+      "form": {
+        "title": "Nouvel emplacement",
+        "description": "Un emplacement appartient à la zone sélectionnée.",
+        "code": "Code",
+        "notes": "Notes",
+        "submit": "Créer",
+        "submitting": "Création...",
+        "success": "Emplacement créé avec succès.",
+        "error": "Impossible de créer cet emplacement."
+      }
+    }
+  },
+  "stockTransfers": {
+    "title": "Transferts de stock",
+    "newTransfer": "Nouveau transfert",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucun transfert trouvé.",
+    "loadError": "Impossible de charger les transferts.",
+    "loading": "Chargement...",
+    "actionError": "Une erreur est survenue.",
+    "filter": { "all": "Tous" },
+    "status": {
+      "draft": "Brouillon",
+      "pending": "En attente",
+      "in_transit": "En transit",
+      "received": "Reçu",
+      "cancelled": "Annulé"
+    },
+    "table": {
+      "transferNumber": "N° de transfert",
+      "from": "De",
+      "to": "Vers",
+      "date": "Date",
+      "items": "Articles",
+      "status": "Statut",
+      "requested": "Demandé",
+      "sent": "Envoyé",
+      "received": "Reçu"
+    },
+    "actions": {
+      "approve": "Approuver",
+      "approveSuccess": "Transfert approuvé.",
+      "send": "Envoyer",
+      "sendSuccess": "Transfert envoyé.",
+      "receive": "Réceptionner",
+      "receiveSuccess": "Transfert réceptionné.",
+      "cancel": "Annuler",
+      "cancelSuccess": "Transfert annulé."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} transfert(s)"
+    },
+    "form": {
+      "fromStore": "Magasin source",
+      "toStore": "Magasin destination",
+      "selectStore": "Sélectionner un magasin",
+      "notes": "Notes",
+      "items": "Articles",
+      "product": "Produit",
+      "quantity": "Quantité",
+      "storesRequired": "Sélectionnez un magasin source et un magasin destination.",
+      "sameStoreError": "Les magasins source et destination doivent être différents.",
+      "itemsRequired": "Ajoutez au moins un article.",
+      "submit": "Créer le transfert",
+      "submitting": "Création...",
+      "success": "Transfert créé avec succès.",
+      "error": "Impossible de créer ce transfert.",
+      "loadStoresError": "Impossible de charger les magasins."
+    }
+  },
+  "stockCounts": {
+    "title": "Inventaires physiques",
+    "newCount": "Nouvel inventaire",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucun inventaire trouvé.",
+    "loadError": "Impossible de charger les inventaires.",
+    "loading": "Chargement...",
+    "actionError": "Une erreur est survenue.",
+    "countEntryError": "Impossible d'enregistrer cette quantité comptée.",
+    "filter": { "all": "Tous" },
+    "status": {
+      "in_progress": "En cours",
+      "pending_review": "En attente de validation",
+      "approved": "Approuvé",
+      "cancelled": "Annulé"
+    },
+    "table": {
+      "countNumber": "N° d'inventaire",
+      "store": "Magasin",
+      "date": "Date",
+      "items": "Articles",
+      "status": "Statut",
+      "product": "Produit",
+      "system": "Système",
+      "counted": "Compté",
+      "difference": "Écart"
+    },
+    "actions": {
+      "submit": "Soumettre pour validation",
+      "submitSuccess": "Inventaire soumis pour validation.",
+      "approve": "Approuver les ajustements",
+      "approveSuccess": "Inventaire approuvé — stock ajusté.",
+      "cancel": "Annuler",
+      "cancelSuccess": "Inventaire annulé."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} inventaire(s)"
+    },
+    "form": {
+      "store": "Magasin",
+      "selectStore": "Sélectionner un magasin",
+      "notes": "Notes",
+      "productsToCount": "Produits à compter",
+      "storeRequired": "Sélectionnez un magasin.",
+      "itemsRequired": "Ajoutez au moins un produit.",
+      "submit": "Démarrer l'inventaire",
+      "submitting": "Création...",
+      "success": "Inventaire démarré avec succès.",
+      "error": "Impossible de créer cet inventaire.",
+      "loadStoresError": "Impossible de charger les magasins."
+    }
   }
 }

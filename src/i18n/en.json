@@ -725,5 +725,196 @@
       "success": "Stock adjusted successfully.",
       "error": "Unable to adjust stock."
     }
+  },
+  "warehouses": {
+    "title": "Warehouses",
+    "forbidden": "You don't have permission to access this page.",
+    "tabs": { "warehouses": "Warehouses", "zones": "Zones", "bins": "Bins" },
+    "warehouses": {
+      "newWarehouse": "New warehouse",
+      "empty": "No warehouses yet.",
+      "loadError": "Unable to load warehouses.",
+      "table": { "name": "Name", "store": "Store", "address": "Address", "actions": "Actions" },
+      "delete": {
+        "confirm": "Delete this warehouse?",
+        "success": "Warehouse deleted.",
+        "error": "Unable to delete this warehouse."
+      },
+      "form": {
+        "title": "New warehouse",
+        "description": "A warehouse belongs to one store — a store can have more than one (e.g. a backroom and an offsite depot).",
+        "store": "Store",
+        "selectStore": "Select a store",
+        "name": "Name",
+        "address": "Address",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "success": "Warehouse created successfully.",
+        "error": "Unable to create this warehouse."
+      }
+    },
+    "zones": {
+      "newZone": "New zone",
+      "selectWarehouse": "Select a warehouse",
+      "selectWarehouseFirst": "Select a warehouse to see its zones.",
+      "empty": "No zones yet.",
+      "loadError": "Unable to load zones.",
+      "table": { "name": "Name", "code": "Code", "actions": "Actions" },
+      "delete": {
+        "confirm": "Delete this zone?",
+        "success": "Zone deleted.",
+        "error": "Unable to delete this zone."
+      },
+      "form": {
+        "title": "New zone",
+        "description": "A zone belongs to the selected warehouse.",
+        "name": "Name",
+        "code": "Code",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "success": "Zone created successfully.",
+        "error": "Unable to create this zone."
+      }
+    },
+    "bins": {
+      "newBin": "New bin",
+      "selectWarehouse": "Warehouse",
+      "selectZone": "Zone",
+      "selectZoneFirst": "Select a warehouse and a zone to see its bins.",
+      "empty": "No bins yet.",
+      "loadError": "Unable to load bins.",
+      "table": { "code": "Code", "notes": "Notes", "actions": "Actions" },
+      "delete": {
+        "confirm": "Delete this bin?",
+        "success": "Bin deleted.",
+        "error": "Unable to delete this bin."
+      },
+      "form": {
+        "title": "New bin",
+        "description": "A bin belongs to the selected zone.",
+        "code": "Code",
+        "notes": "Notes",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "success": "Bin created successfully.",
+        "error": "Unable to create this bin."
+      }
+    }
+  },
+  "stockTransfers": {
+    "title": "Stock Transfers",
+    "newTransfer": "New transfer",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No transfers found.",
+    "loadError": "Unable to load transfers.",
+    "loading": "Loading...",
+    "actionError": "Something went wrong.",
+    "filter": { "all": "All" },
+    "status": {
+      "draft": "Draft",
+      "pending": "Pending",
+      "in_transit": "In transit",
+      "received": "Received",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "transferNumber": "Transfer #",
+      "from": "From",
+      "to": "To",
+      "date": "Date",
+      "items": "Items",
+      "status": "Status",
+      "requested": "Requested",
+      "sent": "Sent",
+      "received": "Received"
+    },
+    "actions": {
+      "approve": "Approve",
+      "approveSuccess": "Transfer approved.",
+      "send": "Send",
+      "sendSuccess": "Transfer sent.",
+      "receive": "Receive",
+      "receiveSuccess": "Transfer received.",
+      "cancel": "Cancel",
+      "cancelSuccess": "Transfer cancelled."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} transfer(s)"
+    },
+    "form": {
+      "fromStore": "From store",
+      "toStore": "To store",
+      "selectStore": "Select a store",
+      "notes": "Notes",
+      "items": "Items",
+      "product": "Product",
+      "quantity": "Quantity",
+      "storesRequired": "Select both a source and a destination store.",
+      "sameStoreError": "The source and destination stores must be different.",
+      "itemsRequired": "Add at least one item.",
+      "submit": "Create transfer",
+      "submitting": "Creating...",
+      "success": "Transfer created successfully.",
+      "error": "Unable to create this transfer.",
+      "loadStoresError": "Unable to load stores."
+    }
+  },
+  "stockCounts": {
+    "title": "Stock Counts",
+    "newCount": "New count",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No stock counts found.",
+    "loadError": "Unable to load stock counts.",
+    "loading": "Loading...",
+    "actionError": "Something went wrong.",
+    "countEntryError": "Unable to save this counted quantity.",
+    "filter": { "all": "All" },
+    "status": {
+      "in_progress": "In progress",
+      "pending_review": "Pending review",
+      "approved": "Approved",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "countNumber": "Count #",
+      "store": "Store",
+      "date": "Date",
+      "items": "Items",
+      "status": "Status",
+      "product": "Product",
+      "system": "System",
+      "counted": "Counted",
+      "difference": "Difference"
+    },
+    "actions": {
+      "submit": "Submit for review",
+      "submitSuccess": "Count submitted for review.",
+      "approve": "Approve adjustments",
+      "approveSuccess": "Count approved — stock adjusted.",
+      "cancel": "Cancel",
+      "cancelSuccess": "Count cancelled."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} count(s)"
+    },
+    "form": {
+      "store": "Store",
+      "selectStore": "Select a store",
+      "notes": "Notes",
+      "productsToCount": "Products to count",
+      "storeRequired": "Select a store.",
+      "itemsRequired": "Add at least one product.",
+      "submit": "Start count",
+      "submitting": "Creating...",
+      "success": "Stock count started successfully.",
+      "error": "Unable to create this stock count.",
+      "loadStoresError": "Unable to load stores."
+    }
   }
 }

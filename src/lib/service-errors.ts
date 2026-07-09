@@ -18,6 +18,11 @@ import {
   MissingUnitPriceError,
 } from "@/server/services/purchase-orders";
 import { InvalidDeliveryQuantityError } from "@/server/services/purchase-deliveries";
+import {
+  InvalidTransferQuantityError,
+  InvalidTransferStatusTransitionError,
+} from "@/server/services/stock-transfers";
+import { InvalidCountStatusTransitionError } from "@/server/services/stock-counts";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -67,6 +72,13 @@ export function mapServiceError(error: unknown) {
     return apiError("VALIDATION", error.message, 422);
   }
   if (error instanceof InvalidDeliveryQuantityError) {
+    return apiError("VALIDATION", error.message, 422);
+  }
+  if (
+    error instanceof InvalidTransferStatusTransitionError ||
+    error instanceof InvalidTransferQuantityError ||
+    error instanceof InvalidCountStatusTransitionError
+  ) {
     return apiError("VALIDATION", error.message, 422);
   }
   if ((error as { code?: string })?.code === "P2025") {
