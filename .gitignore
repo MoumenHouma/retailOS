@@ -19,6 +19,8 @@ prisma/migrations/**/migration_lock.toml.bak
 .obsidian/workspace-mobile.json
 # obsidian-local-rest-api plugin: contains a live API key + TLS private key
 .obsidian/plugins/obsidian-local-rest-api/data.json
+# Claude's second-brain memory mirror (personal notes, not project files)
+_ClaudeMemory/
 
 # logs
 *.log
