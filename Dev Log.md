@@ -15,9 +15,11 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 - Filled in the shadcn/Tailwind v4 theme tokens (`secondary`, `accent`, `destructive`, `popover`, `input`, `ring`) in `globals.css` — the scaffolded UI primitives referenced them but they were never defined, so buttons/selects/dialogs would have rendered unstyled.
 - Mounted the Sonner `<Toaster>` (component existed, was never added to the provider tree).
 - Added **edit UI** for products and suppliers: the create dialogs (`ProductFormDialog`, `SupplierFormDialog`) now take an optional `product`/`supplier` prop and switch between POST-create and PATCH-update — a pencil-icon button per row opens the same dialog pre-filled. Both PATCH routes already existed; only the UI was missing.
+- Added **CSV/Excel import-export UI** for products: "Exporter (CSV)"/"Exporter (Excel)" buttons (plain `<a>` downloads, not client routing — the response is a file, not a page), and an "Importer" dialog that previews the parsed rows (valid/error counts, per-row error detail) before a separate confirm step commits only the valid rows.
 - Verified every page live in a real browser (Playwright-driven headless Chromium) against the Dockerized dev stack — not just typecheck/lint.
 
 **Bugs found and fixed during verification:**
+- `parseAndValidateImportRows` (`src/server/services/product-import.ts`) read CSV uploads via `XLSX.read(buffer, { type: "array" })`, which without an explicit UTF-8 BOM can mis-decode accented headers — so a CSV missing a BOM (e.g. hand-edited in a plain text editor) silently failed to match the `Unité`/`Catégorie` columns, surfacing as a spurious "Required" error on every row. Fixed by detecting zip-format (xlsx/xls, unicode-safe by construction) via the "PK" signature and explicitly UTF-8-decoding everything else before parsing.
 - No units existed for either demo tenant, and `unitId` is required on every product — product creation was a dead end. Seeded 4 default units (Pièce/Kilogramme/Litre/Carton) per tenant in `prisma/seed.ts`.
 - `src/app/api/products/export/route.ts` passed a Node `Buffer` straight to `NextResponse` — not valid `BodyInit`, a real typecheck failure nobody had caught. Fixed with `new Uint8Array(buffer)`.
 - `getStockLevels` (`src/server/services/stock.ts`) computed `isLowStock` in JS *after* paginating in SQL — the low-stock-only view could show a stale non-zero total against an empty page, or silently drop/misplace rows outside the current page. Fixed by fetching all matching rows and paginating post-filter (fine at Phase 1 catalog sizes; revisit if a tenant's catalog gets large).
@@ -30,7 +32,7 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 - Next dev's on-demand compilation can race an in-flight request body: the *first* hit to a not-yet-compiled dynamic API route that carries a JSON body can fail with `SyntaxError: Unexpected end of JSON input` in `request.json()` (the body stream appears to get consumed/discarded during the compile-triggered re-invocation). Retrying the exact same request once the route is warm succeeds immediately. Only ever seen on the first body-carrying request to a given route per dev-server process — a dev-mode-only artifact, not reproducible against a production build.
 
 **Open items for later phases:**
-- Multi-barcode management and CSV/Excel import-export UI (both have working APIs already, just no UI).
+- Multi-barcode management UI (API exists already, just no UI).
 - Supplier-product linking UI (API exists via `/api/suppliers/[id]/products`).
 - Multi-store support — Inventory/adjustment UI currently assumes the single seeded "principal" store per tenant.
 

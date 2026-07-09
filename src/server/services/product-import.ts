@@ -55,7 +55,17 @@ export interface ImportRowResult {
 
 /** Parses an uploaded .xlsx/.csv buffer and validates every row — no DB writes. */
 export function parseAndValidateImportRows(buffer: ArrayBuffer): ImportRowResult[] {
-  const workbook = XLSX.read(buffer, { type: "array" });
+  // .xlsx/.xls are zip archives (start with the "PK" signature) and are
+  // unicode-safe by construction. Plain CSV has no such marker, and without
+  // an explicit UTF-8 BOM, XLSX.read's codepage auto-detection can mis-decode
+  // accented headers ("Unité", "Catégorie") — silently breaking the column
+  // lookup below for any CSV a user didn't happen to save with a BOM. Decode
+  // non-zip input as UTF-8 text ourselves to sidestep that guesswork.
+  const bytes = new Uint8Array(buffer);
+  const isZip = bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b;
+  const workbook = isZip
+    ? XLSX.read(buffer, { type: "array" })
+    : XLSX.read(new TextDecoder("utf-8").decode(buffer), { type: "string" });
   const sheet = workbook.Sheets[workbook.SheetNames[0]!]!;
   const rawRows = XLSX.utils.sheet_to_json<Record<string, unknown>>(sheet, {
     defval: null,

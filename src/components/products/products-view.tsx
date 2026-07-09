@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductFormDialog, type ProductEditData } from "@/components/products/product-form-dialog";
+import { ImportExportControls } from "@/components/products/import-export-controls";
 import { CategoriesTab } from "@/components/products/categories-tab";
 import { BrandsTab } from "@/components/products/brands-tab";
 import { UnitsTab } from "@/components/products/units-tab";
@@ -179,7 +180,10 @@ export function ProductsView() {
         </TabsList>
 
         <TabsContent value="products" className="flex flex-col gap-4">
-          <div className="flex justify-end">
+          <div className="flex items-center justify-between">
+            <ImportExportControls
+              onImported={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
+            />
             {unitsQuery.data ? (
               <ProductFormDialog
                 units={unitsQuery.data.data}
