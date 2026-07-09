@@ -30,6 +30,15 @@ export const StockMovementHistoryQuerySchema = z.object({
 });
 export type StockMovementHistoryQuery = z.infer<typeof StockMovementHistoryQuerySchema>;
 
+export const ProductBatchQuerySchema = z.object({
+  productId: z.string().uuid().optional(),
+  storeId: z.string().uuid().optional(),
+  expiringOnly: z.coerce.boolean().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce.number().int().min(1).max(100).default(20),
+});
+export type ProductBatchQuery = z.infer<typeof ProductBatchQuerySchema>;
+
 export const StockAdjustmentSchema = z.object({
   productId: z.string().uuid(),
   storeId: z.string().uuid(),

@@ -17,6 +17,7 @@ import {
   InvalidPoStatusTransitionError,
   MissingUnitPriceError,
 } from "@/server/services/purchase-orders";
+import { InvalidDeliveryQuantityError } from "@/server/services/purchase-deliveries";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -63,6 +64,9 @@ export function mapServiceError(error: unknown) {
     return apiError("NOT_FOUND", error.message, 404);
   }
   if (error instanceof InvalidPoStatusTransitionError || error instanceof MissingUnitPriceError) {
+    return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof InvalidDeliveryQuantityError) {
     return apiError("VALIDATION", error.message, 422);
   }
   if ((error as { code?: string })?.code === "P2025") {

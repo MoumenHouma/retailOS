@@ -37,7 +37,15 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
   BUSINESS_OWNER: ALL_PERMISSIONS,
   STORE_MANAGER: ALL_PERMISSIONS.filter((p) => p !== "employees:manage"),
   CASHIER: [...PERMISSION_CATALOG.pos, "products:read", "customers:read", "customers:create"],
-  INVENTORY_CLERK: [...PERMISSION_CATALOG.inventory, "products:read", "suppliers:read"],
+  INVENTORY_CLERK: [
+    ...PERMISSION_CATALOG.inventory,
+    "products:read",
+    "suppliers:read",
+    // Chunk B (receiving) gap flagged in PHASE3_PURCHASING_PLAN.md: this
+    // role could already adjust/count/transfer stock but had no way to
+    // view the POs it would be receiving deliveries against.
+    "purchases:read",
+  ],
   ACCOUNTANT: [
     ...PERMISSION_CATALOG.finance,
     ...PERMISSION_CATALOG.reports,

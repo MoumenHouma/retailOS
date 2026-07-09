@@ -89,6 +89,11 @@ model Tenant {
   purchaseOrderItems PurchaseOrderItem[]
   supplierQuotes     SupplierQuote[]
   supplierQuoteItems SupplierQuoteItem[]
+  purchaseDeliveries     PurchaseDelivery[]
+  purchaseDeliveryItems  PurchaseDeliveryItem[]
+  productBatches         ProductBatch[]
+  purchaseReturns        PurchaseReturn[]
+  purchaseReturnItems    PurchaseReturnItem[]
 
   @@map("tenants")
 }
@@ -128,6 +133,8 @@ model Store {
   sales          Sale[]
   saleReturns    SaleReturn[]
   purchaseOrders PurchaseOrder[]
+  productBatches ProductBatch[]
+  purchaseReturns PurchaseReturn[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -165,6 +172,8 @@ model User {
   invoicesCreated           Invoice[]         @relation("InvoiceCreatedBy")
   purchaseOrdersCreated     PurchaseOrder[]   @relation("PurchaseOrderCreatedBy")
   purchaseOrdersApproved    PurchaseOrder[]   @relation("PurchaseOrderApprovedBy")
+  purchaseDeliveriesReceived PurchaseDelivery[] @relation("PurchaseDeliveryReceivedBy")
+  purchaseReturnsCreated     PurchaseReturn[]   @relation("PurchaseReturnCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -358,6 +367,9 @@ model Product {
   invoiceItems     InvoiceItem[]
   purchaseOrderItems PurchaseOrderItem[]
   supplierQuoteItems SupplierQuoteItem[]
+  batches                ProductBatch[]
+  purchaseDeliveryItems  PurchaseDeliveryItem[]
+  purchaseReturnItems    PurchaseReturnItem[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -420,16 +432,18 @@ model StockMovement {
   quantity      Int
   referenceId   String?           @map("reference_id") @db.Uuid
   referenceType String?           @map("reference_type") @db.VarChar(50)
-  // No FK — product_batches doesn't exist until Phase 3; always null for now.
+  // product_batches now exists (Phase 3 Chunk B) — FK added below. Still
+  // null on every movement type except PURCHASE_IN lines that carry a batch.
   batchId   String?  @map("batch_id") @db.Uuid
   notes     String?
   createdBy String?  @map("created_by") @db.Uuid
   createdAt DateTime @default(now()) @map("created_at")
 
-  tenant        Tenant  @relation(fields: [tenantId], references: [id])
-  product       Product @relation(fields: [productId], references: [id])
-  store         Store   @relation(fields: [storeId], references: [id])
-  createdByUser User?   @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+  store         Store         @relation(fields: [storeId], references: [id])
+  createdByUser User?         @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
+  batch         ProductBatch? @relation(fields: [batchId], references: [id])
 
   @@index([tenantId])
   @@index([productId])
@@ -497,6 +511,8 @@ model Supplier {
   supplierProducts SupplierProduct[]
   purchaseOrders   PurchaseOrder[]
   supplierQuotes   SupplierQuote[]
+  productBatches   ProductBatch[]
+  purchaseReturns  PurchaseReturn[]
 
   @@index([tenantId])
   @@map("suppliers")
@@ -709,13 +725,15 @@ model SaleItem {
   subtotal       Int
   tvaAmount      Int     @map("tva_amount")
   total          Int
-  // No FK — product_batches doesn't exist until Phase 3, always null for now
-  // (same as StockMovement.batchId).
+  // product_batches now exists (Phase 3 Chunk B) — FK added below. Not
+  // populated by completeSale yet; FIFO/FEFO batch consumption on sale is
+  // out of this chunk's scope (see Dev Log open items).
   batchId String? @map("batch_id") @db.Uuid
 
   tenant      Tenant           @relation(fields: [tenantId], references: [id])
   sale        Sale             @relation(fields: [saleId], references: [id])
   product     Product          @relation(fields: [productId], references: [id])
+  batch       ProductBatch?    @relation(fields: [batchId], references: [id])
   returnItems SaleReturnItem[]
 
   @@index([tenantId])
@@ -946,6 +964,7 @@ model PurchaseOrder {
   createdByUser  User?               @relation("PurchaseOrderCreatedBy", fields: [createdBy], references: [id])
   approvedByUser User?               @relation("PurchaseOrderApprovedBy", fields: [approvedBy], references: [id])
   items          PurchaseOrderItem[]
+  deliveries     PurchaseDelivery[]
 
   @@unique([tenantId, storeId, poNumber])
   @@index([tenantId])
@@ -971,6 +990,7 @@ model PurchaseOrderItem {
   tenant  Tenant        @relation(fields: [tenantId], references: [id])
   po      PurchaseOrder @relation(fields: [poId], references: [id])
   product Product       @relation(fields: [productId], references: [id])
+  deliveryItems PurchaseDeliveryItem[]
 
   @@index([tenantId])
   @@index([poId])
@@ -1026,4 +1046,148 @@ model SupplierQuoteItem {
   @@index([tenantId])
   @@index([quoteId])
   @@map("supplier_quote_items")
+}
+
+// --- Phase 3 Chunk B: Delivery & Receiving -------------------------------
+
+/// per DATABASE.md §8.6 verbatim. deliveryNumber is derived from the parent
+/// PO's poNumber (`${poNumber}-R${n}`) rather than a new Store counter field
+/// — ties a delivery's identity directly to its PO instead of adding a
+/// fifth counter column.
+model PurchaseDelivery {
+  id             String    @id @default(uuid()) @db.Uuid
+  tenantId       String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  poId           String    @map("po_id") @db.Uuid
+  deliveryNumber String    @map("delivery_number") @db.VarChar(50)
+  deliveredAt    DateTime? @map("delivered_at")
+  receivedBy     String?   @map("received_by") @db.Uuid
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  tenant         Tenant                 @relation(fields: [tenantId], references: [id])
+  po             PurchaseOrder          @relation(fields: [poId], references: [id])
+  receivedByUser User?                  @relation("PurchaseDeliveryReceivedBy", fields: [receivedBy], references: [id])
+  items          PurchaseDeliveryItem[]
+  returns        PurchaseReturn[]
+
+  @@index([tenantId])
+  @@index([poId])
+  @@map("purchase_deliveries")
+}
+
+/// per DATABASE.md §8.7 verbatim — batchNumber/expirationDate are recorded
+/// here per delivery line (not a batchId FK; the doc specifies no such
+/// column), denormalized alongside the real ProductBatch row this receiving
+/// flow creates when an expirationDate is given.
+model PurchaseDeliveryItem {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  deliveryId        String    @map("delivery_id") @db.Uuid
+  poItemId          String    @map("po_item_id") @db.Uuid
+  productId         String    @map("product_id") @db.Uuid
+  quantityDelivered Int       @map("quantity_delivered")
+  batchNumber       String?   @map("batch_number") @db.VarChar(100)
+  expirationDate    DateTime? @map("expiration_date") @db.Date
+  unitCost          Int?      @map("unit_cost")
+
+  tenant      Tenant               @relation(fields: [tenantId], references: [id])
+  delivery    PurchaseDelivery     @relation(fields: [deliveryId], references: [id])
+  poItem      PurchaseOrderItem    @relation(fields: [poItemId], references: [id])
+  product     Product              @relation(fields: [productId], references: [id])
+  returnItems PurchaseReturnItem[]
+
+  @@index([tenantId])
+  @@index([deliveryId])
+  @@index([poItemId])
+  @@map("purchase_delivery_items")
+}
+
+/// per DATABASE.md §5.6 verbatim — this is where StockMovement.batchId and
+/// SaleItem.batchId (both nullable FK-less placeholders since Phase 1)
+/// finally get a real table to point at.
+model ProductBatch {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  productId         String    @map("product_id") @db.Uuid
+  batchNumber       String    @map("batch_number") @db.VarChar(100)
+  manufacturingDate DateTime? @map("manufacturing_date") @db.Date
+  expirationDate    DateTime? @map("expiration_date") @db.Date
+  quantityReceived  Int       @map("quantity_received")
+  // Set equal to quantityReceived at creation time. Nothing decrements it
+  // yet — FIFO/FEFO batch consumption on sale/return is out of this
+  // chunk's scope (SaleItem.batchId stays unpopulated by completeSale).
+  quantityRemaining Int       @map("quantity_remaining")
+  unitCost          Int?      @map("unit_cost")
+  supplierId        String?   @map("supplier_id") @db.Uuid
+  storeId           String?   @map("store_id") @db.Uuid
+  notes             String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  deletedAt         DateTime? @map("deleted_at")
+
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
+  product        Product         @relation(fields: [productId], references: [id])
+  supplier       Supplier?       @relation(fields: [supplierId], references: [id])
+  store          Store?          @relation(fields: [storeId], references: [id])
+  stockMovements StockMovement[]
+  saleItems      SaleItem[]
+
+  @@index([tenantId])
+  @@index([productId])
+  @@map("product_batches")
+  // CHECK (quantity_remaining >= 0) hand-appended in migration.sql — same
+  // "hand-append what Prisma can't express" rule already used for
+  // stock_levels/product_categories elsewhere in this schema.
+}
+
+/// Net-new — ARCHITECTURE.md §5.2's Week 11 rules name "purchase_returns"
+/// but specify zero columns for it (same gap class as supplier_quotes in
+/// Chunk A). Modeled directly on Phase 2's SaleReturn/SaleReturnItem shape,
+/// including reuse of the same ReturnStatus enum — a return-to-supplier and
+/// a customer return are the same kind of document at the schema level.
+model PurchaseReturn {
+  id                 String       @id @default(uuid()) @db.Uuid
+  tenantId           String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId            String       @map("store_id") @db.Uuid
+  supplierId         String       @map("supplier_id") @db.Uuid
+  originalDeliveryId String       @map("original_delivery_id") @db.Uuid
+  returnNumber       String       @map("return_number") @db.VarChar(50)
+  reason             String?
+  totalRefunded      Int          @map("total_refunded")
+  status             ReturnStatus @default(completed)
+  createdBy          String       @map("created_by") @db.Uuid
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  tenant           Tenant               @relation(fields: [tenantId], references: [id])
+  store            Store                @relation(fields: [storeId], references: [id])
+  supplier         Supplier             @relation(fields: [supplierId], references: [id])
+  originalDelivery PurchaseDelivery     @relation(fields: [originalDeliveryId], references: [id])
+  createdByUser    User                 @relation("PurchaseReturnCreatedBy", fields: [createdBy], references: [id])
+  items            PurchaseReturnItem[]
+
+  @@index([tenantId])
+  @@index([storeId])
+  @@index([originalDeliveryId])
+  @@map("purchase_returns")
+}
+
+model PurchaseReturnItem {
+  id             String  @id @default(uuid()) @db.Uuid
+  tenantId       String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  returnId       String  @map("return_id") @db.Uuid
+  deliveryItemId String  @map("delivery_item_id") @db.Uuid
+  productId      String  @map("product_id") @db.Uuid
+  quantity       Int
+  unitCost       Int     @map("unit_cost")
+  reason         String?
+
+  tenant       Tenant               @relation(fields: [tenantId], references: [id])
+  return       PurchaseReturn       @relation(fields: [returnId], references: [id])
+  deliveryItem PurchaseDeliveryItem @relation(fields: [deliveryItemId], references: [id])
+  product      Product              @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([returnId])
+  @@index([deliveryItemId])
+  @@map("purchase_return_items")
 }

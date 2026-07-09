@@ -69,3 +69,38 @@ export const QuoteCompareQuerySchema = z.object({
     .pipe(z.array(z.string().uuid()).min(1)),
 });
 export type QuoteCompareQuery = z.infer<typeof QuoteCompareQuerySchema>;
+
+// --- Phase 3 Chunk B: Delivery & Receiving -------------------------------
+
+// batchNumber/expirationDate/unitCost are all optional per line — a
+// delivery line only becomes a ProductBatch when expirationDate is given
+// (see receiveDelivery's batch-creation rule).
+export const ReceiveDeliveryItemInputSchema = z.object({
+  poItemId: z.string().uuid(),
+  quantityDelivered: z.number().int().positive(),
+  batchNumber: z.string().max(100).nullable().optional(),
+  expirationDate: z.string().nullable().optional(),
+  unitCost: z.number().int().min(0).nullable().optional(),
+});
+export type ReceiveDeliveryItemInput = z.infer<typeof ReceiveDeliveryItemInputSchema>;
+
+export const ReceiveDeliverySchema = z.object({
+  deliveredAt: z.string().nullable().optional(),
+  notes: z.string().nullable().optional(),
+  items: z.array(ReceiveDeliveryItemInputSchema).min(1),
+});
+export type ReceiveDeliveryInput = z.infer<typeof ReceiveDeliverySchema>;
+
+export const CreatePurchaseReturnItemInputSchema = z.object({
+  deliveryItemId: z.string().uuid(),
+  quantity: z.number().int().positive(),
+  reason: z.string().nullable().optional(),
+});
+export type CreatePurchaseReturnItemInput = z.infer<typeof CreatePurchaseReturnItemInputSchema>;
+
+export const CreatePurchaseReturnSchema = z.object({
+  originalDeliveryId: z.string().uuid(),
+  reason: z.string().nullable().optional(),
+  items: z.array(CreatePurchaseReturnItemInputSchema).min(1),
+});
+export type CreatePurchaseReturnInput = z.infer<typeof CreatePurchaseReturnSchema>;

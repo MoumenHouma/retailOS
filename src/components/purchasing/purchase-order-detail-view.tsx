@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
 import { PurchaseOrderForm } from "@/components/purchasing/purchase-order-form";
+import { ReceiveDeliveryDialog } from "@/components/purchasing/receive-delivery-dialog";
+import { PurchaseReturnDialog } from "@/components/purchasing/purchase-return-dialog";
 
 interface PurchaseOrderItem {
   id: string;
@@ -46,10 +48,39 @@ interface PurchaseOrderDetail {
   items: PurchaseOrderItem[];
 }
 
+interface DeliveryRow {
+  id: string;
+  deliveryNumber: string;
+  deliveredAt: string | null;
+  items: { id: string; product: { name: string }; quantityDelivered: number }[];
+}
+
+interface ReturnRow {
+  id: string;
+  returnNumber: string;
+  createdAt: string;
+  totalRefunded: number;
+  items: { id: string; product: { name: string }; quantity: number }[];
+}
+
 async function fetchPurchaseOrder(id: string): Promise<PurchaseOrderDetail> {
   const response = await fetch(`/api/purchase-orders/${id}`);
   if (!response.ok) throw new Error("Failed to load purchase order");
   const body: { data: PurchaseOrderDetail } = await response.json();
+  return body.data;
+}
+
+async function fetchDeliveries(id: string): Promise<DeliveryRow[]> {
+  const response = await fetch(`/api/purchase-orders/${id}/deliveries`);
+  if (!response.ok) throw new Error("Failed to load deliveries");
+  const body: { data: DeliveryRow[] } = await response.json();
+  return body.data;
+}
+
+async function fetchReturns(id: string): Promise<ReturnRow[]> {
+  const response = await fetch(`/api/purchase-orders/${id}/returns`);
+  if (!response.ok) throw new Error("Failed to load returns");
+  const body: { data: ReturnRow[] } = await response.json();
   return body.data;
 }
 
@@ -73,6 +104,21 @@ export function PurchaseOrderDetailView({ id }: { id: string }) {
     queryKey: ["purchase-order", id],
     queryFn: () => fetchPurchaseOrder(id),
   });
+
+  const deliveriesQuery = useQuery({
+    queryKey: ["purchase-order-deliveries", id],
+    queryFn: () => fetchDeliveries(id),
+  });
+  const returnsQuery = useQuery({
+    queryKey: ["purchase-order-returns", id],
+    queryFn: () => fetchReturns(id),
+  });
+
+  function refreshAfterReceivingOrReturn() {
+    queryClient.invalidateQueries({ queryKey: ["purchase-order", id] });
+    queryClient.invalidateQueries({ queryKey: ["purchase-order-deliveries", id] });
+    queryClient.invalidateQueries({ queryKey: ["purchase-order-returns", id] });
+  }
 
   const canApprove = authSession?.user.permissions.includes("purchases:approve") ?? false;
 
@@ -165,6 +211,26 @@ export function PurchaseOrderDetailView({ id }: { id: string }) {
             {t("actions.cancel")}
           </Button>
         )}
+        {(purchaseOrder.status === "ordered" || purchaseOrder.status === "partially_received") && (
+          <ReceiveDeliveryDialog
+            poId={id}
+            items={purchaseOrder.items}
+            onReceived={refreshAfterReceivingOrReturn}
+            trigger={<Button disabled={busy}>{t("deliveries.receiveAction")}</Button>}
+          />
+        )}
+        {(purchaseOrder.status === "partially_received" || purchaseOrder.status === "received") &&
+          (deliveriesQuery.data?.length ?? 0) > 0 && (
+            <PurchaseReturnDialog
+              poId={id}
+              onReturned={refreshAfterReceivingOrReturn}
+              trigger={
+                <Button variant="outline" disabled={busy}>
+                  {t("returns.returnAction")}
+                </Button>
+              }
+            />
+          )}
       </div>
 
       {purchaseOrder.expectedDeliveryDate && (
@@ -213,6 +279,68 @@ export function PurchaseOrderDetailView({ id }: { id: string }) {
           <span className="tabular-nums">{formatDa(purchaseOrder.total)}</span>
         </div>
       </div>
+
+      {(deliveriesQuery.data?.length ?? 0) > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">{t("deliveries.title")}</h2>
+          <div className="rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("deliveries.table.number")}</TableHead>
+                  <TableHead>{t("deliveries.table.deliveredAt")}</TableHead>
+                  <TableHead>{t("deliveries.table.items")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {deliveriesQuery.data!.map((delivery) => (
+                  <TableRow key={delivery.id}>
+                    <TableCell className="font-medium">{delivery.deliveryNumber}</TableCell>
+                    <TableCell>
+                      {delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {delivery.items.map((item) => `${item.product.name} (${item.quantityDelivered})`).join(", ")}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
+
+      {(returnsQuery.data?.length ?? 0) > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="text-lg font-semibold">{t("returns.title")}</h2>
+          <div className="rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("returns.table.number")}</TableHead>
+                  <TableHead>{t("returns.table.date")}</TableHead>
+                  <TableHead>{t("returns.table.items")}</TableHead>
+                  <TableHead className="text-right">{t("returns.table.totalRefunded")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {returnsQuery.data!.map((purchaseReturn) => (
+                  <TableRow key={purchaseReturn.id}>
+                    <TableCell className="font-medium">{purchaseReturn.returnNumber}</TableCell>
+                    <TableCell>{new Date(purchaseReturn.createdAt).toLocaleDateString()}</TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {purchaseReturn.items.map((item) => `${item.product.name} (${item.quantity})`).join(", ")}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatDa(purchaseReturn.totalRefunded)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

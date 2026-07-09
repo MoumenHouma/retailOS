@@ -584,6 +584,35 @@
       "cancelEdit": "Annuler",
       "error": "Impossible d'enregistrer ce bon de commande.",
       "loadSuppliersError": "Impossible de charger les fournisseurs."
+    },
+    "deliveries": {
+      "receiveAction": "Réceptionner une livraison",
+      "title": "Livraisons",
+      "table": { "number": "N° de livraison", "deliveredAt": "Livré le", "items": "Articles" },
+      "description": "Indiquez la quantité réellement livrée pour chaque ligne restante. Ajoutez un numéro de lot et une date de péremption si cette ligne nécessite un suivi de péremption.",
+      "nothingOutstanding": "Il ne reste rien à réceptionner sur ce bon de commande.",
+      "outstanding": "{quantity} restant(s)",
+      "quantityReceived": "Quantité reçue",
+      "batchNumber": "Numéro de lot",
+      "expirationDate": "Date de péremption",
+      "submit": "Confirmer la réception",
+      "submitting": "Enregistrement...",
+      "success": "Livraison enregistrée avec succès.",
+      "error": "Impossible d'enregistrer cette livraison."
+    },
+    "returns": {
+      "returnAction": "Retourner au fournisseur",
+      "title": "Retours",
+      "table": { "number": "N° de retour", "date": "Date", "items": "Articles", "totalRefunded": "Remboursé" },
+      "description": "Choisissez une livraison, puis indiquez la quantité à retourner pour chaque ligne.",
+      "selectDelivery": "Sélectionner une livraison",
+      "noDeliveries": "Aucune livraison avec des articles retournables pour le moment.",
+      "delivered": "{quantity} livré(s)",
+      "reason": "Motif",
+      "submit": "Confirmer le retour",
+      "submitting": "Enregistrement...",
+      "success": "Retour fournisseur enregistré avec succès.",
+      "error": "Impossible d'enregistrer ce retour."
     }
   },
   "supplierQuotes": {
@@ -619,7 +648,8 @@
     "adjustStock": "Ajuster le stock",
     "tabs": {
       "levels": "Niveaux de stock",
-      "movements": "Mouvements"
+      "movements": "Mouvements",
+      "batches": "Lots"
     },
     "filter": {
       "allStores": "Tous les magasins",
@@ -651,6 +681,17 @@
       },
       "empty": "Aucun mouvement enregistré.",
       "loadError": "Impossible de charger les mouvements."
+    },
+    "batches": {
+      "table": {
+        "product": "Produit",
+        "batchNumber": "N° de lot",
+        "expirationDate": "Date de péremption",
+        "remaining": "Restant / reçu",
+        "store": "Magasin"
+      },
+      "empty": "Aucun lot enregistré pour le moment.",
+      "loadError": "Impossible de charger les lots."
     },
     "movementTypes": {
       "PURCHASE_IN": "Achat (entrée)",

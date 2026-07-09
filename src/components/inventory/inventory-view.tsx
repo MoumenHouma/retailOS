@@ -45,6 +45,16 @@ interface StockMovementRow {
   store: { name: string };
 }
 
+interface ProductBatchRow {
+  id: string;
+  batchNumber: string;
+  expirationDate: string | null;
+  quantityReceived: number;
+  quantityRemaining: number;
+  product: { name: string };
+  store: { name: string } | null;
+}
+
 interface Paginated<T> {
   data: T[];
   meta: { page: number; pageSize: number; total: number; totalPages: number };
@@ -83,6 +93,8 @@ export function InventoryView() {
   const [movementTypeFilter, setMovementTypeFilter] = useState(ALL);
   const [movementsPage, setMovementsPage] = useState(1);
 
+  const [batchesPage, setBatchesPage] = useState(1);
+
   const storesQuery = useQuery({
     queryKey: ["stores"],
     queryFn: () => fetchJson<{ data: { id: string; name: string }[] }>("/api/stores"),
@@ -120,12 +132,27 @@ export function InventoryView() {
     placeholderData: (previous) => previous,
   });
 
+  const batchesQuery = useQuery({
+    queryKey: ["product-batches", { batchesPage }],
+    queryFn: () => {
+      const params = new URLSearchParams({
+        page: String(batchesPage),
+        pageSize: String(PAGE_SIZE),
+        expiringOnly: "true",
+      });
+      return fetchJson<Paginated<ProductBatchRow>>(`/api/product-batches?${params.toString()}`);
+    },
+    placeholderData: (previous) => previous,
+  });
+
   const stores = storesQuery.data?.data ?? [];
   const products = productsQuery.data?.data ?? [];
   const levels = levelsQuery.data?.data ?? [];
   const levelsMeta = levelsQuery.data?.meta;
   const movements = movementsQuery.data?.data ?? [];
   const movementsMeta = movementsQuery.data?.meta;
+  const batches = batchesQuery.data?.data ?? [];
+  const batchesMeta = batchesQuery.data?.meta;
 
   function refreshAfterAdjustment() {
     queryClient.invalidateQueries({ queryKey: ["stock-levels"] });
@@ -147,6 +174,7 @@ export function InventoryView() {
         <TabsList>
           <TabsTrigger value="levels">{t("tabs.levels")}</TabsTrigger>
           <TabsTrigger value="movements">{t("tabs.movements")}</TabsTrigger>
+          <TabsTrigger value="batches">{t("tabs.batches")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="levels" className="flex flex-col gap-4">
@@ -364,6 +392,78 @@ export function InventoryView() {
                   onClick={() =>
                     setMovementsPage((current) => Math.min(movementsMeta.totalPages, current + 1))
                   }
+                >
+                  {t("pagination.next")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="batches" className="flex flex-col gap-4">
+          <div className="rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("batches.table.product")}</TableHead>
+                  <TableHead>{t("batches.table.batchNumber")}</TableHead>
+                  <TableHead>{t("batches.table.expirationDate")}</TableHead>
+                  <TableHead>{t("batches.table.remaining")}</TableHead>
+                  <TableHead>{t("batches.table.store")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {batchesQuery.isError && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-destructive">
+                      {t("batches.loadError")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!batchesQuery.isError && !batchesQuery.isLoading && batches.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground">
+                      {t("batches.empty")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {batches.map((batch) => (
+                  <TableRow key={batch.id}>
+                    <TableCell className="font-medium">{batch.product.name}</TableCell>
+                    <TableCell>{batch.batchNumber}</TableCell>
+                    <TableCell>
+                      {batch.expirationDate ? new Date(batch.expirationDate).toLocaleDateString() : "—"}
+                    </TableCell>
+                    <TableCell>
+                      {batch.quantityRemaining} / {batch.quantityReceived}
+                    </TableCell>
+                    <TableCell>{batch.store?.name ?? "—"}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {batchesMeta && batchesMeta.totalPages > 0 && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{t("pagination.total", { count: batchesMeta.total })}</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={batchesPage <= 1}
+                  onClick={() => setBatchesPage((current) => Math.max(1, current - 1))}
+                >
+                  {t("pagination.previous")}
+                </Button>
+                <span>
+                  {t("pagination.pageInfo", { page: batchesMeta.page, totalPages: batchesMeta.totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={batchesPage >= batchesMeta.totalPages}
+                  onClick={() => setBatchesPage((current) => Math.min(batchesMeta.totalPages, current + 1))}
                 >
                   {t("pagination.next")}
                 </Button>

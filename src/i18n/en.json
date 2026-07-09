@@ -584,6 +584,35 @@
       "cancelEdit": "Cancel",
       "error": "Unable to save this purchase order.",
       "loadSuppliersError": "Unable to load suppliers."
+    },
+    "deliveries": {
+      "receiveAction": "Receive delivery",
+      "title": "Deliveries",
+      "table": { "number": "Delivery #", "deliveredAt": "Delivered", "items": "Items" },
+      "description": "Enter the quantity actually delivered for each outstanding line. Add a batch number and expiration date if this line needs expiry tracking.",
+      "nothingOutstanding": "Nothing left to receive on this purchase order.",
+      "outstanding": "{quantity} outstanding",
+      "quantityReceived": "Quantity received",
+      "batchNumber": "Batch number",
+      "expirationDate": "Expiration date",
+      "submit": "Confirm receipt",
+      "submitting": "Saving...",
+      "success": "Delivery recorded successfully.",
+      "error": "Unable to record this delivery."
+    },
+    "returns": {
+      "returnAction": "Return to supplier",
+      "title": "Returns",
+      "table": { "number": "Return #", "date": "Date", "items": "Items", "totalRefunded": "Refunded" },
+      "description": "Pick a delivery, then enter the quantity to return for each line.",
+      "selectDelivery": "Select a delivery",
+      "noDeliveries": "No deliveries with returnable items yet.",
+      "delivered": "{quantity} delivered",
+      "reason": "Reason",
+      "submit": "Confirm return",
+      "submitting": "Saving...",
+      "success": "Purchase return recorded successfully.",
+      "error": "Unable to record this return."
     }
   },
   "supplierQuotes": {
@@ -619,7 +648,8 @@
     "adjustStock": "Adjust stock",
     "tabs": {
       "levels": "Stock levels",
-      "movements": "Movements"
+      "movements": "Movements",
+      "batches": "Batches"
     },
     "filter": {
       "allStores": "All stores",
@@ -651,6 +681,17 @@
       },
       "empty": "No movements recorded.",
       "loadError": "Unable to load movements."
+    },
+    "batches": {
+      "table": {
+        "product": "Product",
+        "batchNumber": "Batch #",
+        "expirationDate": "Expiration date",
+        "remaining": "Remaining / received",
+        "store": "Store"
+      },
+      "empty": "No batches recorded yet.",
+      "loadError": "Unable to load batches."
     },
     "movementTypes": {
       "PURCHASE_IN": "Purchase (in)",

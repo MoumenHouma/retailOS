@@ -584,6 +584,35 @@
       "cancelEdit": "إلغاء",
       "error": "تعذر حفظ أمر الشراء هذا.",
       "loadSuppliersError": "تعذر تحميل الموردين."
+    },
+    "deliveries": {
+      "receiveAction": "استلام توصيل",
+      "title": "التوصيلات",
+      "table": { "number": "رقم التوصيل", "deliveredAt": "تاريخ التسليم", "items": "العناصر" },
+      "description": "أدخل الكمية المسلَّمة فعلياً لكل سطر متبقٍ. أضف رقم الدفعة وتاريخ الصلاحية إذا كان هذا السطر يتطلب تتبع الصلاحية.",
+      "nothingOutstanding": "لا يوجد شيء متبقٍ لاستلامه في أمر الشراء هذا.",
+      "outstanding": "{quantity} متبقٍ",
+      "quantityReceived": "الكمية المستلمة",
+      "batchNumber": "رقم الدفعة",
+      "expirationDate": "تاريخ الصلاحية",
+      "submit": "تأكيد الاستلام",
+      "submitting": "جارٍ الحفظ...",
+      "success": "تم تسجيل التوصيل بنجاح.",
+      "error": "تعذر تسجيل هذا التوصيل."
+    },
+    "returns": {
+      "returnAction": "إرجاع إلى المورد",
+      "title": "المرتجعات",
+      "table": { "number": "رقم الإرجاع", "date": "التاريخ", "items": "العناصر", "totalRefunded": "المبلغ المسترد" },
+      "description": "اختر توصيلاً، ثم أدخل الكمية المراد إرجاعها لكل سطر.",
+      "selectDelivery": "اختر توصيلاً",
+      "noDeliveries": "لا توجد توصيلات تحتوي على عناصر قابلة للإرجاع حالياً.",
+      "delivered": "{quantity} مُسلَّم",
+      "reason": "السبب",
+      "submit": "تأكيد الإرجاع",
+      "submitting": "جارٍ الحفظ...",
+      "success": "تم تسجيل مرتجع المورد بنجاح.",
+      "error": "تعذر تسجيل هذا المرتجع."
     }
   },
   "supplierQuotes": {
@@ -619,7 +648,8 @@
     "adjustStock": "تعديل المخزون",
     "tabs": {
       "levels": "مستويات المخزون",
-      "movements": "الحركات"
+      "movements": "الحركات",
+      "batches": "الدفعات"
     },
     "filter": {
       "allStores": "كل المتاجر",
@@ -651,6 +681,17 @@
       },
       "empty": "لا توجد حركات مسجلة.",
       "loadError": "تعذر تحميل الحركات."
+    },
+    "batches": {
+      "table": {
+        "product": "المنتج",
+        "batchNumber": "رقم الدفعة",
+        "expirationDate": "تاريخ الصلاحية",
+        "remaining": "المتبقي / المستلم",
+        "store": "المتجر"
+      },
+      "empty": "لا توجد دفعات مسجلة بعد.",
+      "loadError": "تعذر تحميل الدفعات."
     },
     "movementTypes": {
       "PURCHASE_IN": "شراء (دخول)",

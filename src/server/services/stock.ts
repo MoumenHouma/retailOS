@@ -17,6 +17,9 @@ interface RecordStockMovementInput {
   notes?: string | null;
   referenceId?: string | null;
   referenceType?: string | null;
+  // product_batches exists as of Phase 3 Chunk B — only PURCHASE_IN lines
+  // that carry a batch (expirationDate given at receiving time) populate it.
+  batchId?: string | null;
   createdBy: string;
 }
 
@@ -105,6 +108,45 @@ export async function getStockLevels(tx: TransactionClient, query: GetStockLevel
 
   const total = filtered.length;
   const items = filtered.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
+
+  return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
+}
+
+interface GetProductBatchesQuery {
+  productId?: string;
+  storeId?: string;
+  expiringOnly?: boolean;
+  page: number;
+  pageSize: number;
+}
+
+/**
+ * Read-only batch/expiry browser for the Inventory page's Batches tab
+ * (PHASE3_PURCHASING_PLAN.md Chunk B: "least disruptive way to expose it
+ * ... without turning this into an Inventory-page redesign"). expiringOnly
+ * narrows to batches that still have stock remaining and carry an
+ * expiration date, soonest first.
+ */
+export async function getProductBatches(tx: TransactionClient, query: GetProductBatchesQuery) {
+  const { productId, storeId, expiringOnly, page, pageSize } = query;
+
+  const where: Prisma.ProductBatchWhereInput = {
+    deletedAt: null,
+    ...(productId ? { productId } : {}),
+    ...(storeId ? { storeId } : {}),
+    ...(expiringOnly ? { quantityRemaining: { gt: 0 }, expirationDate: { not: null } } : {}),
+  };
+
+  const [items, total] = await Promise.all([
+    tx.productBatch.findMany({
+      where,
+      include: { product: { select: { name: true } }, store: { select: { name: true } } },
+      orderBy: [{ expirationDate: "asc" }, { createdAt: "desc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    tx.productBatch.count({ where }),
+  ]);
 
   return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
