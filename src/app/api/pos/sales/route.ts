@@ -4,8 +4,26 @@ import { withTenant } from "@/lib/prisma";
 import { requirePermission } from "@/lib/permissions";
 import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
-import { CompleteSaleSchema } from "@/lib/validators/pos";
-import { completeSale } from "@/server/services/sales";
+import { CompleteSaleSchema, SaleHistoryQuerySchema } from "@/lib/validators/pos";
+import { completeSale, searchSales } from "@/server/services/sales";
+
+export async function GET(request: NextRequest) {
+  const session = await auth();
+  try {
+    requirePermission(session, "pos:operate");
+    const { searchParams } = new URL(request.url);
+    const parsed = SaleHistoryQuerySchema.safeParse(Object.fromEntries(searchParams));
+    if (!parsed.success) return apiValidationError(parsed.error);
+
+    const { items, total, page, pageSize, totalPages } = await withTenant(
+      session!.user.tenantId,
+      (tx) => searchSales(tx, parsed.data),
+    );
+    return apiSuccess(items, { page, pageSize, total, totalPages });
+  } catch (error) {
+    return mapServiceError(error);
+  }
+}
 
 export async function POST(request: NextRequest) {
   const session = await auth();

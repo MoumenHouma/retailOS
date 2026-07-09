@@ -10,7 +10,8 @@ import {
   SessionClosedError,
   SessionNotFoundError,
 } from "@/server/services/pos-sessions";
-import { EmptySaleError, PaymentMismatchError } from "@/server/services/sales";
+import { EmptySaleError, PaymentMismatchError, SaleNotHeldError } from "@/server/services/sales";
+import { InvalidReturnQuantityError } from "@/server/services/returns";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -43,6 +44,12 @@ export function mapServiceError(error: unknown) {
   }
   if (error instanceof EmptySaleError || error instanceof PaymentMismatchError) {
     return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof InvalidReturnQuantityError) {
+    return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof SaleNotHeldError) {
+    return apiError("SALE_NOT_HELD", error.message, 409);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);

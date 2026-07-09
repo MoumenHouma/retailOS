@@ -31,6 +31,7 @@ interface PosCartState {
   removeLine: (productId: string) => void;
   setCustomer: (customer: PosCartCustomer | null) => void;
   setDiscountAmount: (amount: number) => void;
+  loadLines: (lines: PosCartLine[], discountAmount: number) => void;
   clear: () => void;
 }
 
@@ -87,6 +88,11 @@ export const usePosCartStore = create<PosCartState>((set) => ({
 
   setCustomer: (customer) => set({ customer }),
   setDiscountAmount: (discountAmount) => set({ discountAmount }),
+
+  // Used to reload a recalled held ticket's items back into the working
+  // cart — recall discards the held Sale row server-side, so this is the
+  // only place that data survives afterward.
+  loadLines: (lines, discountAmount) => set({ lines, discountAmount, customer: null }),
 
   clear: () => set({ lines: [], customer: null, discountAmount: 0 }),
 }));

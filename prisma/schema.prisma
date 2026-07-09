@@ -80,6 +80,8 @@ model Tenant {
   sales            Sale[]
   saleItems        SaleItem[]
   salePayments     SalePayment[]
+  saleReturns      SaleReturn[]
+  saleReturnItems  SaleReturnItem[]
 
   @@map("tenants")
 }
@@ -113,6 +115,7 @@ model Store {
   stockLevels    StockLevel[]
   posSessions    PosSession[]
   sales          Sale[]
+  saleReturns    SaleReturn[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -146,6 +149,7 @@ model User {
   posSessionsAsCashier      PosSession[]      @relation("PosSessionCashier")
   posCashMovementsCreated   PosCashMovement[] @relation("PosCashMovementCreatedBy")
   salesAsCashier            Sale[]            @relation("SaleCashier")
+  saleReturnsCreated        SaleReturn[]      @relation("SaleReturnCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -335,6 +339,7 @@ model Product {
   stockLevels      StockLevel[]
   supplierProducts SupplierProduct[]
   saleItems        SaleItem[]
+  saleReturnItems  SaleReturnItem[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -657,6 +662,7 @@ model Sale {
   cashier    User          @relation("SaleCashier", fields: [cashierId], references: [id])
   items      SaleItem[]
   payments   SalePayment[]
+  returns    SaleReturn[]
 
   @@unique([tenantId, storeId, saleNumber])
   @@index([tenantId])
@@ -685,9 +691,10 @@ model SaleItem {
   // (same as StockMovement.batchId).
   batchId String? @map("batch_id") @db.Uuid
 
-  tenant  Tenant  @relation(fields: [tenantId], references: [id])
-  sale    Sale    @relation(fields: [saleId], references: [id])
-  product Product @relation(fields: [productId], references: [id])
+  tenant      Tenant           @relation(fields: [tenantId], references: [id])
+  sale        Sale             @relation(fields: [saleId], references: [id])
+  product     Product          @relation(fields: [productId], references: [id])
+  returnItems SaleReturnItem[]
 
   @@index([tenantId])
   @@index([saleId])
@@ -720,4 +727,61 @@ model SalePayment {
   @@index([tenantId])
   @@index([saleId])
   @@map("sale_payments")
+}
+
+// --- Phase 2 Chunk B: Transaction Flow -----------------------------------
+
+enum ReturnStatus {
+  pending
+  completed
+  cancelled
+
+  @@map("return_status_enum")
+}
+
+model SaleReturn {
+  id              String       @id @default(uuid()) @db.Uuid
+  tenantId        String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId         String       @map("store_id") @db.Uuid
+  originalSaleId  String       @map("original_sale_id") @db.Uuid
+  returnNumber    String       @map("return_number") @db.VarChar(50)
+  reason          String?
+  totalRefunded   Int          @map("total_refunded")
+  status          ReturnStatus @default(completed)
+  createdBy       String       @map("created_by") @db.Uuid
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  tenant        Tenant           @relation(fields: [tenantId], references: [id])
+  store         Store            @relation(fields: [storeId], references: [id])
+  originalSale  Sale             @relation(fields: [originalSaleId], references: [id])
+  createdByUser User             @relation("SaleReturnCreatedBy", fields: [createdBy], references: [id])
+  items         SaleReturnItem[]
+
+  @@index([tenantId])
+  @@index([storeId])
+  @@index([originalSaleId])
+  @@map("sale_returns")
+}
+
+model SaleReturnItem {
+  id            String  @id @default(uuid()) @db.Uuid
+  tenantId      String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  returnId      String  @map("return_id") @db.Uuid
+  saleItemId    String  @map("sale_item_id") @db.Uuid
+  productId     String  @map("product_id") @db.Uuid
+  quantity      Int
+  unitPrice     Int     @map("unit_price")
+  tvaRate       Int     @map("tva_rate") @db.SmallInt
+  refundAmount  Int     @map("refund_amount")
+  reason        String?
+
+  tenant   Tenant     @relation(fields: [tenantId], references: [id])
+  return   SaleReturn @relation(fields: [returnId], references: [id])
+  saleItem SaleItem   @relation(fields: [saleItemId], references: [id])
+  product  Product    @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([returnId])
+  @@index([saleItemId])
+  @@map("sale_return_items")
 }

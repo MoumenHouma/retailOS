@@ -24,6 +24,9 @@ import { OpenSessionForm } from "@/components/pos/open-session-form";
 import { CloseSessionDialog } from "@/components/pos/close-session-dialog";
 import { PaymentDialog, type CompletedSale } from "@/components/pos/payment-dialog";
 import { ReceiptDialog } from "@/components/pos/receipt-dialog";
+import { HeldSalesDialog } from "@/components/pos/held-sales-dialog";
+import { SessionReportDialog } from "@/components/pos/session-report-dialog";
+import { toast } from "sonner";
 import { cartTotals, usePosCartStore } from "@/stores/pos-cart-store";
 
 interface PosSessionData {
@@ -52,8 +55,10 @@ export function PosView() {
 
   const lines = usePosCartStore((state) => state.lines);
   const discountAmount = usePosCartStore((state) => state.discountAmount);
+  const customer = usePosCartStore((state) => state.customer);
   const clearCart = usePosCartStore((state) => state.clear);
   const totals = cartTotals(lines, discountAmount);
+  const [holding, setHolding] = useState(false);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ["pos-session", storeId],
@@ -69,6 +74,36 @@ export function PosView() {
     setPaymentOpen(false);
     setCompletedSale(sale);
     clearCart();
+  }
+
+  async function handleHold() {
+    if (!storeId || !session || lines.length === 0) return;
+    setHolding(true);
+    try {
+      const response = await fetch("/api/pos/sales/hold", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          storeId,
+          posSessionId: session.id,
+          customerId: customer?.id ?? null,
+          discountAmount,
+          items: lines.map((line) => ({
+            productId: line.productId,
+            quantity: line.quantity,
+            discountAmount: line.discountAmount,
+          })),
+        }),
+      });
+      if (!response.ok) {
+        toast.error(t("hold.error"));
+        return;
+      }
+      clearCart();
+      toast.success(t("hold.success"));
+    } finally {
+      setHolding(false);
+    }
   }
 
   if (!storeId) {
@@ -92,7 +127,10 @@ export function PosView() {
             {t("session.cashierLabel")}: {authSession?.user.name} — {session.terminalName}
           </p>
         </div>
-        <CloseSessionDialog sessionId={session.id} onClosed={invalidateSession} />
+        <div className="flex items-center gap-2">
+          <SessionReportDialog sessionId={session.id} />
+          <CloseSessionDialog sessionId={session.id} onClosed={invalidateSession} />
+        </div>
       </header>
 
       <div className="grid flex-1 grid-cols-3 overflow-hidden">
@@ -106,6 +144,19 @@ export function PosView() {
 
         <div className="flex flex-col gap-4 p-4">
           <CustomerPicker />
+
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="flex-1"
+              disabled={lines.length === 0 || holding}
+              onClick={handleHold}
+            >
+              {holding ? t("hold.holding") : t("hold.hold")}
+            </Button>
+            <HeldSalesDialog storeId={storeId} />
+          </div>
 
           <AlertDialog>
             <AlertDialogTrigger asChild>

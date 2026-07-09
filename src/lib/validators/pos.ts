@@ -53,7 +53,32 @@ export type CompleteSaleInput = z.infer<typeof CompleteSaleSchema>;
 
 export const SaleHistoryQuerySchema = z.object({
   storeId: z.string().uuid().optional(),
+  q: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
 });
 export type SaleHistoryQuery = z.infer<typeof SaleHistoryQuerySchema>;
+
+export const HoldSaleSchema = z.object({
+  storeId: z.string().uuid(),
+  posSessionId: z.string().uuid(),
+  customerId: z.string().uuid().nullable().optional(),
+  items: z.array(SaleItemInputSchema).min(1),
+  discountAmount: z.number().int().min(0).default(0),
+  notes: z.string().nullable().optional(),
+});
+export type HoldSaleInput = z.infer<typeof HoldSaleSchema>;
+
+export const ReturnItemInputSchema = z.object({
+  saleItemId: z.string().uuid(),
+  quantity: z.number().int().positive(),
+  reason: z.string().max(500).nullable().optional(),
+});
+export type ReturnItemInput = z.infer<typeof ReturnItemInputSchema>;
+
+export const CreateReturnSchema = z.object({
+  storeId: z.string().uuid(),
+  reason: z.string().max(500).nullable().optional(),
+  items: z.array(ReturnItemInputSchema).min(1),
+});
+export type CreateReturnInput = z.infer<typeof CreateReturnSchema>;

@@ -4,6 +4,25 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-09 — Phase 2 Chunk B: Transaction Flow
+
+**Done (per [[PHASE2_POS_PLAN]] Chunk B), continuing directly from Chunk A the same day:**
+- Schema: `SaleReturn`/`SaleReturnItem` (+ `ReturnStatus` enum). Returns reuse `Store.saleCounter` (the same counter `Sale.saleNumber` draws from) rather than adding a second counter column — numbers interleave in issue order, disambiguated by a `-RET-` segment; nothing depends on either sequence being contiguous on its own.
+- `sales.ts` refactored: pricing logic (resolve unit price/TVA/cost from the `Product` record, never trust client input) extracted into a shared `priceItems()` used by both `completeSale` and the new `holdSale`. Held tickets (F3) are a real `Sale` row with `status: "held"`, priced but with no payments and **no stock movement** — a hold never touches inventory. `recallSale` returns the held ticket's items for the client to reload into the cart, then soft-deletes the row; the eventual checkout is a fresh `completeSale()` call, not an update of the held row.
+- `returns.ts`: `createReturn` validates each returned line against the sale item's original quantity minus whatever's already been returned against it (so the same item can't be over-returned across multiple partial returns), refunds proportionally from the line's actual post-discount total (not list price), and records a `RETURN_IN` stock movement per line via the existing `recordStockMovement`.
+- `pos-sessions.ts`: `getSessionReport` — a read-only aggregation (sale count, gross/net sales, refunds, payments-by-method) that works identically whether the session is open (X report, mid-shift) or closed (Z report) — closing just additionally persists the totals onto the session row.
+- Routes: `/api/pos/sales` (GET added for history search), `/api/pos/sales/[id]`, `/api/pos/sales/[id]/return`, `/api/pos/sales/hold`, `/api/pos/sales/held`, `/api/pos/sales/[id]/recall`, `/api/pos/sessions/[id]/report`.
+- Frontend: hold/recall buttons + held-sales dialog and an X-report dialog added to the POS screen; a new **Sales History** page under the dashboard (`/sales`, new sidebar link "Ventes") with a `ReturnDialog` reusable from both the history list and (in principle) the POS screen, showing per-line remaining-returnable quantity.
+- Verified live in a real browser end-to-end: hold a cart → recall it → complete the sale → view the X report → find the sale in history → process a partial return → confirmed in Postgres that the return row and its `RETURN_IN` stock movement both landed correctly.
+
+**Bugs found and fixed during verification:** none in the app — every failure on the first few verification passes was the test script itself using timeouts too short for Next dev's on-demand compilation of freshly-added routes/pages (each brand-new route's *first* hit compiles before serving, same class of thing as Chunk A's route-cache gotcha, but showing up per-endpoint here rather than per-page). Lesson for next time: after adding new API routes in a chunk, give the *first* verification hit to each one 20-30s of margin, not the usual 10s — it's fast on every hit after that.
+
+**Open items for later chunks:**
+- Still single-payment-method checkout only; multi-payment/split (`MIXED`) UI is still not built (the schema supports it — multiple `SalePayment` rows per sale — just no UI for entering more than one).
+- Next up per [[PHASE2_POS_PLAN]] is Chunk C (DÉCRET 05-468 invoicing).
+
+---
+
 ## 2026-07-09 — Phase 2 Chunk A: POS Core
 
 **Done (per [[PHASE2_POS_PLAN]] Chunk A):**

@@ -401,6 +401,37 @@
       "newSale": "New sale",
       "success": "Sale recorded successfully."
     },
+    "hold": {
+      "hold": "Hold sale",
+      "holding": "Holding...",
+      "success": "Sale held.",
+      "error": "Unable to hold this sale.",
+      "recall": "Recall",
+      "recallSuccess": "Sale recalled.",
+      "recallError": "Unable to recall this sale.",
+      "title": "Held sales",
+      "empty": "No held sales.",
+      "items": "item(s)"
+    },
+    "returns": {
+      "title": "Return",
+      "description": "Select the items to return for ticket {number}.",
+      "sold": "Sold: {quantity}",
+      "reason": "Reason (optional)",
+      "submit": "Record return",
+      "submitting": "Recording...",
+      "success": "Return recorded.",
+      "error": "Unable to record this return."
+    },
+    "report": {
+      "trigger": "Report",
+      "title": "Session report",
+      "loading": "Loading...",
+      "saleCount": "Number of sales",
+      "grossSales": "Gross sales",
+      "totalRefunds": "Total refunds",
+      "netSales": "Net sales"
+    },
     "errors": {
       "sessionClosed": "No open register session.",
       "sessionAlreadyOpen": "A session is already open on this terminal.",
@@ -416,6 +447,29 @@
       "submitting": "Creating...",
       "success": "Customer created successfully.",
       "error": "Unable to create this customer."
+    }
+  },
+  "sales": {
+    "title": "Sales",
+    "forbidden": "You don't have permission to access this page.",
+    "searchPlaceholder": "Search a ticket (sale number)...",
+    "empty": "No sales found.",
+    "loadError": "Unable to load sales.",
+    "walkInCustomer": "Walk-in customer",
+    "table": {
+      "saleNumber": "Sale #",
+      "date": "Date",
+      "customer": "Customer",
+      "items": "Items",
+      "total": "Total",
+      "actions": "Actions",
+      "return": "Return"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} sale(s)"
     }
   },
   "inventory": {

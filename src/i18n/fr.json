@@ -401,6 +401,37 @@
       "newSale": "Nouvelle vente",
       "success": "Vente enregistrée avec succès."
     },
+    "hold": {
+      "hold": "Mettre en attente",
+      "holding": "Mise en attente...",
+      "success": "Vente mise en attente.",
+      "error": "Impossible de mettre cette vente en attente.",
+      "recall": "Rappeler",
+      "recallSuccess": "Vente rappelée.",
+      "recallError": "Impossible de rappeler cette vente.",
+      "title": "Ventes en attente",
+      "empty": "Aucune vente en attente.",
+      "items": "article(s)"
+    },
+    "returns": {
+      "title": "Retour",
+      "description": "Sélectionnez les articles à retourner pour le ticket {number}.",
+      "sold": "Vendu : {quantity}",
+      "reason": "Motif (optionnel)",
+      "submit": "Enregistrer le retour",
+      "submitting": "Enregistrement...",
+      "success": "Retour enregistré.",
+      "error": "Impossible d'enregistrer ce retour."
+    },
+    "report": {
+      "trigger": "Rapport",
+      "title": "Rapport de session",
+      "loading": "Chargement...",
+      "saleCount": "Nombre de ventes",
+      "grossSales": "Ventes brutes",
+      "totalRefunds": "Total des retours",
+      "netSales": "Ventes nettes"
+    },
     "errors": {
       "sessionClosed": "Aucune session de caisse ouverte.",
       "sessionAlreadyOpen": "Une session est déjà ouverte sur ce terminal.",
@@ -416,6 +447,29 @@
       "submitting": "Création...",
       "success": "Client créé avec succès.",
       "error": "Impossible de créer ce client."
+    }
+  },
+  "sales": {
+    "title": "Ventes",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "searchPlaceholder": "Rechercher un ticket (n° de vente)...",
+    "empty": "Aucune vente trouvée.",
+    "loadError": "Impossible de charger les ventes.",
+    "walkInCustomer": "Client de passage",
+    "table": {
+      "saleNumber": "N° de vente",
+      "date": "Date",
+      "customer": "Client",
+      "items": "Articles",
+      "total": "Total",
+      "actions": "Actions",
+      "return": "Retour"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} vente(s)"
     }
   },
   "inventory": {

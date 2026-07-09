@@ -155,3 +155,47 @@ export async function getCurrentSession(tx: TransactionClient, storeId: string, 
     orderBy: { openedAt: "desc" },
   });
 }
+
+/**
+ * X report (mid-shift, session still open) and Z report (after closeSession)
+ * are the same read-only aggregation — closing just additionally persists
+ * totalSales/totalRefunds onto the session row. Doesn't require the session
+ * to be closed.
+ */
+export async function getSessionReport(tx: TransactionClient, sessionId: string) {
+  const session = await getOpenOrClosedSessionOrThrow(tx, sessionId);
+
+  const [sales, payments, returns, cashMovements] = await Promise.all([
+    tx.sale.findMany({ where: { posSessionId: sessionId, status: "completed" } }),
+    tx.salePayment.findMany({
+      where: { sale: { posSessionId: sessionId, status: "completed" } },
+    }),
+    tx.saleReturn.findMany({ where: { originalSale: { posSessionId: sessionId } } }),
+    tx.posCashMovement.findMany({ where: { sessionId }, orderBy: { createdAt: "asc" } }),
+  ]);
+
+  const paymentsByMethod = payments.reduce<Record<string, number>>((acc, payment) => {
+    acc[payment.paymentMethod] = (acc[payment.paymentMethod] ?? 0) + payment.amount;
+    return acc;
+  }, {});
+
+  const totalRefunds = returns.reduce((sum, saleReturn) => sum + saleReturn.totalRefunded, 0);
+  const grossSales = sales.reduce((sum, sale) => sum + sale.total, 0);
+
+  return {
+    session,
+    saleCount: sales.length,
+    returnCount: returns.length,
+    grossSales,
+    totalRefunds,
+    netSales: grossSales - totalRefunds,
+    paymentsByMethod,
+    cashMovements,
+  };
+}
+
+async function getOpenOrClosedSessionOrThrow(tx: TransactionClient, sessionId: string) {
+  const session = await tx.posSession.findUnique({ where: { id: sessionId } });
+  if (!session) throw new SessionNotFoundError();
+  return session;
+}
