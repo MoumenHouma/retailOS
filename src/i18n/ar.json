@@ -87,5 +87,146 @@
       "success": "تم إنشاء المورد بنجاح.",
       "error": "تعذر إنشاء هذا المورد."
     }
+  },
+  "products": {
+    "title": "المنتجات",
+    "newProduct": "منتج جديد",
+    "searchPlaceholder": "البحث (الاسم، SKU، الباركود)...",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لم يتم العثور على أي منتج.",
+    "loadError": "تعذر تحميل المنتجات.",
+    "filter": {
+      "allCategories": "كل الفئات",
+      "allBrands": "كل العلامات التجارية",
+      "all": "الكل",
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "sort": {
+      "nameAsc": "الاسم (أ→ي)",
+      "nameDesc": "الاسم (ي→أ)",
+      "priceAsc": "السعر تصاعدي",
+      "priceDesc": "السعر تنازلي",
+      "createdAtDesc": "الأحدث",
+      "createdAtAsc": "الأقدم"
+    },
+    "table": {
+      "name": "الاسم",
+      "sku": "SKU",
+      "category": "الفئة",
+      "brand": "العلامة التجارية",
+      "unit": "الوحدة",
+      "price": "سعر البيع",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": {
+      "active": "نشط",
+      "inactive": "غير نشط"
+    },
+    "pagination": {
+      "pageInfo": "الصفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} منتج"
+    },
+    "delete": {
+      "confirm": "هل تريد حذف هذا المنتج؟",
+      "success": "تم حذف المنتج.",
+      "error": "تعذر حذف هذا المنتج."
+    },
+    "form": {
+      "title": "منتج جديد",
+      "description": "أضف منتجاً إلى كتالوجك.",
+      "name": "الاسم *",
+      "sku": "SKU",
+      "barcode": "الباركود",
+      "unit": "الوحدة *",
+      "noUnit": "لا توجد وحدات متاحة — أنشئ واحدة أولاً.",
+      "category": "الفئة",
+      "noCategory": "بدون",
+      "brand": "العلامة التجارية",
+      "noBrand": "بدون",
+      "costPrice": "سعر الشراء (دج)",
+      "sellingPrice": "سعر البيع (دج) *",
+      "tvaRate": "الرسم على القيمة المضافة",
+      "minStockLevel": "الحد الأدنى للمخزون",
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء المنتج بنجاح.",
+      "error": "تعذر إنشاء هذا المنتج."
+    }
+  },
+  "inventory": {
+    "title": "المخزون",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "adjustStock": "تعديل المخزون",
+    "tabs": {
+      "levels": "مستويات المخزون",
+      "movements": "الحركات"
+    },
+    "filter": {
+      "allStores": "كل المتاجر",
+      "allTypes": "كل الأنواع",
+      "lowStockOnly": "المخزون المنخفض فقط"
+    },
+    "levels": {
+      "table": {
+        "product": "المنتج",
+        "store": "المتجر",
+        "onHand": "المتوفر",
+        "reserved": "المحجوز",
+        "available": "المتاح",
+        "status": "الحالة"
+      },
+      "lowStock": "مخزون منخفض",
+      "ok": "جيد",
+      "empty": "لا توجد بيانات مخزون بعد. عدّل مخزون منتج للبدء.",
+      "loadError": "تعذر تحميل مستويات المخزون."
+    },
+    "movements": {
+      "table": {
+        "date": "التاريخ",
+        "product": "المنتج",
+        "store": "المتجر",
+        "type": "النوع",
+        "quantity": "الكمية",
+        "notes": "ملاحظات"
+      },
+      "empty": "لا توجد حركات مسجلة.",
+      "loadError": "تعذر تحميل الحركات."
+    },
+    "movementTypes": {
+      "PURCHASE_IN": "شراء (دخول)",
+      "SALE_OUT": "بيع (خروج)",
+      "TRANSFER_OUT": "تحويل (خروج)",
+      "TRANSFER_IN": "تحويل (دخول)",
+      "ADJUSTMENT_IN": "تعديل (دخول)",
+      "ADJUSTMENT_OUT": "تعديل (خروج)",
+      "RETURN_IN": "إرجاع (دخول)",
+      "RETURN_OUT": "إرجاع (خروج)",
+      "WRITE_OFF": "إتلاف"
+    },
+    "pagination": {
+      "pageInfo": "الصفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} سطر"
+    },
+    "form": {
+      "title": "تعديل المخزون",
+      "description": "يسجل حركة مخزون يدوية مع سبب.",
+      "product": "المنتج *",
+      "store": "المتجر *",
+      "direction": "الاتجاه",
+      "in": "دخول",
+      "out": "خروج",
+      "quantity": "الكمية *",
+      "reason": "السبب *",
+      "submit": "حفظ",
+      "submitting": "جارٍ الحفظ...",
+      "success": "تم تعديل المخزون بنجاح.",
+      "error": "تعذر تعديل المخزون."
+    }
   }
 }

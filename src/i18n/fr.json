@@ -87,5 +87,146 @@
       "success": "Fournisseur créé avec succès.",
       "error": "Impossible de créer ce fournisseur."
     }
+  },
+  "products": {
+    "title": "Produits",
+    "newProduct": "Nouveau produit",
+    "searchPlaceholder": "Rechercher (nom, SKU, code-barres)...",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucun produit trouvé.",
+    "loadError": "Impossible de charger les produits.",
+    "filter": {
+      "allCategories": "Toutes les catégories",
+      "allBrands": "Toutes les marques",
+      "all": "Tous",
+      "active": "Actifs",
+      "inactive": "Inactifs"
+    },
+    "sort": {
+      "nameAsc": "Nom (A→Z)",
+      "nameDesc": "Nom (Z→A)",
+      "priceAsc": "Prix croissant",
+      "priceDesc": "Prix décroissant",
+      "createdAtDesc": "Plus récents",
+      "createdAtAsc": "Plus anciens"
+    },
+    "table": {
+      "name": "Nom",
+      "sku": "SKU",
+      "category": "Catégorie",
+      "brand": "Marque",
+      "unit": "Unité",
+      "price": "Prix de vente",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Actif",
+      "inactive": "Inactif"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} produit(s)"
+    },
+    "delete": {
+      "confirm": "Supprimer ce produit ?",
+      "success": "Produit supprimé.",
+      "error": "Impossible de supprimer ce produit."
+    },
+    "form": {
+      "title": "Nouveau produit",
+      "description": "Ajoutez un produit à votre catalogue.",
+      "name": "Nom *",
+      "sku": "SKU",
+      "barcode": "Code-barres",
+      "unit": "Unité *",
+      "noUnit": "Aucune unité disponible — créez-en une d'abord.",
+      "category": "Catégorie",
+      "noCategory": "Aucune",
+      "brand": "Marque",
+      "noBrand": "Aucune",
+      "costPrice": "Prix d'achat (DA)",
+      "sellingPrice": "Prix de vente (DA) *",
+      "tvaRate": "TVA",
+      "minStockLevel": "Stock minimum",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Produit créé avec succès.",
+      "error": "Impossible de créer ce produit."
+    }
+  },
+  "inventory": {
+    "title": "Inventaire",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "adjustStock": "Ajuster le stock",
+    "tabs": {
+      "levels": "Niveaux de stock",
+      "movements": "Mouvements"
+    },
+    "filter": {
+      "allStores": "Tous les magasins",
+      "allTypes": "Tous les types",
+      "lowStockOnly": "Stock faible uniquement"
+    },
+    "levels": {
+      "table": {
+        "product": "Produit",
+        "store": "Magasin",
+        "onHand": "En stock",
+        "reserved": "Réservé",
+        "available": "Disponible",
+        "status": "Statut"
+      },
+      "lowStock": "Stock faible",
+      "ok": "OK",
+      "empty": "Aucune donnée de stock. Ajustez le stock d'un produit pour commencer.",
+      "loadError": "Impossible de charger les niveaux de stock."
+    },
+    "movements": {
+      "table": {
+        "date": "Date",
+        "product": "Produit",
+        "store": "Magasin",
+        "type": "Type",
+        "quantity": "Quantité",
+        "notes": "Notes"
+      },
+      "empty": "Aucun mouvement enregistré.",
+      "loadError": "Impossible de charger les mouvements."
+    },
+    "movementTypes": {
+      "PURCHASE_IN": "Achat (entrée)",
+      "SALE_OUT": "Vente (sortie)",
+      "TRANSFER_OUT": "Transfert (sortie)",
+      "TRANSFER_IN": "Transfert (entrée)",
+      "ADJUSTMENT_IN": "Ajustement (entrée)",
+      "ADJUSTMENT_OUT": "Ajustement (sortie)",
+      "RETURN_IN": "Retour (entrée)",
+      "RETURN_OUT": "Retour (sortie)",
+      "WRITE_OFF": "Perte / rebut"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} ligne(s)"
+    },
+    "form": {
+      "title": "Ajuster le stock",
+      "description": "Enregistre un mouvement de stock manuel, avec motif.",
+      "product": "Produit *",
+      "store": "Magasin *",
+      "direction": "Sens",
+      "in": "Entrée",
+      "out": "Sortie",
+      "quantity": "Quantité *",
+      "reason": "Motif *",
+      "submit": "Enregistrer",
+      "submitting": "Enregistrement...",
+      "success": "Stock ajusté avec succès.",
+      "error": "Impossible d'ajuster le stock."
+    }
   }
 }

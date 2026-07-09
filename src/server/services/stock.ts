@@ -88,20 +88,23 @@ export async function getStockLevels(tx: TransactionClient, query: GetStockLevel
     ...(storeId ? { storeId } : {}),
   };
 
-  const [rows, total] = await Promise.all([
-    tx.stockLevel.findMany({
-      where,
-      include: { product: { select: { name: true, barcode: true, minStockLevel: true } }, store: true },
-      orderBy: { updatedAt: "desc" },
-      skip: (page - 1) * pageSize,
-      take: pageSize,
-    }),
-    tx.stockLevel.count({ where }),
-  ]);
+  // isLowStock compares two columns (quantityOnHand vs. product.minStockLevel),
+  // which Prisma can't express in `where` without raw SQL. Filtering it in JS
+  // means pagination has to happen in JS too — fetch every matching row
+  // (fine at Phase 1 catalog sizes) rather than paginating pre-filter, which
+  // would silently drop/misreport low-stock rows outside the current page.
+  const rows = await tx.stockLevel.findMany({
+    where,
+    include: { product: { select: { name: true, barcode: true, minStockLevel: true } }, store: true },
+    orderBy: { updatedAt: "desc" },
+  });
 
-  const items = rows
+  const filtered = rows
     .map((row) => ({ ...row, isLowStock: row.quantityOnHand <= row.product.minStockLevel }))
     .filter((row) => (lowStockOnly ? row.isLowStock : true));
+
+  const total = filtered.length;
+  const items = filtered.slice((page - 1) * pageSize, (page - 1) * pageSize + pageSize);
 
   return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }

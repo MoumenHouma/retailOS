@@ -87,5 +87,146 @@
       "success": "Supplier created successfully.",
       "error": "Unable to create this supplier."
     }
+  },
+  "products": {
+    "title": "Products",
+    "newProduct": "New product",
+    "searchPlaceholder": "Search (name, SKU, barcode)...",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No products found.",
+    "loadError": "Unable to load products.",
+    "filter": {
+      "allCategories": "All categories",
+      "allBrands": "All brands",
+      "all": "All",
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "sort": {
+      "nameAsc": "Name (A→Z)",
+      "nameDesc": "Name (Z→A)",
+      "priceAsc": "Price (low→high)",
+      "priceDesc": "Price (high→low)",
+      "createdAtDesc": "Newest",
+      "createdAtAsc": "Oldest"
+    },
+    "table": {
+      "name": "Name",
+      "sku": "SKU",
+      "category": "Category",
+      "brand": "Brand",
+      "unit": "Unit",
+      "price": "Selling price",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": {
+      "active": "Active",
+      "inactive": "Inactive"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} product(s)"
+    },
+    "delete": {
+      "confirm": "Delete this product?",
+      "success": "Product deleted.",
+      "error": "Unable to delete this product."
+    },
+    "form": {
+      "title": "New product",
+      "description": "Add a product to your catalog.",
+      "name": "Name *",
+      "sku": "SKU",
+      "barcode": "Barcode",
+      "unit": "Unit *",
+      "noUnit": "No units available — create one first.",
+      "category": "Category",
+      "noCategory": "None",
+      "brand": "Brand",
+      "noBrand": "None",
+      "costPrice": "Cost price (DA)",
+      "sellingPrice": "Selling price (DA) *",
+      "tvaRate": "VAT",
+      "minStockLevel": "Minimum stock",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Product created successfully.",
+      "error": "Unable to create this product."
+    }
+  },
+  "inventory": {
+    "title": "Inventory",
+    "forbidden": "You don't have permission to access this page.",
+    "adjustStock": "Adjust stock",
+    "tabs": {
+      "levels": "Stock levels",
+      "movements": "Movements"
+    },
+    "filter": {
+      "allStores": "All stores",
+      "allTypes": "All types",
+      "lowStockOnly": "Low stock only"
+    },
+    "levels": {
+      "table": {
+        "product": "Product",
+        "store": "Store",
+        "onHand": "On hand",
+        "reserved": "Reserved",
+        "available": "Available",
+        "status": "Status"
+      },
+      "lowStock": "Low stock",
+      "ok": "OK",
+      "empty": "No stock data yet. Adjust a product's stock to get started.",
+      "loadError": "Unable to load stock levels."
+    },
+    "movements": {
+      "table": {
+        "date": "Date",
+        "product": "Product",
+        "store": "Store",
+        "type": "Type",
+        "quantity": "Quantity",
+        "notes": "Notes"
+      },
+      "empty": "No movements recorded.",
+      "loadError": "Unable to load movements."
+    },
+    "movementTypes": {
+      "PURCHASE_IN": "Purchase (in)",
+      "SALE_OUT": "Sale (out)",
+      "TRANSFER_OUT": "Transfer (out)",
+      "TRANSFER_IN": "Transfer (in)",
+      "ADJUSTMENT_IN": "Adjustment (in)",
+      "ADJUSTMENT_OUT": "Adjustment (out)",
+      "RETURN_IN": "Return (in)",
+      "RETURN_OUT": "Return (out)",
+      "WRITE_OFF": "Write-off"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} row(s)"
+    },
+    "form": {
+      "title": "Adjust stock",
+      "description": "Records a manual stock movement, with a reason.",
+      "product": "Product *",
+      "store": "Store *",
+      "direction": "Direction",
+      "in": "In",
+      "out": "Out",
+      "quantity": "Quantity *",
+      "reason": "Reason *",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "success": "Stock adjusted successfully.",
+      "error": "Unable to adjust stock."
+    }
   }
 }

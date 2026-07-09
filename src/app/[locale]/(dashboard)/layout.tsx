@@ -21,8 +21,12 @@ export default async function DashboardLayout({
       <aside className="w-56 shrink-0 border-e border-[var(--color-border)] bg-[var(--color-muted)] p-4">
         <div className="mb-6 text-lg font-semibold">RetailOS</div>
         <nav className="flex flex-col gap-2 text-sm text-[var(--color-muted-foreground)]">
-          <span>Produits</span>
-          <span>Inventaire</span>
+          <Link href={`/${locale}/products`} className="hover:text-[var(--color-foreground)]">
+            Produits
+          </Link>
+          <Link href={`/${locale}/inventory`} className="hover:text-[var(--color-foreground)]">
+            Inventaire
+          </Link>
           <Link href={`/${locale}/suppliers`} className="hover:text-[var(--color-foreground)]">
             Fournisseurs
           </Link>

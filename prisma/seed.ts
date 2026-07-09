@@ -76,6 +76,13 @@ const DEMO_TENANTS: DemoTenantSpec[] = [
 
 const DEMO_PASSWORD = "Demo1234!";
 
+const DEFAULT_UNITS = [
+  { name: "Pièce", abbreviation: "pce", isBaseUnit: true },
+  { name: "Kilogramme", abbreviation: "kg", isBaseUnit: false },
+  { name: "Litre", abbreviation: "L", isBaseUnit: false },
+  { name: "Carton", abbreviation: "carton", isBaseUnit: false },
+];
+
 async function main() {
   console.log("Seeding permission catalog...");
   const permissionsByName = new Map<string, { id: string }>();
@@ -156,6 +163,18 @@ async function main() {
       update: {},
       create: { userId: adminUser.id, storeId: store.id },
     });
+
+    // Units have no compound-unique key to upsert against — guard
+    // idempotency with an existence check instead, same pattern as the
+    // owner user-role above.
+    for (const unit of DEFAULT_UNITS) {
+      const existingUnit = await prisma.unit.findFirst({
+        where: { tenantId: tenant.id, abbreviation: unit.abbreviation, deletedAt: null },
+      });
+      if (!existingUnit) {
+        await prisma.unit.create({ data: { tenantId: tenant.id, ...unit } });
+      }
+    }
 
     console.log(`  -> login with ${spec.adminEmail} / ${DEMO_PASSWORD}`);
   }
