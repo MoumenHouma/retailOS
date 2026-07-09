@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductFormDialog, type ProductEditData } from "@/components/products/product-form-dialog";
 import { ImportExportControls } from "@/components/products/import-export-controls";
+import { BarcodesDialog } from "@/components/products/barcodes-dialog";
 import { CategoriesTab } from "@/components/products/categories-tab";
 import { BrandsTab } from "@/components/products/brands-tab";
 import { UnitsTab } from "@/components/products/units-tab";
@@ -328,6 +329,7 @@ export function ProductsView() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
+                      <BarcodesDialog productId={product.id} productName={product.name} />
                       {unitsQuery.data && (
                         <ProductFormDialog
                           units={unitsQuery.data.data}

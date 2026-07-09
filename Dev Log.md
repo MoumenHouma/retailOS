@@ -16,6 +16,7 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 - Mounted the Sonner `<Toaster>` (component existed, was never added to the provider tree).
 - Added **edit UI** for products and suppliers: the create dialogs (`ProductFormDialog`, `SupplierFormDialog`) now take an optional `product`/`supplier` prop and switch between POST-create and PATCH-update — a pencil-icon button per row opens the same dialog pre-filled. Both PATCH routes already existed; only the UI was missing.
 - Added **CSV/Excel import-export UI** for products: "Exporter (CSV)"/"Exporter (Excel)" buttons (plain `<a>` downloads, not client routing — the response is a file, not a page), and an "Importer" dialog that previews the parsed rows (valid/error counts, per-row error detail) before a separate confirm step commits only the valid rows.
+- Added **multi-barcode management UI**: a barcode-icon button per product row opens a dialog listing all barcodes for that product (type, primary badge), with add/set-primary/remove actions wired to the existing `/api/products/[id]/barcodes[/[barcodeId]]` routes.
 - Verified every page live in a real browser (Playwright-driven headless Chromium) against the Dockerized dev stack — not just typecheck/lint.
 
 **Bugs found and fixed during verification:**
@@ -32,7 +33,6 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 - Next dev's on-demand compilation can race an in-flight request body: the *first* hit to a not-yet-compiled dynamic API route that carries a JSON body can fail with `SyntaxError: Unexpected end of JSON input` in `request.json()` (the body stream appears to get consumed/discarded during the compile-triggered re-invocation). Retrying the exact same request once the route is warm succeeds immediately. Only ever seen on the first body-carrying request to a given route per dev-server process — a dev-mode-only artifact, not reproducible against a production build.
 
 **Open items for later phases:**
-- Multi-barcode management UI (API exists already, just no UI).
 - Supplier-product linking UI (API exists via `/api/suppliers/[id]/products`).
 - Multi-store support — Inventory/adjustment UI currently assumes the single seeded "principal" store per tenant.
 

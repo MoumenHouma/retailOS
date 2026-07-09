@@ -120,6 +120,32 @@
       "close": "Fermer",
       "noValidRows": "Aucune ligne valide à importer."
     },
+    "barcodes": {
+      "trigger": "Gérer les codes-barres",
+      "dialogTitle": "Codes-barres — {name}",
+      "dialogDescription": "Gérez les codes-barres associés à ce produit.",
+      "table": {
+        "barcode": "Code-barres",
+        "type": "Type",
+        "actions": "Actions"
+      },
+      "primary": "Principal",
+      "setPrimary": "Définir comme principal",
+      "setPrimarySuccess": "Code-barres principal mis à jour.",
+      "setPrimaryError": "Impossible de définir ce code-barres comme principal.",
+      "addPlaceholder": "Nouveau code-barres",
+      "addSubmit": "Ajouter",
+      "adding": "Ajout...",
+      "addSuccess": "Code-barres ajouté.",
+      "addError": "Impossible d'ajouter ce code-barres — il est peut-être déjà utilisé.",
+      "delete": {
+        "confirm": "Supprimer ce code-barres ?",
+        "success": "Code-barres supprimé.",
+        "error": "Impossible de supprimer ce code-barres."
+      },
+      "empty": "Aucun code-barres pour ce produit.",
+      "loadError": "Impossible de charger les codes-barres."
+    },
     "tabs": {
       "products": "Produits",
       "categories": "Catégories",

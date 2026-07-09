@@ -120,6 +120,32 @@
       "close": "Close",
       "noValidRows": "No valid rows to import."
     },
+    "barcodes": {
+      "trigger": "Manage barcodes",
+      "dialogTitle": "Barcodes — {name}",
+      "dialogDescription": "Manage the barcodes attached to this product.",
+      "table": {
+        "barcode": "Barcode",
+        "type": "Type",
+        "actions": "Actions"
+      },
+      "primary": "Primary",
+      "setPrimary": "Set as primary",
+      "setPrimarySuccess": "Primary barcode updated.",
+      "setPrimaryError": "Unable to set this barcode as primary.",
+      "addPlaceholder": "New barcode",
+      "addSubmit": "Add",
+      "adding": "Adding...",
+      "addSuccess": "Barcode added.",
+      "addError": "Unable to add this barcode — it may already be in use.",
+      "delete": {
+        "confirm": "Delete this barcode?",
+        "success": "Barcode deleted.",
+        "error": "Unable to delete this barcode."
+      },
+      "empty": "No barcodes for this product.",
+      "loadError": "Unable to load barcodes."
+    },
     "tabs": {
       "products": "Products",
       "categories": "Categories",
