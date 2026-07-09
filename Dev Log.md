@@ -4,6 +4,31 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-09 — Phase 2 Chunk D: Offline Sync — Phase 2 complete
+
+**Done (per [[PHASE2_POS_PLAN]] Chunk D), closing out Phase 2 the same day as A/B/C:**
+- `src/lib/offline-db.ts`: Dexie schema (`localProducts` cache, `queuedSales` outbox). Lazily instantiated behind a `typeof window` guard — Next.js SSR still executes "use client" component code once in Node for the initial render pass, and constructing Dexie there throws (no IndexedDB).
+- `src/lib/product-cache-sync.ts` + `useProductCatalogSync`: pulls the full active catalog into `localProducts` on mount and every 5 minutes while online (ARCHITECTURE.md §7.2). `ProductSearch` now takes an `isOnline` prop and searches the Dexie cache (substring match) instead of the network when offline, falling back to it too if an "online" fetch fails mid-flight.
+- `src/hooks/use-online-status.ts`: heartbeat-based connectivity (`/api/health`, new unauthenticated route) rather than trusting `navigator.onLine` alone — a device can report "online" with no real path to the server, exactly the gap ARCHITECTURE.md's offline design calls out.
+- `src/hooks/use-offline-sync.ts`: the client-side sale queue. Checkout writes to `queuedSales` instead of POSTing when offline; on reconnect, queued sales push to `/api/pos/sales` in order (oldest first). Stock conflicts (or any other rejection) mark that sale `conflict` with the server's message rather than retrying forever or blocking the rest of the queue — matches ARCHITECTURE.md §7.3's "server is authoritative, flag for cashier resolution."
+- Server side: `CompleteSaleSchema`/`completeSale` gained an `isOffline` flag; a synced offline sale gets `syncedAt` set at push time. No idempotency key yet (see open items).
+- UI: `OfflineSyncPanel` (offline badge, pending-sync count, conflict list with retry/discard) in the POS header; receipt dialog shows a distinct "will sync once reconnected" message with a local `HORS-LIGNE-XXXXXXXX` reference for queued sales (no real sale number exists until the server assigns one on sync).
+
+**Bugs found and fixed during verification:**
+1. **Real race condition in `useOnlineStatus`.** The heartbeat interval and the `online`/`offline` DOM event listeners can both trigger a connectivity check concurrently; their async `pingServer()` calls could then resolve *out of order* — a slow, now-stale "online" check finishing after a fresher "offline" event had already fired, silently flipping the state back. Fixed with a monotonic sequence counter (`latestCheckId` ref): only the most recently *started* check is allowed to apply its result. Symptom before the fix: the offline product search's own internal logic was provably correct (verified via direct instrumentation — it found the right cached rows every time) but the UI intermittently showed zero results anyway, because `isOnline` flapping mid-flight caused React Query to key against a different (still-pending) query than the one that had actually resolved.
+2. **Not an app bug, but a testing-environment trap worth recording:** Playwright's `context.setOffline(true)` proved unreliable for same-container loopback traffic in this Docker setup — fetches to `localhost:3000` intermittently succeeded anyway, which is what made bug #1 above hard to pin down at first (looked like app flakiness, was partly verification-harness flakiness). Switched to `page.route("**/api/**", route => route.abort())` for a deterministic offline simulation, which also happens to be the *more faithful* test of the heartbeat's actual purpose (navigator.onLine stays true, only the server becomes unreachable) versus `setOffline` (which also flips `navigator.onLine`, short-circuiting the heartbeat check entirely).
+
+Also hit the by-now-familiar "Next dev's on-demand compilation can eat into an open Prisma interactive-transaction's timeout" issue again, this time on `/api/products` (`GET /api/products ... 500`, `P2028 Transaction already closed`) — purely a dev-mode artifact of the *first* hit to a route compiling while a `withTenant` transaction is already open and ticking down its 5s budget; production builds have nothing to compile on-demand. Not a Chunk D-specific bug, just the first time this project's traffic pattern happened to trigger it on this particular route.
+
+**Open items (acceptable gaps for this scope, worth flagging for whoever picks this up next):**
+- No idempotency key on offline-queued sales — if a sync push's response is lost after the server already committed it (rare, but possible on a flaky reconnect), a retry could double-insert. Would need a unique client-reference column on `Sale` to close properly.
+- Hold, X/Z session report, and close-session all remain online-only (no local queue) — disabled in the UI while offline rather than given their own offline path.
+- No conflict UI for *editing* a queued sale's items (e.g., removing the one line that's out of stock) — conflicts can only be retried as-is or discarded outright.
+
+**Phase 2 is now complete** (Chunks A–D all shipped and verified the same day): POS Core, Transaction Flow, DÉCRET 05-468 Invoicing, and Offline Sync. See [[PHASE2_POS_PLAN]] for the original chunk breakdown and the decisions recorded there. Next per [[ROADMAP]] is Phase 3 (Purchasing & Warehousing).
+
+---
+
 ## 2026-07-09 — Phase 2 Chunk C: Invoicing (DÉCRET 05-468)
 
 **Done (per [[PHASE2_POS_PLAN]] Chunk C), continuing directly from Chunks A/B the same day:**

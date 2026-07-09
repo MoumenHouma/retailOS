@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/select";
 import { centimesToDa, daToCentimes, formatDa } from "@/lib/currency";
 import { usePosCartStore } from "@/stores/pos-cart-store";
+import type { QueueSaleInput } from "@/hooks/use-offline-sync";
 
 const paymentFormSchema = z.object({
   paymentMethod: z.enum(["CASH", "CARD", "CHECK", "TRANSFER"]),
@@ -41,6 +42,7 @@ export interface CompletedSale {
   total: number;
   totalPaid: number;
   changeDue: number;
+  isQueued?: boolean;
 }
 
 export function PaymentDialog({
@@ -49,6 +51,8 @@ export function PaymentDialog({
   storeId,
   posSessionId,
   total,
+  isOnline,
+  queueSale,
   onCompleted,
 }: {
   open: boolean;
@@ -56,6 +60,8 @@ export function PaymentDialog({
   storeId: string;
   posSessionId: string;
   total: number;
+  isOnline: boolean;
+  queueSale: (input: QueueSaleInput) => Promise<string>;
   onCompleted: (sale: CompletedSale) => void;
 }) {
   const t = useTranslations("pos.payment");
@@ -86,8 +92,44 @@ export function PaymentDialog({
       return;
     }
 
+    const payment = {
+      paymentMethod: values.paymentMethod,
+      amount,
+      reference: values.reference || null,
+    };
+
     setSubmitting(true);
     try {
+      if (!isOnline) {
+        // No network round-trip possible — park the sale in the local
+        // Dexie queue instead. There's no real server-assigned sale
+        // number yet, so the receipt shows a local reference until sync
+        // (see useOfflineSync, which pushes this automatically on reconnect).
+        const localId = await queueSale({
+          storeId,
+          posSessionId,
+          customerId: customer?.id ?? null,
+          discountAmount,
+          items: lines.map((line) => ({
+            productId: line.productId,
+            productName: line.name,
+            quantity: line.quantity,
+            discountAmount: line.discountAmount,
+          })),
+          payments: [payment],
+          notes: null,
+        });
+        onCompleted({
+          id: localId,
+          saleNumber: `HORS-LIGNE-${localId.slice(0, 8).toUpperCase()}`,
+          total,
+          totalPaid: amount,
+          changeDue: method === "CASH" ? changeDue : 0,
+          isQueued: true,
+        });
+        return;
+      }
+
       const response = await fetch("/api/pos/sales", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,13 +143,7 @@ export function PaymentDialog({
             quantity: line.quantity,
             discountAmount: line.discountAmount,
           })),
-          payments: [
-            {
-              paymentMethod: values.paymentMethod,
-              amount,
-              reference: values.reference || undefined,
-            },
-          ],
+          payments: [payment],
         }),
       });
 

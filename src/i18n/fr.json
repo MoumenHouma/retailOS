@@ -399,7 +399,18 @@
       "title": "Vente enregistrée",
       "saleNumber": "Ticket n° {number}",
       "newSale": "Nouvelle vente",
-      "success": "Vente enregistrée avec succès."
+      "success": "Vente enregistrée avec succès.",
+      "queuedOffline": "Hors ligne — sera synchronisée dès le retour du réseau."
+    },
+    "offline": {
+      "offlineBadge": "Hors ligne",
+      "pendingBadge": "{count} en attente de synchro",
+      "conflictsBadge": "{count} conflit(s)",
+      "dialogTitle": "Synchronisation",
+      "pendingCount": "{count} vente(s) en attente de synchronisation.",
+      "noConflicts": "Aucun conflit.",
+      "retry": "Réessayer",
+      "discard": "Ignorer"
     },
     "hold": {
       "hold": "Mettre en attente",

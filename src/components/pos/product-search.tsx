@@ -7,6 +7,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { formatDa } from "@/lib/currency";
 import { usePosCartStore } from "@/stores/pos-cart-store";
+import { getOfflineDb } from "@/lib/offline-db";
 
 interface SearchProduct {
   id: string;
@@ -21,8 +22,7 @@ interface ProductsResponse {
   data: SearchProduct[];
 }
 
-async function searchProducts(q: string): Promise<SearchProduct[]> {
-  if (!q.trim()) return [];
+async function searchProductsOnline(q: string): Promise<SearchProduct[]> {
   const params = new URLSearchParams({ q, isActive: "true", pageSize: "10", sort: "name", order: "asc" });
   const response = await fetch(`/api/products?${params.toString()}`);
   if (!response.ok) throw new Error("Failed to search products");
@@ -30,7 +30,29 @@ async function searchProducts(q: string): Promise<SearchProduct[]> {
   return body.data;
 }
 
-export function ProductSearch() {
+// Offline fallback: substring match against the Dexie-cached catalog
+// (kept fresh by useProductCatalogSync) instead of hitting the network.
+async function searchProductsOffline(q: string): Promise<SearchProduct[]> {
+  const needle = q.trim().toLowerCase();
+  const rows = await getOfflineDb().localProducts.toArray();
+  return rows
+    .filter((row) => row.name.toLowerCase().includes(needle) || row.barcode?.includes(needle))
+    .slice(0, 10);
+}
+
+async function searchProducts(q: string, isOnline: boolean): Promise<SearchProduct[]> {
+  if (!q.trim()) return [];
+  if (!isOnline) return searchProductsOffline(q);
+  try {
+    return await searchProductsOnline(q);
+  } catch {
+    // Network reported online but the request still failed mid-flight —
+    // fall back rather than showing a dead-end empty result.
+    return searchProductsOffline(q);
+  }
+}
+
+export function ProductSearch({ isOnline }: { isOnline: boolean }) {
   const t = useTranslations("pos");
   const addProduct = usePosCartStore((state) => state.addProduct);
   const [query, setQuery] = useState("");
@@ -44,8 +66,8 @@ export function ProductSearch() {
   }, [query]);
 
   const { data: results = [] } = useQuery({
-    queryKey: ["pos-product-search", debounced],
-    queryFn: () => searchProducts(debounced),
+    queryKey: ["pos-product-search", debounced, isOnline],
+    queryFn: () => searchProducts(debounced, isOnline),
     enabled: debounced.trim().length > 0,
   });
 

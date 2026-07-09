@@ -29,6 +29,7 @@ export function ReceiptDialog({
         {sale && (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">{t("saleNumber", { number: sale.saleNumber })}</p>
+            {sale.isQueued && <p className="text-sm text-amber-500">{t("queuedOffline")}</p>}
             <div className="flex justify-between text-lg font-semibold">
               <span>{formatDa(sale.total)}</span>
             </div>

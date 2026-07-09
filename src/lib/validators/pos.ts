@@ -48,6 +48,9 @@ export const CompleteSaleSchema = z.object({
   payments: z.array(SalePaymentInputSchema).min(1),
   discountAmount: z.number().int().min(0).default(0),
   notes: z.string().nullable().optional(),
+  // True when this sale was rung up while the POS terminal was offline and
+  // is only now (on reconnect) being pushed from the local Dexie queue.
+  isOffline: z.boolean().default(false),
 });
 export type CompleteSaleInput = z.infer<typeof CompleteSaleSchema>;
 

@@ -399,7 +399,18 @@
       "title": "تم تسجيل عملية البيع",
       "saleNumber": "تذكرة رقم {number}",
       "newSale": "عملية بيع جديدة",
-      "success": "تم تسجيل عملية البيع بنجاح."
+      "success": "تم تسجيل عملية البيع بنجاح.",
+      "queuedOffline": "غير متصل — ستتم المزامنة عند عودة الشبكة."
+    },
+    "offline": {
+      "offlineBadge": "غير متصل",
+      "pendingBadge": "{count} بانتظار المزامنة",
+      "conflictsBadge": "{count} تعارض",
+      "dialogTitle": "حالة المزامنة",
+      "pendingCount": "{count} عملية بيع بانتظار المزامنة.",
+      "noConflicts": "لا توجد تعارضات.",
+      "retry": "إعادة المحاولة",
+      "discard": "تجاهل"
     },
     "hold": {
       "hold": "وضع في الانتظار",

@@ -399,7 +399,18 @@
       "title": "Sale recorded",
       "saleNumber": "Receipt #{number}",
       "newSale": "New sale",
-      "success": "Sale recorded successfully."
+      "success": "Sale recorded successfully.",
+      "queuedOffline": "Offline — will sync once the network is back."
+    },
+    "offline": {
+      "offlineBadge": "Offline",
+      "pendingBadge": "{count} pending sync",
+      "conflictsBadge": "{count} conflict(s)",
+      "dialogTitle": "Sync status",
+      "pendingCount": "{count} sale(s) waiting to sync.",
+      "noConflicts": "No conflicts.",
+      "retry": "Retry",
+      "discard": "Discard"
     },
     "hold": {
       "hold": "Hold sale",

@@ -26,8 +26,11 @@ import { PaymentDialog, type CompletedSale } from "@/components/pos/payment-dial
 import { ReceiptDialog } from "@/components/pos/receipt-dialog";
 import { HeldSalesDialog } from "@/components/pos/held-sales-dialog";
 import { SessionReportDialog } from "@/components/pos/session-report-dialog";
+import { OfflineSyncPanel } from "@/components/pos/offline-sync-panel";
 import { toast } from "sonner";
 import { cartTotals, usePosCartStore } from "@/stores/pos-cart-store";
+import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { useProductCatalogSync } from "@/hooks/use-product-catalog-sync";
 
 interface PosSessionData {
   id: string;
@@ -59,6 +62,10 @@ export function PosView() {
   const clearCart = usePosCartStore((state) => state.clear);
   const totals = cartTotals(lines, discountAmount);
   const [holding, setHolding] = useState(false);
+
+  const { isOnline, pendingCount, conflictSales, queueSale, retryConflict, discardConflict } =
+    useOfflineSync();
+  useProductCatalogSync(isOnline);
 
   const { data: session, isLoading } = useQuery({
     queryKey: ["pos-session", storeId],
@@ -128,6 +135,13 @@ export function PosView() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <OfflineSyncPanel
+            isOnline={isOnline}
+            pendingCount={pendingCount}
+            conflictSales={conflictSales}
+            onRetry={retryConflict}
+            onDiscard={discardConflict}
+          />
           <SessionReportDialog sessionId={session.id} />
           <CloseSessionDialog sessionId={session.id} onClosed={invalidateSession} />
         </div>
@@ -135,7 +149,7 @@ export function PosView() {
 
       <div className="grid flex-1 grid-cols-3 overflow-hidden">
         <div className="col-span-2 flex flex-col gap-4 overflow-hidden border-e border-border p-4">
-          <ProductSearch />
+          <ProductSearch isOnline={isOnline} />
           <Separator />
           <div className="flex-1 overflow-hidden">
             <CartPanel />
@@ -150,7 +164,7 @@ export function PosView() {
               type="button"
               variant="outline"
               className="flex-1"
-              disabled={lines.length === 0 || holding}
+              disabled={lines.length === 0 || holding || !isOnline}
               onClick={handleHold}
             >
               {holding ? t("hold.holding") : t("hold.hold")}
@@ -194,6 +208,8 @@ export function PosView() {
         storeId={storeId}
         posSessionId={session.id}
         total={totals.total}
+        isOnline={isOnline}
+        queueSale={queueSale}
         onCompleted={handleSaleCompleted}
       />
       <ReceiptDialog sale={completedSale} onNewSale={() => setCompletedSale(null)} />

@@ -47,6 +47,7 @@ interface CompleteSaleInput {
   discountAmount?: number;
   notes?: string | null;
   cashierId: string;
+  isOffline?: boolean;
 }
 
 interface HoldSaleInput {
@@ -169,6 +170,8 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
       totalPaid,
       changeDue,
       notes: input.notes ?? null,
+      isOffline: input.isOffline ?? false,
+      syncedAt: input.isOffline ? new Date() : null,
       items: { create: itemsData },
       payments: {
         create: input.payments.map((payment) => ({
