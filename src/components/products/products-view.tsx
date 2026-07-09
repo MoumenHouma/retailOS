@@ -23,7 +23,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProductFormDialog } from "@/components/products/product-form-dialog";
+import { CategoriesTab } from "@/components/products/categories-tab";
+import { BrandsTab } from "@/components/products/brands-tab";
+import { UnitsTab } from "@/components/products/units-tab";
 import { formatDa } from "@/lib/currency";
 import { flattenCategories, type CategoryNode } from "@/lib/categories";
 
@@ -45,7 +49,13 @@ interface ProductsResponse {
 }
 
 type StatusFilter = "all" | "active" | "inactive";
-type SortOption = "name:asc" | "name:desc" | "sellingPrice:asc" | "sellingPrice:desc" | "createdAt:desc" | "createdAt:asc";
+type SortOption =
+  | "name:asc"
+  | "name:desc"
+  | "sellingPrice:asc"
+  | "sellingPrice:desc"
+  | "createdAt:desc"
+  | "createdAt:asc";
 
 const ALL = "__all__";
 const PAGE_SIZE = 20;
@@ -100,7 +110,8 @@ export function ProductsView() {
 
   const unitsQuery = useQuery({
     queryKey: ["units"],
-    queryFn: () => fetchJson<{ data: { id: string; name: string; abbreviation: string }[] }>("/api/units"),
+    queryFn: () =>
+      fetchJson<{ data: { id: string; name: string; abbreviation: string }[] }>("/api/units"),
   });
   const categoriesQuery = useQuery({
     queryKey: ["product-categories"],
@@ -138,191 +149,215 @@ export function ProductsView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        {unitsQuery.data ? (
-          <ProductFormDialog
-            units={unitsQuery.data.data}
-            categories={flatCategories}
-            brands={brandsQuery.data?.data ?? []}
-            onCreated={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
-          />
-        ) : (
-          <Button disabled>{t("newProduct")}</Button>
-        )}
-      </div>
+      <h1 className="text-2xl font-semibold">{t("title")}</h1>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={search}
-            onChange={(event) => {
-              setSearch(event.target.value);
-              setPage(1);
-            }}
-            placeholder={t("searchPlaceholder")}
-            className="pl-8"
-          />
-        </div>
-        <Select
-          value={categoryId}
-          onValueChange={(value) => {
-            setCategoryId(value);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>{t("filter.allCategories")}</SelectItem>
-            {flatCategories.map((category) => (
-              <SelectItem key={category.id} value={category.id}>
-                {"— ".repeat(category.depth)}
-                {category.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={brandId}
-          onValueChange={(value) => {
-            setBrandId(value);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-44">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>{t("filter.allBrands")}</SelectItem>
-            {(brandsQuery.data?.data ?? []).map((brand) => (
-              <SelectItem key={brand.id} value={brand.id}>
-                {brand.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select
-          value={status}
-          onValueChange={(value) => {
-            setStatus(value as StatusFilter);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">{t("filter.all")}</SelectItem>
-            <SelectItem value="active">{t("filter.active")}</SelectItem>
-            <SelectItem value="inactive">{t("filter.inactive")}</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={sort}
-          onValueChange={(value) => {
-            setSort(value as SortOption);
-            setPage(1);
-          }}
-        >
-          <SelectTrigger className="w-48">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="name:asc">{t("sort.nameAsc")}</SelectItem>
-            <SelectItem value="name:desc">{t("sort.nameDesc")}</SelectItem>
-            <SelectItem value="sellingPrice:asc">{t("sort.priceAsc")}</SelectItem>
-            <SelectItem value="sellingPrice:desc">{t("sort.priceDesc")}</SelectItem>
-            <SelectItem value="createdAt:desc">{t("sort.createdAtDesc")}</SelectItem>
-            <SelectItem value="createdAt:asc">{t("sort.createdAtAsc")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      <Tabs defaultValue="products">
+        <TabsList>
+          <TabsTrigger value="products">{t("tabs.products")}</TabsTrigger>
+          <TabsTrigger value="categories">{t("tabs.categories")}</TabsTrigger>
+          <TabsTrigger value="brands">{t("tabs.brands")}</TabsTrigger>
+          <TabsTrigger value="units">{t("tabs.units")}</TabsTrigger>
+        </TabsList>
 
-      <div className="rounded-md border border-border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t("table.name")}</TableHead>
-              <TableHead>{t("table.sku")}</TableHead>
-              <TableHead>{t("table.category")}</TableHead>
-              <TableHead>{t("table.brand")}</TableHead>
-              <TableHead>{t("table.unit")}</TableHead>
-              <TableHead>{t("table.price")}</TableHead>
-              <TableHead>{t("table.status")}</TableHead>
-              <TableHead className="text-right">{t("table.actions")}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isError && (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-destructive">
-                  {t("loadError")}
-                </TableCell>
-              </TableRow>
+        <TabsContent value="products" className="flex flex-col gap-4">
+          <div className="flex justify-end">
+            {unitsQuery.data ? (
+              <ProductFormDialog
+                units={unitsQuery.data.data}
+                categories={flatCategories}
+                brands={brandsQuery.data?.data ?? []}
+                onCreated={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
+              />
+            ) : (
+              <Button disabled>{t("newProduct")}</Button>
             )}
-            {!isError && !isLoading && products.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  {t("empty")}
-                </TableCell>
-              </TableRow>
-            )}
-            {products.map((product) => (
-              <TableRow key={product.id}>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.sku ?? "—"}</TableCell>
-                <TableCell>{product.category?.name ?? "—"}</TableCell>
-                <TableCell>{product.brand?.name ?? "—"}</TableCell>
-                <TableCell>{product.unit.abbreviation}</TableCell>
-                <TableCell>{formatDa(product.sellingPrice)}</TableCell>
-                <TableCell>
-                  <Badge variant={product.isActive ? "default" : "secondary"}>
-                    {product.isActive ? t("status.active") : t("status.inactive")}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDelete(product.id)}
-                    aria-label={t("delete.confirm")}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {meta && meta.totalPages > 0 && (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <span>{t("pagination.total", { count: meta.total })}</span>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page <= 1}
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-            >
-              {t("pagination.previous")}
-            </Button>
-            <span>{t("pagination.pageInfo", { page: meta.page, totalPages: meta.totalPages })}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page >= meta.totalPages}
-              onClick={() => setPage((current) => Math.min(meta.totalPages, current + 1))}
-            >
-              {t("pagination.next")}
-            </Button>
           </div>
-        </div>
-      )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[200px]">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={search}
+                onChange={(event) => {
+                  setSearch(event.target.value);
+                  setPage(1);
+                }}
+                placeholder={t("searchPlaceholder")}
+                className="pl-8"
+              />
+            </div>
+            <Select
+              value={categoryId}
+              onValueChange={(value) => {
+                setCategoryId(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t("filter.allCategories")}</SelectItem>
+                {flatCategories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {"— ".repeat(category.depth)}
+                    {category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={brandId}
+              onValueChange={(value) => {
+                setBrandId(value);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-44">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={ALL}>{t("filter.allBrands")}</SelectItem>
+                {(brandsQuery.data?.data ?? []).map((brand) => (
+                  <SelectItem key={brand.id} value={brand.id}>
+                    {brand.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={status}
+              onValueChange={(value) => {
+                setStatus(value as StatusFilter);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">{t("filter.all")}</SelectItem>
+                <SelectItem value="active">{t("filter.active")}</SelectItem>
+                <SelectItem value="inactive">{t("filter.inactive")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select
+              value={sort}
+              onValueChange={(value) => {
+                setSort(value as SortOption);
+                setPage(1);
+              }}
+            >
+              <SelectTrigger className="w-48">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="name:asc">{t("sort.nameAsc")}</SelectItem>
+                <SelectItem value="name:desc">{t("sort.nameDesc")}</SelectItem>
+                <SelectItem value="sellingPrice:asc">{t("sort.priceAsc")}</SelectItem>
+                <SelectItem value="sellingPrice:desc">{t("sort.priceDesc")}</SelectItem>
+                <SelectItem value="createdAt:desc">{t("sort.createdAtDesc")}</SelectItem>
+                <SelectItem value="createdAt:asc">{t("sort.createdAtAsc")}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="rounded-md border border-border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("table.name")}</TableHead>
+                  <TableHead>{t("table.sku")}</TableHead>
+                  <TableHead>{t("table.category")}</TableHead>
+                  <TableHead>{t("table.brand")}</TableHead>
+                  <TableHead>{t("table.unit")}</TableHead>
+                  <TableHead>{t("table.price")}</TableHead>
+                  <TableHead>{t("table.status")}</TableHead>
+                  <TableHead className="text-right">{t("table.actions")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isError && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-destructive">
+                      {t("loadError")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!isError && !isLoading && products.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center text-muted-foreground">
+                      {t("empty")}
+                    </TableCell>
+                  </TableRow>
+                )}
+                {products.map((product) => (
+                  <TableRow key={product.id}>
+                    <TableCell className="font-medium">{product.name}</TableCell>
+                    <TableCell>{product.sku ?? "—"}</TableCell>
+                    <TableCell>{product.category?.name ?? "—"}</TableCell>
+                    <TableCell>{product.brand?.name ?? "—"}</TableCell>
+                    <TableCell>{product.unit.abbreviation}</TableCell>
+                    <TableCell>{formatDa(product.sellingPrice)}</TableCell>
+                    <TableCell>
+                      <Badge variant={product.isActive ? "default" : "secondary"}>
+                        {product.isActive ? t("status.active") : t("status.inactive")}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(product.id)}
+                        aria-label={t("delete.confirm")}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {meta && meta.totalPages > 0 && (
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>{t("pagination.total", { count: meta.total })}</span>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page <= 1}
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                >
+                  {t("pagination.previous")}
+                </Button>
+                <span>
+                  {t("pagination.pageInfo", { page: meta.page, totalPages: meta.totalPages })}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={page >= meta.totalPages}
+                  onClick={() => setPage((current) => Math.min(meta.totalPages, current + 1))}
+                >
+                  {t("pagination.next")}
+                </Button>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="categories">
+          <CategoriesTab />
+        </TabsContent>
+        <TabsContent value="brands">
+          <BrandsTab />
+        </TabsContent>
+        <TabsContent value="units">
+          <UnitsTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

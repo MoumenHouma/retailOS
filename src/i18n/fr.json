@@ -95,6 +95,89 @@
     "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
     "empty": "Aucun produit trouvé.",
     "loadError": "Impossible de charger les produits.",
+    "tabs": {
+      "products": "Produits",
+      "categories": "Catégories",
+      "brands": "Marques",
+      "units": "Unités"
+    },
+    "categories": {
+      "newCategory": "Nouvelle catégorie",
+      "empty": "Aucune catégorie.",
+      "loadError": "Impossible de charger les catégories.",
+      "table": {
+        "name": "Nom",
+        "actions": "Actions"
+      },
+      "form": {
+        "title": "Nouvelle catégorie",
+        "description": "Ajoutez une catégorie à votre catalogue.",
+        "name": "Nom *",
+        "parent": "Catégorie parente",
+        "noParent": "Aucune (racine)",
+        "submit": "Créer",
+        "submitting": "Création...",
+        "success": "Catégorie créée avec succès.",
+        "error": "Impossible de créer cette catégorie."
+      },
+      "delete": {
+        "confirm": "Supprimer cette catégorie ?",
+        "success": "Catégorie supprimée.",
+        "error": "Impossible de supprimer cette catégorie."
+      }
+    },
+    "brands": {
+      "newBrand": "Nouvelle marque",
+      "empty": "Aucune marque.",
+      "loadError": "Impossible de charger les marques.",
+      "table": {
+        "name": "Nom",
+        "country": "Pays",
+        "actions": "Actions"
+      },
+      "form": {
+        "title": "Nouvelle marque",
+        "description": "Ajoutez une marque à votre catalogue.",
+        "name": "Nom *",
+        "country": "Pays",
+        "submit": "Créer",
+        "submitting": "Création...",
+        "success": "Marque créée avec succès.",
+        "error": "Impossible de créer cette marque."
+      },
+      "delete": {
+        "confirm": "Supprimer cette marque ?",
+        "success": "Marque supprimée.",
+        "error": "Impossible de supprimer cette marque — elle est encore utilisée par des produits."
+      }
+    },
+    "units": {
+      "newUnit": "Nouvelle unité",
+      "empty": "Aucune unité.",
+      "loadError": "Impossible de charger les unités.",
+      "baseUnit": "Unité de base",
+      "table": {
+        "name": "Nom",
+        "abbreviation": "Abréviation",
+        "actions": "Actions"
+      },
+      "form": {
+        "title": "Nouvelle unité",
+        "description": "Ajoutez une unité de mesure à votre catalogue.",
+        "name": "Nom *",
+        "abbreviation": "Abréviation *",
+        "isBaseUnit": "Unité de base",
+        "submit": "Créer",
+        "submitting": "Création...",
+        "success": "Unité créée avec succès.",
+        "error": "Impossible de créer cette unité."
+      },
+      "delete": {
+        "confirm": "Supprimer cette unité ?",
+        "success": "Unité supprimée.",
+        "error": "Impossible de supprimer cette unité — elle est encore utilisée par des produits."
+      }
+    },
     "filter": {
       "allCategories": "Toutes les catégories",
       "allBrands": "Toutes les marques",

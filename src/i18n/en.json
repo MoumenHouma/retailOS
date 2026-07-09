@@ -95,6 +95,89 @@
     "forbidden": "You don't have permission to access this page.",
     "empty": "No products found.",
     "loadError": "Unable to load products.",
+    "tabs": {
+      "products": "Products",
+      "categories": "Categories",
+      "brands": "Brands",
+      "units": "Units"
+    },
+    "categories": {
+      "newCategory": "New category",
+      "empty": "No categories.",
+      "loadError": "Unable to load categories.",
+      "table": {
+        "name": "Name",
+        "actions": "Actions"
+      },
+      "form": {
+        "title": "New category",
+        "description": "Add a category to your catalog.",
+        "name": "Name *",
+        "parent": "Parent category",
+        "noParent": "None (root)",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "success": "Category created successfully.",
+        "error": "Unable to create this category."
+      },
+      "delete": {
+        "confirm": "Delete this category?",
+        "success": "Category deleted.",
+        "error": "Unable to delete this category."
+      }
+    },
+    "brands": {
+      "newBrand": "New brand",
+      "empty": "No brands.",
+      "loadError": "Unable to load brands.",
+      "table": {
+        "name": "Name",
+        "country": "Country",
+        "actions": "Actions"
+      },
+      "form": {
+        "title": "New brand",
+        "description": "Add a brand to your catalog.",
+        "name": "Name *",
+        "country": "Country",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "success": "Brand created successfully.",
+        "error": "Unable to create this brand."
+      },
+      "delete": {
+        "confirm": "Delete this brand?",
+        "success": "Brand deleted.",
+        "error": "Unable to delete this brand — it is still used by products."
+      }
+    },
+    "units": {
+      "newUnit": "New unit",
+      "empty": "No units.",
+      "loadError": "Unable to load units.",
+      "baseUnit": "Base unit",
+      "table": {
+        "name": "Name",
+        "abbreviation": "Abbreviation",
+        "actions": "Actions"
+      },
+      "form": {
+        "title": "New unit",
+        "description": "Add a unit of measure to your catalog.",
+        "name": "Name *",
+        "abbreviation": "Abbreviation *",
+        "isBaseUnit": "Base unit",
+        "submit": "Create",
+        "submitting": "Creating...",
+        "success": "Unit created successfully.",
+        "error": "Unable to create this unit."
+      },
+      "delete": {
+        "confirm": "Delete this unit?",
+        "success": "Unit deleted.",
+        "error": "Unable to delete this unit — it is still used by products."
+      }
+    },
     "filter": {
       "allCategories": "All categories",
       "allBrands": "All brands",
