@@ -4,6 +4,27 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-09 — Phase 2 Chunk A: POS Core
+
+**Done (per [[PHASE2_POS_PLAN]] Chunk A):**
+- Schema: `Customer` (minimal — name/phone/type, full CRM fields deferred), `PosSession`, `PosCashMovement`, `Sale`, `SaleItem`, `SalePayment`, plus `Store.saleCounter` for gapless per-store sale numbering (`POS-000001`, incremented inside the same transaction as the sale so the UPDATE's row lock serializes concurrent cashiers — no separate sequence table needed). Migration hand-edited same as every prior one: stripped Prisma's auto-generated `DROP INDEX` on the hand-added trgm index and an unwanted touch of the `stock_levels.quantity_available` generated column, added Grants + RLS policies for the six new tables.
+- Services: `pos-sessions.ts` (open/close/cash-movement, `closeSession` computes `expectedCash` from opening float + cash sales + deposits − withdrawals), `sales.ts` (`completeSale` — resolves price/TVA/cost from the `Product` record server-side, never trusts client-supplied prices; calls the existing `recordStockMovement` per line with `SALE_OUT`, so an oversold line rolls the whole sale back), `customers.ts`. New error classes registered in `service-errors.ts`.
+- Routes: `/api/pos/sessions[/[id]/close, /cash-movements]`, `/api/pos/sales`, `/api/customers` — all on the existing `requirePermission` → Zod → `withTenant` → `apiSuccess`/`mapServiceError` skeleton. Seeded `pos:*`/`finance:*`/`customers:read` permissions from Phase 0 were finally wired up; added `customers:create` (missing from the original catalog) and granted it to `CASHIER`.
+- Frontend: new `(pos)` route group — deliberately outside `(dashboard)`, no sidebar, full-screen terminal per `ARCHITECTURE.md`'s mockup. Zustand cart store (first real use of that dependency), product search-as-you-type, cart panel with per-line/ticket discount (gated behind `pos:discount`), customer picker (search existing + quick-create), open/close session flows, single-method payment dialog, receipt dialog. Added `alert-dialog`/`card`/`separator` shadcn primitives (via the CLI — worked fine non-interactively, just took ~2 min for the registry fetch, don't mistake the wait for a hang). Wired the sidebar's long-unlinked "Point de vente" placeholder to `/pos`.
+- Verified live in a real browser (Playwright, installed ad hoc into the app container and removed again afterward — not a project dependency) against the Dockerized stack: open session → search product → add to cart → increment quantity → checkout (cash) → receipt → new sale clears cart → close session with correct expected-cash/difference math. All green.
+
+**Bugs found and fixed during verification:**
+- New route additions ((pos) route group) 404'd until the app container was restarted — same "Next dev doesn't always pick up new files under the bind mount" class of issue as Phase 1's stock.ts gotcha, just for new *routes* this time rather than an imported service file. Restart after adding new route segments, not just after backend edits.
+- `recordStockMovement` correctly rejected the first verification sale with `INSUFFICIENT_STOCK` — the demo tenant's products had never had any stock added (Phase 1 only ever exercised the adjustment UI manually, nothing persisted). Not a bug; seeded 50 units via a direct `PURCHASE_IN` movement to unblock verification. Worth seeding baseline stock for the demo tenants properly at some point so this doesn't surprise the next session too.
+- My own verification script, not the app: Playwright's `text=` selector doesn't match `placeholder` attributes, only rendered text nodes — cost a couple of false-negative debugging loops before switching to `input[placeholder*="..."]`.
+
+**Open items for later chunks:**
+- Only single-payment-method checkout (Cash/Card/Check/Transfer) — no split/mixed payment UI, no returns, no held sales, no X/Z reports. That's Chunk B.
+- Demo tenants have no baseline stock seeded — every fresh environment will hit `INSUFFICIENT_STOCK` on the first POS sale until something (adjustment UI or seed script) puts stock on the books.
+- Next up per [[PHASE2_POS_PLAN]] is Chunk B (Transaction Flow: returns, held sales, X/Z reports, sale history).
+
+---
+
 ## 2026-07-09 — Phase 1 UI: suppliers, products, inventory, catalog management
 
 **Done:**

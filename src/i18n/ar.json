@@ -330,6 +330,94 @@
       "editError": "تعذر تحديث هذا المنتج."
     }
   },
+  "pos": {
+    "title": "نقطة البيع",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "noStore": "حسابك غير مرتبط بأي متجر — اتصل بالمسؤول.",
+    "searchPlaceholder": "ابحث أو امسح منتجًا (الاسم، الباركود)...",
+    "searchEmpty": "لم يتم العثور على أي منتج.",
+    "cart": {
+      "title": "عملية البيع الحالية",
+      "empty": "السلة فارغة. ابحث عن منتج للبدء.",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "unitPrice": "سعر الوحدة",
+      "discount": "التخفيض",
+      "total": "المجموع",
+      "remove": "إزالة",
+      "subtotal": "المجموع الفرعي",
+      "ticketDiscount": "تخفيض (التذكرة)",
+      "tva": "الرسم على القيمة المضافة",
+      "grandTotal": "المجموع الإجمالي",
+      "customer": "الزبون",
+      "walkInCustomer": "زبون عابر",
+      "clear": "إلغاء البيع",
+      "clearConfirmTitle": "إلغاء هذه العملية؟",
+      "clearConfirmDescription": "سيتم إفراغ السلة. لا يمكن التراجع عن هذا الإجراء.",
+      "pay": "الدفع"
+    },
+    "session": {
+      "open": "فتح جلسة",
+      "openTitle": "فتح الصندوق",
+      "openDescription": "أدخل مبلغ بداية الصندوق لبدء البيع.",
+      "terminalName": "اسم الجهاز",
+      "openingCash": "مبلغ بداية الصندوق (دج)",
+      "openSubmit": "فتح",
+      "opening": "جارٍ الفتح...",
+      "openSuccess": "تم فتح الجلسة.",
+      "openError": "تعذر فتح الجلسة.",
+      "close": "إغلاق الجلسة",
+      "closeTitle": "إغلاق الصندوق",
+      "closeDescription": "قم بعد النقود في الصندوق وأدخل المبلغ المعدود.",
+      "closingCash": "المبلغ المعدود (دج)",
+      "closeSubmit": "إغلاق",
+      "closing": "جارٍ الإغلاق...",
+      "closeSuccess": "تم إغلاق الجلسة.",
+      "closeError": "تعذر إغلاق الجلسة.",
+      "expectedCash": "المتوقع",
+      "difference": "الفرق",
+      "loading": "جارٍ تحميل الجلسة...",
+      "cashierLabel": "الصراف",
+      "openedAt": "فُتحت في {time}"
+    },
+    "payment": {
+      "title": "الدفع",
+      "description": "اختر طريقة الدفع وأدخل المبلغ المستلم.",
+      "method": "طريقة الدفع",
+      "cash": "نقدًا",
+      "card": "بطاقة",
+      "check": "شيك",
+      "transfer": "تحويل",
+      "amountReceived": "المبلغ المستلم (دج)",
+      "changeDue": "الباقي",
+      "reference": "المرجع (اختياري)",
+      "submit": "تأكيد الدفع",
+      "submitting": "جارٍ التأكيد...",
+      "insufficientPayment": "المبلغ المستلم لا يغطي المجموع."
+    },
+    "receipt": {
+      "title": "تم تسجيل عملية البيع",
+      "saleNumber": "تذكرة رقم {number}",
+      "newSale": "عملية بيع جديدة",
+      "success": "تم تسجيل عملية البيع بنجاح."
+    },
+    "errors": {
+      "sessionClosed": "لا توجد جلسة صندوق مفتوحة.",
+      "sessionAlreadyOpen": "توجد جلسة مفتوحة بالفعل على هذا الجهاز.",
+      "generic": "حدث خطأ ما."
+    }
+  },
+  "customers": {
+    "newCustomer": "زبون جديد",
+    "form": {
+      "name": "الاسم *",
+      "phone": "الهاتف",
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء الزبون بنجاح.",
+      "error": "تعذر إنشاء هذا الزبون."
+    }
+  },
   "inventory": {
     "title": "المخزون",
     "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",

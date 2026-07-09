@@ -330,6 +330,94 @@
       "editError": "Unable to update this product."
     }
   },
+  "pos": {
+    "title": "Point of Sale",
+    "forbidden": "You don't have permission to access this page.",
+    "noStore": "Your account isn't assigned to a store — contact your administrator.",
+    "searchPlaceholder": "Search or scan a product (name, barcode)...",
+    "searchEmpty": "No products found.",
+    "cart": {
+      "title": "Current sale",
+      "empty": "The cart is empty. Search for a product to get started.",
+      "product": "Product",
+      "quantity": "Qty",
+      "unitPrice": "Unit price",
+      "discount": "Discount",
+      "total": "Total",
+      "remove": "Remove",
+      "subtotal": "Subtotal",
+      "ticketDiscount": "Discount (ticket)",
+      "tva": "VAT",
+      "grandTotal": "Total due",
+      "customer": "Customer",
+      "walkInCustomer": "Walk-in customer",
+      "clear": "Cancel sale",
+      "clearConfirmTitle": "Cancel this sale?",
+      "clearConfirmDescription": "The cart will be cleared. This cannot be undone.",
+      "pay": "Checkout"
+    },
+    "session": {
+      "open": "Open session",
+      "openTitle": "Open register",
+      "openDescription": "Enter the starting cash float to begin selling.",
+      "terminalName": "Terminal name",
+      "openingCash": "Starting cash (DA)",
+      "openSubmit": "Open",
+      "opening": "Opening...",
+      "openSuccess": "Session opened.",
+      "openError": "Unable to open the session.",
+      "close": "Close session",
+      "closeTitle": "Close register",
+      "closeDescription": "Count the cash drawer and enter the counted amount.",
+      "closingCash": "Counted amount (DA)",
+      "closeSubmit": "Close",
+      "closing": "Closing...",
+      "closeSuccess": "Session closed.",
+      "closeError": "Unable to close the session.",
+      "expectedCash": "Expected",
+      "difference": "Difference",
+      "loading": "Loading session...",
+      "cashierLabel": "Cashier",
+      "openedAt": "Opened at {time}"
+    },
+    "payment": {
+      "title": "Payment",
+      "description": "Select a payment method and enter the amount received.",
+      "method": "Payment method",
+      "cash": "Cash",
+      "card": "Card",
+      "check": "Check",
+      "transfer": "Transfer",
+      "amountReceived": "Amount received (DA)",
+      "changeDue": "Change due",
+      "reference": "Reference (optional)",
+      "submit": "Confirm payment",
+      "submitting": "Confirming...",
+      "insufficientPayment": "The amount received doesn't cover the total."
+    },
+    "receipt": {
+      "title": "Sale recorded",
+      "saleNumber": "Receipt #{number}",
+      "newSale": "New sale",
+      "success": "Sale recorded successfully."
+    },
+    "errors": {
+      "sessionClosed": "No open register session.",
+      "sessionAlreadyOpen": "A session is already open on this terminal.",
+      "generic": "Something went wrong."
+    }
+  },
+  "customers": {
+    "newCustomer": "New customer",
+    "form": {
+      "name": "Name *",
+      "phone": "Phone",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Customer created successfully.",
+      "error": "Unable to create this customer."
+    }
+  },
   "inventory": {
     "title": "Inventory",
     "forbidden": "You don't have permission to access this page.",

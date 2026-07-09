@@ -74,6 +74,12 @@ model Tenant {
   suppliers        Supplier[]
   supplierContacts SupplierContact[]
   supplierProducts SupplierProduct[]
+  customers        Customer[]
+  posSessions      PosSession[]
+  posCashMovements PosCashMovement[]
+  sales            Sale[]
+  saleItems        SaleItem[]
+  salePayments     SalePayment[]
 
   @@map("tenants")
 }
@@ -89,6 +95,11 @@ model Store {
   email     String?   @db.VarChar(255)
   isMain    Boolean   @default(false) @map("is_main")
   posPrefix String    @default("POS") @map("pos_prefix") @db.VarChar(5)
+  // Incremented (not read) inside the same withTenant transaction as sale
+  // creation — the UPDATE's row lock serializes concurrent cashiers on the
+  // same store, giving gapless per-store sale numbers without a separate
+  // sequence/counter table or raw SQL row-locking.
+  saleCounter Int     @default(0) @map("sale_counter")
   settings  Json      @default("{}")
   isActive  Boolean   @default(true) @map("is_active")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -100,6 +111,8 @@ model Store {
   userStores     UserStore[]
   stockMovements StockMovement[]
   stockLevels    StockLevel[]
+  posSessions    PosSession[]
+  sales          Sale[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -130,6 +143,9 @@ model User {
   productsCreated       Product[]       @relation("ProductCreatedBy")
   productsUpdated       Product[]       @relation("ProductUpdatedBy")
   stockMovementsCreated StockMovement[] @relation("StockMovementCreatedBy")
+  posSessionsAsCashier      PosSession[]      @relation("PosSessionCashier")
+  posCashMovementsCreated   PosCashMovement[] @relation("PosCashMovementCreatedBy")
+  salesAsCashier            Sale[]            @relation("SaleCashier")
 
   @@index([tenantId])
   @@map("users")
@@ -318,6 +334,7 @@ model Product {
   stockMovements   StockMovement[]
   stockLevels      StockLevel[]
   supplierProducts SupplierProduct[]
+  saleItems        SaleItem[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -499,4 +516,208 @@ model SupplierProduct {
 
   @@unique([tenantId, supplierId, productId])
   @@map("supplier_products")
+}
+
+// --- Phase 2 Chunk A: POS Core -------------------------------------------
+
+enum CustomerType {
+  walk_in
+  regular
+  vip
+  wholesale
+
+  @@map("customer_type_enum")
+}
+
+/// Minimal for Chunk A — just enough for a POS sale to reference "who this
+/// sale is for". Loyalty/debt/segmentation columns (DATABASE.md §10) are
+/// deferred to whichever later phase actually needs them.
+model Customer {
+  id           String       @id @default(uuid()) @db.Uuid
+  tenantId     String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name         String       @db.VarChar(500)
+  phone        String?      @db.VarChar(20)
+  customerType CustomerType @default(walk_in) @map("customer_type")
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  deletedAt    DateTime?    @map("deleted_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  sales  Sale[]
+
+  @@index([tenantId])
+  @@map("customers")
+}
+
+enum PosSessionStatus {
+  open
+  closed
+
+  @@map("pos_session_status_enum")
+}
+
+/// Cashier shift. A Sale can only be completed while its terminal has an
+/// open PosSession (enforced in the sales service, not the DB) — see
+/// SessionClosedError in src/server/services/pos-sessions.ts.
+model PosSession {
+  id             String           @id @default(uuid()) @db.Uuid
+  tenantId       String           @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId        String           @map("store_id") @db.Uuid
+  cashierId      String           @map("cashier_id") @db.Uuid
+  terminalName   String           @map("terminal_name") @db.VarChar(50)
+  openedAt       DateTime         @default(now()) @map("opened_at")
+  closedAt       DateTime?        @map("closed_at")
+  openingCash    Int              @map("opening_cash")
+  closingCash    Int?             @map("closing_cash")
+  expectedCash   Int?             @map("expected_cash")
+  cashDifference Int?             @map("cash_difference")
+  totalSales     Int              @default(0) @map("total_sales")
+  totalRefunds   Int              @default(0) @map("total_refunds")
+  status         PosSessionStatus @default(open)
+
+  tenant        Tenant            @relation(fields: [tenantId], references: [id])
+  store         Store             @relation(fields: [storeId], references: [id])
+  cashier       User              @relation("PosSessionCashier", fields: [cashierId], references: [id])
+  cashMovements PosCashMovement[]
+  sales         Sale[]
+
+  @@index([tenantId])
+  @@index([storeId])
+  @@index([cashierId])
+  @@map("pos_sessions")
+}
+
+enum CashMovementType {
+  OPENING
+  CLOSING
+  WITHDRAWAL
+  DEPOSIT
+  ADJUSTMENT
+
+  @@map("cash_movement_type_enum")
+}
+
+model PosCashMovement {
+  id           String            @id @default(uuid()) @db.Uuid
+  tenantId     String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  sessionId    String            @map("session_id") @db.Uuid
+  movementType CashMovementType  @map("movement_type")
+  amount       Int
+  reason       String?
+  createdBy    String            @map("created_by") @db.Uuid
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  tenant        Tenant     @relation(fields: [tenantId], references: [id])
+  session       PosSession @relation(fields: [sessionId], references: [id])
+  createdByUser User       @relation("PosCashMovementCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([sessionId])
+  @@map("pos_cash_movements")
+}
+
+enum SaleStatus {
+  completed
+  voided
+  held
+
+  @@map("sale_status_enum")
+}
+
+model Sale {
+  id             String     @id @default(uuid()) @db.Uuid
+  tenantId       String     @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId        String     @map("store_id") @db.Uuid
+  saleNumber     String     @map("sale_number") @db.VarChar(50)
+  posSessionId   String?    @map("pos_session_id") @db.Uuid
+  customerId     String?    @map("customer_id") @db.Uuid
+  cashierId      String     @map("cashier_id") @db.Uuid
+  subtotal       Int
+  discountAmount Int        @default(0) @map("discount_amount")
+  tvaAmount      Int        @map("tva_amount")
+  // Only populated once Chunk C (invoicing) exists — every Chunk A/B sale
+  // is a plain receipt, not a DÉCRET 05-468 facture.
+  taxStampAmount Int        @default(0) @map("tax_stamp_amount")
+  total          Int
+  totalPaid      Int        @map("total_paid")
+  changeDue      Int        @default(0) @map("change_due")
+  status         SaleStatus @default(completed)
+  isOffline      Boolean    @default(false) @map("is_offline")
+  syncedAt       DateTime?  @map("synced_at")
+  notes          String?
+  createdAt      DateTime   @default(now()) @map("created_at")
+  updatedAt      DateTime   @updatedAt @map("updated_at")
+  deletedAt      DateTime?  @map("deleted_at")
+
+  tenant     Tenant        @relation(fields: [tenantId], references: [id])
+  store      Store         @relation(fields: [storeId], references: [id])
+  posSession PosSession?   @relation(fields: [posSessionId], references: [id])
+  customer   Customer?     @relation(fields: [customerId], references: [id])
+  cashier    User          @relation("SaleCashier", fields: [cashierId], references: [id])
+  items      SaleItem[]
+  payments   SalePayment[]
+
+  @@unique([tenantId, storeId, saleNumber])
+  @@index([tenantId])
+  @@index([storeId])
+  @@index([cashierId])
+  @@index([createdAt])
+  @@map("sales")
+}
+
+model SaleItem {
+  id             String  @id @default(uuid()) @db.Uuid
+  tenantId       String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  saleId         String  @map("sale_id") @db.Uuid
+  productId      String  @map("product_id") @db.Uuid
+  productName    String  @map("product_name") @db.VarChar(500)
+  productBarcode String? @map("product_barcode") @db.VarChar(20)
+  quantity       Int
+  unitPrice      Int     @map("unit_price")
+  costPrice      Int?    @map("cost_price")
+  tvaRate        Int     @map("tva_rate") @db.SmallInt
+  discountAmount Int     @default(0) @map("discount_amount")
+  subtotal       Int
+  tvaAmount      Int     @map("tva_amount")
+  total          Int
+  // No FK — product_batches doesn't exist until Phase 3, always null for now
+  // (same as StockMovement.batchId).
+  batchId String? @map("batch_id") @db.Uuid
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  sale    Sale    @relation(fields: [saleId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([saleId])
+  @@index([productId])
+  @@map("sale_items")
+}
+
+enum PaymentMethodType {
+  CASH
+  CARD
+  CHECK
+  TRANSFER
+  MIXED
+
+  @@map("payment_method_enum")
+}
+
+model SalePayment {
+  id            String            @id @default(uuid()) @db.Uuid
+  tenantId      String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  saleId        String            @map("sale_id") @db.Uuid
+  paymentMethod PaymentMethodType @map("payment_method")
+  amount        Int
+  reference     String?           @db.VarChar(100)
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  sale   Sale   @relation(fields: [saleId], references: [id])
+
+  @@index([tenantId])
+  @@index([saleId])
+  @@map("sale_payments")
 }

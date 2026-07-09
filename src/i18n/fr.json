@@ -330,6 +330,94 @@
       "editError": "Impossible de mettre à jour ce produit."
     }
   },
+  "pos": {
+    "title": "Point de vente",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "noStore": "Votre compte n'est associé à aucun magasin — contactez votre administrateur.",
+    "searchPlaceholder": "Rechercher ou scanner un produit (nom, code-barres)...",
+    "searchEmpty": "Aucun produit trouvé.",
+    "cart": {
+      "title": "Vente en cours",
+      "empty": "Le panier est vide. Recherchez un produit pour commencer.",
+      "product": "Produit",
+      "quantity": "Qté",
+      "unitPrice": "P.U.",
+      "discount": "Remise",
+      "total": "Total",
+      "remove": "Retirer",
+      "subtotal": "Sous-total",
+      "ticketDiscount": "Remise (ticket)",
+      "tva": "TVA",
+      "grandTotal": "Total TTC",
+      "customer": "Client",
+      "walkInCustomer": "Client de passage",
+      "clear": "Annuler la vente",
+      "clearConfirmTitle": "Annuler cette vente ?",
+      "clearConfirmDescription": "Le panier sera vidé. Cette action est irréversible.",
+      "pay": "Encaisser"
+    },
+    "session": {
+      "open": "Ouvrir une session",
+      "openTitle": "Ouverture de caisse",
+      "openDescription": "Saisissez le fond de caisse pour commencer à vendre.",
+      "terminalName": "Nom du terminal",
+      "openingCash": "Fond de caisse (DA)",
+      "openSubmit": "Ouvrir",
+      "opening": "Ouverture...",
+      "openSuccess": "Session ouverte.",
+      "openError": "Impossible d'ouvrir la session.",
+      "close": "Fermer la session",
+      "closeTitle": "Fermeture de caisse",
+      "closeDescription": "Comptez le tiroir-caisse et saisissez le montant compté.",
+      "closingCash": "Montant compté (DA)",
+      "closeSubmit": "Fermer",
+      "closing": "Fermeture...",
+      "closeSuccess": "Session fermée.",
+      "closeError": "Impossible de fermer la session.",
+      "expectedCash": "Attendu",
+      "difference": "Écart",
+      "loading": "Chargement de la session...",
+      "cashierLabel": "Caissier",
+      "openedAt": "Ouverte à {time}"
+    },
+    "payment": {
+      "title": "Paiement",
+      "description": "Sélectionnez un mode de paiement et saisissez le montant reçu.",
+      "method": "Mode de paiement",
+      "cash": "Espèces",
+      "card": "Carte",
+      "check": "Chèque",
+      "transfer": "Virement",
+      "amountReceived": "Montant reçu (DA)",
+      "changeDue": "Monnaie à rendre",
+      "reference": "Référence (optionnel)",
+      "submit": "Valider le paiement",
+      "submitting": "Validation...",
+      "insufficientPayment": "Le montant reçu ne couvre pas le total."
+    },
+    "receipt": {
+      "title": "Vente enregistrée",
+      "saleNumber": "Ticket n° {number}",
+      "newSale": "Nouvelle vente",
+      "success": "Vente enregistrée avec succès."
+    },
+    "errors": {
+      "sessionClosed": "Aucune session de caisse ouverte.",
+      "sessionAlreadyOpen": "Une session est déjà ouverte sur ce terminal.",
+      "generic": "Une erreur est survenue."
+    }
+  },
+  "customers": {
+    "newCustomer": "Nouveau client",
+    "form": {
+      "name": "Nom *",
+      "phone": "Téléphone",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Client créé avec succès.",
+      "error": "Impossible de créer ce client."
+    }
+  },
   "inventory": {
     "title": "Inventaire",
     "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",

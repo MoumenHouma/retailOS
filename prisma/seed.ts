@@ -21,7 +21,7 @@ const PERMISSION_CATALOG: Record<
   pos: ["pos:operate", "pos:refund", "pos:discount", "pos:open_drawer"],
   purchases: ["purchases:read", "purchases:create", "purchases:approve"],
   suppliers: ["suppliers:read", "suppliers:create", "suppliers:update", "suppliers:delete"],
-  customers: ["customers:read"],
+  customers: ["customers:read", "customers:create"],
   finance: ["finance:read", "finance:invoice", "finance:report"],
   employees: ["employees:read", "employees:manage"],
   reports: ["reports:view", "reports:export"],
@@ -36,7 +36,7 @@ const ALL_PERMISSIONS = Object.values(PERMISSION_CATALOG).flat();
 const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
   BUSINESS_OWNER: ALL_PERMISSIONS,
   STORE_MANAGER: ALL_PERMISSIONS.filter((p) => p !== "employees:manage"),
-  CASHIER: [...PERMISSION_CATALOG.pos, "products:read", "customers:read"],
+  CASHIER: [...PERMISSION_CATALOG.pos, "products:read", "customers:read", "customers:create"],
   INVENTORY_CLERK: [...PERMISSION_CATALOG.inventory, "products:read", "suppliers:read"],
   ACCOUNTANT: [
     ...PERMISSION_CATALOG.finance,

@@ -5,6 +5,12 @@ import { InUseError } from "@/server/services/brands";
 import { InvalidReferenceError } from "@/server/services/products";
 import { DuplicateBarcodeError, BarcodeInUseError } from "@/server/services/barcodes";
 import { InsufficientStockError } from "@/server/services/stock";
+import {
+  SessionAlreadyOpenError,
+  SessionClosedError,
+  SessionNotFoundError,
+} from "@/server/services/pos-sessions";
+import { EmptySaleError, PaymentMismatchError } from "@/server/services/sales";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -25,6 +31,18 @@ export function mapServiceError(error: unknown) {
   }
   if (error instanceof InsufficientStockError) {
     return apiError("INSUFFICIENT_STOCK", error.message, 409);
+  }
+  if (error instanceof SessionAlreadyOpenError) {
+    return apiError("SESSION_ALREADY_OPEN", error.message, 409);
+  }
+  if (error instanceof SessionClosedError) {
+    return apiError("SESSION_CLOSED", error.message, 409);
+  }
+  if (error instanceof SessionNotFoundError) {
+    return apiError("NOT_FOUND", error.message, 404);
+  }
+  if (error instanceof EmptySaleError || error instanceof PaymentMismatchError) {
+    return apiError("VALIDATION", error.message, 422);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);
