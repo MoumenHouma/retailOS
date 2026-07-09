@@ -24,7 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProductFormDialog } from "@/components/products/product-form-dialog";
+import { ProductFormDialog, type ProductEditData } from "@/components/products/product-form-dialog";
 import { CategoriesTab } from "@/components/products/categories-tab";
 import { BrandsTab } from "@/components/products/brands-tab";
 import { UnitsTab } from "@/components/products/units-tab";
@@ -36,11 +36,30 @@ interface Product {
   name: string;
   sku: string | null;
   barcode: string | null;
+  costPrice: number | null;
   sellingPrice: number;
+  tvaRate: number;
+  minStockLevel: number;
   isActive: boolean;
   category: { id: string; name: string } | null;
   brand: { id: string; name: string } | null;
   unit: { id: string; name: string; abbreviation: string };
+}
+
+function toEditData(product: Product): ProductEditData {
+  return {
+    id: product.id,
+    name: product.name,
+    sku: product.sku,
+    barcode: product.barcode,
+    unitId: product.unit.id,
+    categoryId: product.category?.id ?? null,
+    brandId: product.brand?.id ?? null,
+    costPrice: product.costPrice,
+    sellingPrice: product.sellingPrice,
+    tvaRate: product.tvaRate,
+    minStockLevel: product.minStockLevel,
+  };
 }
 
 interface ProductsResponse {
@@ -166,7 +185,7 @@ export function ProductsView() {
                 units={unitsQuery.data.data}
                 categories={flatCategories}
                 brands={brandsQuery.data?.data ?? []}
-                onCreated={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
+                onSaved={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
               />
             ) : (
               <Button disabled>{t("newProduct")}</Button>
@@ -305,6 +324,15 @@ export function ProductsView() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
+                      {unitsQuery.data && (
+                        <ProductFormDialog
+                          units={unitsQuery.data.data}
+                          categories={flatCategories}
+                          brands={brandsQuery.data?.data ?? []}
+                          product={toEditData(product)}
+                          onSaved={() => queryClient.invalidateQueries({ queryKey: ["products"] })}
+                        />
+                      )}
                       <Button
                         variant="ghost"
                         size="icon"

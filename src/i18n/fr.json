@@ -85,7 +85,13 @@
       "submit": "Créer",
       "submitting": "Création...",
       "success": "Fournisseur créé avec succès.",
-      "error": "Impossible de créer ce fournisseur."
+      "error": "Impossible de créer ce fournisseur.",
+      "editTitle": "Modifier le fournisseur",
+      "editDescription": "Modifiez les informations de ce fournisseur.",
+      "editSubmit": "Enregistrer",
+      "editSubmitting": "Enregistrement...",
+      "editSuccess": "Fournisseur mis à jour avec succès.",
+      "editError": "Impossible de mettre à jour ce fournisseur."
     }
   },
   "products": {
@@ -237,7 +243,13 @@
       "submit": "Créer",
       "submitting": "Création...",
       "success": "Produit créé avec succès.",
-      "error": "Impossible de créer ce produit."
+      "error": "Impossible de créer ce produit.",
+      "editTitle": "Modifier le produit",
+      "editDescription": "Modifiez les informations de ce produit.",
+      "editSubmit": "Enregistrer",
+      "editSubmitting": "Enregistrement...",
+      "editSuccess": "Produit mis à jour avec succès.",
+      "editError": "Impossible de mettre à jour ce produit."
     }
   },
   "inventory": {

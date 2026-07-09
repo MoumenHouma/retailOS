@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -33,7 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { daToCentimes } from "@/lib/currency";
+import { centimesToDa, daToCentimes } from "@/lib/currency";
 import type { FlatCategory } from "@/lib/categories";
 
 interface UnitOption {
@@ -45,6 +45,20 @@ interface UnitOption {
 interface BrandOption {
   id: string;
   name: string;
+}
+
+export interface ProductEditData {
+  id: string;
+  name: string;
+  sku: string | null;
+  barcode: string | null;
+  unitId: string;
+  categoryId: string | null;
+  brandId: string | null;
+  costPrice: number | null;
+  sellingPrice: number;
+  tvaRate: number;
+  minStockLevel: number;
 }
 
 const NONE = "__none__";
@@ -68,31 +82,47 @@ export function ProductFormDialog({
   units,
   categories,
   brands,
-  onCreated,
+  onSaved,
+  product,
 }: {
   units: UnitOption[];
   categories: FlatCategory[];
   brands: BrandOption[];
-  onCreated: () => void;
+  onSaved: () => void;
+  product?: ProductEditData;
 }) {
   const t = useTranslations("products.form");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
+  const isEdit = !!product;
 
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
-    defaultValues: {
-      name: "",
-      sku: "",
-      barcode: "",
-      unitId: units[0]?.id ?? "",
-      categoryId: NONE,
-      brandId: NONE,
-      costPrice: "",
-      sellingPrice: 0,
-      tvaRate: "19",
-      minStockLevel: 0,
-    },
+    defaultValues: product
+      ? {
+          name: product.name,
+          sku: product.sku ?? "",
+          barcode: product.barcode ?? "",
+          unitId: product.unitId,
+          categoryId: product.categoryId ?? NONE,
+          brandId: product.brandId ?? NONE,
+          costPrice: product.costPrice != null ? String(centimesToDa(product.costPrice)) : "",
+          sellingPrice: centimesToDa(product.sellingPrice),
+          tvaRate: String(product.tvaRate) as "0" | "9" | "19",
+          minStockLevel: product.minStockLevel,
+        }
+      : {
+          name: "",
+          sku: "",
+          barcode: "",
+          unitId: units[0]?.id ?? "",
+          categoryId: NONE,
+          brandId: NONE,
+          costPrice: "",
+          sellingPrice: 0,
+          tvaRate: "19",
+          minStockLevel: 0,
+        },
   });
 
   async function onSubmit(values: ProductFormValues) {
@@ -109,36 +139,42 @@ export function ProductFormDialog({
       minStockLevel: values.minStockLevel,
     };
 
-    const response = await fetch("/api/products", {
-      method: "POST",
+    const response = await fetch(isEdit ? `/api/products/${product.id}` : "/api/products", {
+      method: isEdit ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      toast.error(t("error"));
+      toast.error(isEdit ? t("editError") : t("error"));
       return;
     }
 
-    toast.success(t("success"));
-    form.reset();
+    toast.success(isEdit ? t("editSuccess") : t("success"));
+    if (!isEdit) form.reset();
     setOpen(false);
-    onCreated();
+    onSaved();
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button disabled={units.length === 0}>
-          <Plus />
-          {t("title")}
-        </Button>
+        {isEdit ? (
+          <Button variant="ghost" size="icon" aria-label={t("editTitle")}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button disabled={units.length === 0}>
+            <Plus />
+            {t("title")}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
+          <DialogTitle>{isEdit ? t("editTitle") : t("title")}</DialogTitle>
           <DialogDescription>
-            {units.length === 0 ? t("noUnit") : t("description")}
+            {units.length === 0 ? t("noUnit") : isEdit ? t("editDescription") : t("description")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -327,7 +363,13 @@ export function ProductFormDialog({
                 {tCommon("cancel")}
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? t("submitting") : t("submit")}
+                {form.formState.isSubmitting
+                  ? isEdit
+                    ? t("editSubmitting")
+                    : t("submitting")
+                  : isEdit
+                    ? t("editSubmit")
+                    : t("submit")}
               </Button>
             </DialogFooter>
           </form>

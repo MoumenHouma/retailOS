@@ -23,16 +23,31 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { SupplierFormDialog } from "@/components/suppliers/supplier-form-dialog";
+import { SupplierFormDialog, type SupplierEditData } from "@/components/suppliers/supplier-form-dialog";
 
 interface Supplier {
   id: string;
   name: string;
+  email: string | null;
   city: string | null;
   wilaya: string | null;
   phone: string | null;
   leadTimeDays: number;
+  notes: string | null;
   isActive: boolean;
+}
+
+function toEditData(supplier: Supplier): SupplierEditData {
+  return {
+    id: supplier.id,
+    name: supplier.name,
+    phone: supplier.phone,
+    email: supplier.email,
+    city: supplier.city,
+    wilaya: supplier.wilaya,
+    leadTimeDays: supplier.leadTimeDays,
+    notes: supplier.notes,
+  };
 }
 
 interface SuppliersResponse {
@@ -109,7 +124,7 @@ export function SuppliersView() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">{t("title")}</h1>
         <SupplierFormDialog
-          onCreated={() => queryClient.invalidateQueries({ queryKey: ["suppliers"] })}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["suppliers"] })}
         />
       </div>
 
@@ -202,6 +217,10 @@ export function SuppliersView() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
+                  <SupplierFormDialog
+                    supplier={toEditData(supplier)}
+                    onSaved={() => queryClient.invalidateQueries({ queryKey: ["suppliers"] })}
+                  />
                   <Button
                     variant="ghost"
                     size="icon"

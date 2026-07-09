@@ -85,7 +85,13 @@
       "submit": "Create",
       "submitting": "Creating...",
       "success": "Supplier created successfully.",
-      "error": "Unable to create this supplier."
+      "error": "Unable to create this supplier.",
+      "editTitle": "Edit supplier",
+      "editDescription": "Update this supplier's information.",
+      "editSubmit": "Save",
+      "editSubmitting": "Saving...",
+      "editSuccess": "Supplier updated successfully.",
+      "editError": "Unable to update this supplier."
     }
   },
   "products": {
@@ -237,7 +243,13 @@
       "submit": "Create",
       "submitting": "Creating...",
       "success": "Product created successfully.",
-      "error": "Unable to create this product."
+      "error": "Unable to create this product.",
+      "editTitle": "Edit product",
+      "editDescription": "Update this product's information.",
+      "editSubmit": "Save",
+      "editSubmitting": "Saving...",
+      "editSuccess": "Product updated successfully.",
+      "editError": "Unable to update this product."
     }
   },
   "inventory": {

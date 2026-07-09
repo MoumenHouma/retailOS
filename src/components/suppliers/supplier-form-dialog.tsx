@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Plus } from "lucide-react";
+import { Plus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 
+export interface SupplierEditData {
+  id: string;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  city: string | null;
+  wilaya: string | null;
+  leadTimeDays: number;
+  notes: string | null;
+}
+
 const supplierFormSchema = z.object({
   name: z.string().min(1),
   phone: z.string().optional(),
@@ -40,22 +51,39 @@ const supplierFormSchema = z.object({
 
 type SupplierFormValues = z.infer<typeof supplierFormSchema>;
 
-export function SupplierFormDialog({ onCreated }: { onCreated: () => void }) {
+export function SupplierFormDialog({
+  onSaved,
+  supplier,
+}: {
+  onSaved: () => void;
+  supplier?: SupplierEditData;
+}) {
   const t = useTranslations("suppliers.form");
   const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
+  const isEdit = !!supplier;
 
   const form = useForm<SupplierFormValues>({
     resolver: zodResolver(supplierFormSchema),
-    defaultValues: {
-      name: "",
-      phone: "",
-      email: "",
-      city: "",
-      wilaya: "",
-      leadTimeDays: 3,
-      notes: "",
-    },
+    defaultValues: supplier
+      ? {
+          name: supplier.name,
+          phone: supplier.phone ?? "",
+          email: supplier.email ?? "",
+          city: supplier.city ?? "",
+          wilaya: supplier.wilaya ?? "",
+          leadTimeDays: supplier.leadTimeDays,
+          notes: supplier.notes ?? "",
+        }
+      : {
+          name: "",
+          phone: "",
+          email: "",
+          city: "",
+          wilaya: "",
+          leadTimeDays: 3,
+          notes: "",
+        },
   });
 
   async function onSubmit(values: SupplierFormValues) {
@@ -69,35 +97,41 @@ export function SupplierFormDialog({ onCreated }: { onCreated: () => void }) {
       notes: values.notes || undefined,
     };
 
-    const response = await fetch("/api/suppliers", {
-      method: "POST",
+    const response = await fetch(isEdit ? `/api/suppliers/${supplier.id}` : "/api/suppliers", {
+      method: isEdit ? "PATCH" : "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
-      toast.error(t("error"));
+      toast.error(isEdit ? t("editError") : t("error"));
       return;
     }
 
-    toast.success(t("success"));
-    form.reset();
+    toast.success(isEdit ? t("editSuccess") : t("success"));
+    if (!isEdit) form.reset();
     setOpen(false);
-    onCreated();
+    onSaved();
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus />
-          {t("title")}
-        </Button>
+        {isEdit ? (
+          <Button variant="ghost" size="icon" aria-label={t("editTitle")}>
+            <Pencil className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button>
+            <Plus />
+            {t("title")}
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{t("title")}</DialogTitle>
-          <DialogDescription>{t("description")}</DialogDescription>
+          <DialogTitle>{isEdit ? t("editTitle") : t("title")}</DialogTitle>
+          <DialogDescription>{isEdit ? t("editDescription") : t("description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -199,7 +233,13 @@ export function SupplierFormDialog({ onCreated }: { onCreated: () => void }) {
                 {tCommon("cancel")}
               </Button>
               <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? t("submitting") : t("submit")}
+                {form.formState.isSubmitting
+                  ? isEdit
+                    ? t("editSubmitting")
+                    : t("submitting")
+                  : isEdit
+                    ? t("editSubmit")
+                    : t("submit")}
               </Button>
             </DialogFooter>
           </form>
