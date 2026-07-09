@@ -4,6 +4,29 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-09 — Phase 2 Chunk C: Invoicing (DÉCRET 05-468)
+
+**Done (per [[PHASE2_POS_PLAN]] Chunk C), continuing directly from Chunks A/B the same day:**
+- Schema: `Invoice`, `InvoiceItem`, `InvoiceSequence` (+ `InvoiceStatus` enum). `InvoiceSequence` is a dedicated per-tenant table (not a reuse of `Store.saleCounter`) since invoice numbering is tenant-wide, not per-store, and resets on calendar-year rollover.
+- `invoices.ts`: gapless `YYYY-NNNNN` numbering via `SELECT ... FOR UPDATE` on the sequence row (parameterized `$queryRaw`/`$executeRaw` tagged templates, not the `Unsafe` variants — same "hand-append what Prisma can't express" pattern as RLS/triggers elsewhere, but done safely this time). TVA grouped into a `tvaDetails` JSON bucket per rate; tax stamp = `max(100 DA, round(TTC × 1%))`; DÉCRET 05-468 mandatory fields (NIF/NIS/RC/AI from the `Tenant` record, TVA breakdown, amount in words) all populated.
+- `src/lib/number-to-french-words.ts`: hand-rolled French number-to-words (no suitable npm package) — verified against the exact ARCHITECTURE.md spec example (9 702,50 DA → "Neuf mille sept cent deux dinars et cinquante centimes.") and spot-checked the irregular cases (quatre-vingts, soixante-dix, cent vs cents, mille not "un mille").
+- `src/server/services/invoice-pdf.tsx`: `@react-pdf/renderer` document matching the ARCHITECTURE.md §4.7 mockup structurally (header, seller/buyer blocks, line-item table, totals, amount in words, payment terms). Chosen over Puppeteer specifically to avoid another headless-browser dependency in a Docker setup that's already hit enough container-flakiness gotchas.
+- `src/lib/storage.ts`: MinIO client (`minio` package) — bucket already provisioned by the `minio-init` compose service since Phase 0, previously unused. PDFs stored at `invoices/{tenantId}/{invoiceNumber}.pdf`, served back through `/api/invoices/[id]/pdf` (the app proxies/streams it — no direct public bucket access).
+- Frontend: "Générer facture" action on sale-history rows (becomes "Voir la facture" once one exists), new Invoices list page (`/invoices`, sidebar "Finances" now links here).
+
+**Bugs found and fixed during verification (both real, both worth remembering):**
+1. **PDF thousands-separator glyph.** `formatDa()`'s `toLocaleString("fr-FR", ...)` uses a narrow no-break space (U+202F) as the thousands separator — fine in a browser (full Unicode font fallback), but react-pdf's base Helvetica font (WinAnsiEncoding, no fallback) has no glyph for it and silently rendered `/` instead: "1 200,00" came out as "1/200,00" on every amount in the PDF. Fixed with a PDF-local `formatDa` wrapper that swaps U+00A0/U+202F for a plain space (built via `String.fromCharCode`, not a literal, to avoid the exact same invisible-character ambiguity biting the fix itself — it did, mid-session, and cost a few edit-tool round-trips before switching to `fromCharCode`). Web UI keeps the nicer non-breaking version.
+2. **PDF generation inside the DB transaction.** The original `generateInvoice` rendered the PDF and uploaded it to MinIO *inside* the `withTenant` transaction. Both are slow, latency-variable operations (first-ever PDF render pays font-loading/JIT cost; MinIO upload is network I/O) that have no business holding a Postgres transaction open — it blew Prisma's default 5s interactive-transaction timeout (`Transaction already closed... 7230 ms passed`) on the very first real invoice generation. Fixed by splitting into `createInvoiceRecord` (fast, DB-only, returns the row + PDF data) → render + upload happen outside any transaction → `attachInvoicePdf` (a second, fast transaction just to set `pdfUrl`). General lesson: never do slow external I/O inside a Prisma interactive transaction, no matter how convenient "just do it all in one function" looks.
+
+Also re-confirmed the now-familiar "editing a file imported by a route doesn't always get picked up without a container restart" gotcha — this time for `invoice-pdf.tsx`, imported by the service, imported by the route.
+
+**Open items for later chunks:**
+- Invoices are always generated as `issued` immediately — no `draft` review step, no payment-status tracking (`paid`/`partially_paid`/`overdue`) even though the schema supports it.
+- Walk-in (no `Customer` record) sales invoice with `customerNif: null` — DÉCRET 05-468 compliance for fully anonymous cash sales is a known real-world gap, not addressed here.
+- Next up per [[PHASE2_POS_PLAN]] is Chunk D (offline sync, Dexie.js/IndexedDB) — the roadmap's own highest-risk item.
+
+---
+
 ## 2026-07-09 — Phase 2 Chunk B: Transaction Flow
 
 **Done (per [[PHASE2_POS_PLAN]] Chunk B), continuing directly from Chunk A the same day:**

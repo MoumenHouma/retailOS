@@ -470,6 +470,33 @@
       "previous": "السابق",
       "next": "التالي",
       "total": "{count} عملية بيع"
+    },
+    "invoice": {
+      "generate": "إنشاء فاتورة",
+      "generating": "جارٍ الإنشاء...",
+      "view": "عرض الفاتورة",
+      "success": "تم إنشاء الفاتورة بنجاح.",
+      "error": "تعذر إنشاء هذه الفاتورة."
+    }
+  },
+  "invoices": {
+    "title": "الفواتير",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لم يتم إنشاء أي فاتورة.",
+    "loadError": "تعذر تحميل الفواتير.",
+    "table": {
+      "number": "رقم الفاتورة",
+      "date": "التاريخ",
+      "customer": "الزبون",
+      "netToPay": "صافي المستحق",
+      "actions": "الإجراءات",
+      "view": "عرض PDF"
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} فاتورة"
     }
   },
   "inventory": {

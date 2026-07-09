@@ -470,6 +470,33 @@
       "previous": "Précédent",
       "next": "Suivant",
       "total": "{count} vente(s)"
+    },
+    "invoice": {
+      "generate": "Générer facture",
+      "generating": "Génération...",
+      "view": "Voir la facture",
+      "success": "Facture générée avec succès.",
+      "error": "Impossible de générer cette facture."
+    }
+  },
+  "invoices": {
+    "title": "Factures",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucune facture générée.",
+    "loadError": "Impossible de charger les factures.",
+    "table": {
+      "number": "N° de facture",
+      "date": "Date",
+      "customer": "Client",
+      "netToPay": "Net à payer",
+      "actions": "Actions",
+      "view": "Voir le PDF"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} facture(s)"
     }
   },
   "inventory": {

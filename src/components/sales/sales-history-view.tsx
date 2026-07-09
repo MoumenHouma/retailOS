@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
 import { ReturnDialog } from "@/components/pos/return-dialog";
+import { InvoiceAction } from "@/components/sales/invoice-action";
 
 interface SaleRow {
   id: string;
@@ -25,6 +26,7 @@ interface SaleRow {
   createdAt: string;
   customer: { name: string } | null;
   items: { id: string }[];
+  invoices: { id: string }[];
 }
 
 interface SalesResponse {
@@ -46,6 +48,7 @@ export function SalesHistoryView() {
   const t = useTranslations("sales");
   const { data: authSession } = useSession();
   const canRefund = authSession?.user.permissions.includes("pos:refund") ?? false;
+  const canInvoice = authSession?.user.permissions.includes("finance:invoice") ?? false;
   const queryClient = useQueryClient();
 
   const [search, setSearch] = useState("");
@@ -120,6 +123,9 @@ export function SalesHistoryView() {
                 <TableCell className="text-right">{sale.items.length}</TableCell>
                 <TableCell className="text-right tabular-nums">{formatDa(sale.total)}</TableCell>
                 <TableCell className="text-right">
+                  {canInvoice && (
+                    <InvoiceAction saleId={sale.id} invoiceId={sale.invoices[0]?.id ?? null} />
+                  )}
                   {canRefund && (
                     <ReturnDialog
                       saleId={sale.id}

@@ -470,6 +470,33 @@
       "previous": "Previous",
       "next": "Next",
       "total": "{count} sale(s)"
+    },
+    "invoice": {
+      "generate": "Generate invoice",
+      "generating": "Generating...",
+      "view": "View invoice",
+      "success": "Invoice generated successfully.",
+      "error": "Unable to generate this invoice."
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No invoices generated.",
+    "loadError": "Unable to load invoices.",
+    "table": {
+      "number": "Invoice #",
+      "date": "Date",
+      "customer": "Customer",
+      "netToPay": "Net to pay",
+      "actions": "Actions",
+      "view": "View PDF"
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} invoice(s)"
     }
   },
   "inventory": {

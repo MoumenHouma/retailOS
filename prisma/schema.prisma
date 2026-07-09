@@ -82,6 +82,9 @@ model Tenant {
   salePayments     SalePayment[]
   saleReturns      SaleReturn[]
   saleReturnItems  SaleReturnItem[]
+  invoiceSequence  InvoiceSequence?
+  invoices         Invoice[]
+  invoiceItems     InvoiceItem[]
 
   @@map("tenants")
 }
@@ -150,6 +153,7 @@ model User {
   posCashMovementsCreated   PosCashMovement[] @relation("PosCashMovementCreatedBy")
   salesAsCashier            Sale[]            @relation("SaleCashier")
   saleReturnsCreated        SaleReturn[]      @relation("SaleReturnCreatedBy")
+  invoicesCreated           Invoice[]         @relation("InvoiceCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -340,6 +344,7 @@ model Product {
   supplierProducts SupplierProduct[]
   saleItems        SaleItem[]
   saleReturnItems  SaleReturnItem[]
+  invoiceItems     InvoiceItem[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -548,8 +553,9 @@ model Customer {
   updatedAt    DateTime     @updatedAt @map("updated_at")
   deletedAt    DateTime?    @map("deleted_at")
 
-  tenant Tenant @relation(fields: [tenantId], references: [id])
-  sales  Sale[]
+  tenant   Tenant    @relation(fields: [tenantId], references: [id])
+  sales    Sale[]
+  invoices Invoice[]
 
   @@index([tenantId])
   @@map("customers")
@@ -663,6 +669,7 @@ model Sale {
   items      SaleItem[]
   payments   SalePayment[]
   returns    SaleReturn[]
+  invoices   Invoice[]
 
   @@unique([tenantId, storeId, saleNumber])
   @@index([tenantId])
@@ -710,6 +717,100 @@ enum PaymentMethodType {
   MIXED
 
   @@map("payment_method_enum")
+}
+
+// --- Phase 2 Chunk C: Invoicing (DÉCRET 05-468) --------------------------
+
+/// Per-tenant gapless counter for invoiceNumber. A dedicated single-row-per-
+/// tenant table (not Store.saleCounter) because invoice numbering is
+/// tenant-wide, not per-store, and resets on year change — a concern
+/// sale_number/return_number don't have.
+model InvoiceSequence {
+  tenantId   String @id @map("tenant_id") @db.Uuid
+  lastNumber Int    @default(0) @map("last_number")
+  year       Int
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@map("invoice_sequences")
+}
+
+enum InvoiceStatus {
+  draft
+  issued
+  paid
+  partially_paid
+  overdue
+  cancelled
+
+  @@map("invoice_status_enum")
+}
+
+model Invoice {
+  id               String        @id @default(uuid()) @db.Uuid
+  tenantId         String        @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  invoiceNumber    String        @map("invoice_number") @db.VarChar(20)
+  saleId           String?       @map("sale_id") @db.Uuid
+  customerId       String?       @map("customer_id") @db.Uuid
+  // Snapshots — an invoice must stay legible even if the Customer record
+  // is later edited or deleted.
+  customerName     String?       @map("customer_name") @db.VarChar(500)
+  customerAddress  String?       @map("customer_address")
+  customerNif      String?       @map("customer_nif") @db.VarChar(20)
+  issueDate        DateTime      @map("issue_date") @db.Date
+  dueDate          DateTime?     @map("due_date") @db.Date
+  subtotal         Int
+  discountAmount   Int           @default(0) @map("discount_amount")
+  tvaAmount        Int           @map("tva_amount")
+  // { "19": amount, "9": amount, "0": amount } — one bucket per TVA rate
+  // present on the sale's line items, per DATABASE.md §9.1.
+  tvaDetails       Json          @map("tva_details")
+  taxStampAmount   Int           @map("tax_stamp_amount")
+  totalTtc         Int           @map("total_ttc")
+  netToPay         Int           @map("net_to_pay")
+  amountInWords    String        @map("amount_in_words")
+  paymentTerms     String?       @map("payment_terms")
+  status           InvoiceStatus @default(issued)
+  notes            String?
+  pdfUrl           String?       @map("pdf_url") @db.VarChar(500)
+  createdBy        String?       @map("created_by") @db.Uuid
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  sale          Sale?         @relation(fields: [saleId], references: [id])
+  customer      Customer?     @relation(fields: [customerId], references: [id])
+  createdByUser User?         @relation("InvoiceCreatedBy", fields: [createdBy], references: [id])
+  items         InvoiceItem[]
+
+  @@unique([tenantId, invoiceNumber])
+  @@index([tenantId])
+  @@index([saleId])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id          String  @id @default(uuid()) @db.Uuid
+  tenantId    String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  invoiceId   String  @map("invoice_id") @db.Uuid
+  lineNumber  Int     @map("line_number")
+  productId   String? @map("product_id") @db.Uuid
+  description String  @db.VarChar(500)
+  quantity    Int
+  unit        String  @db.VarChar(20)
+  unitPrice   Int     @map("unit_price")
+  tvaRate     Int     @map("tva_rate") @db.SmallInt
+  amountHt    Int     @map("amount_ht")
+  tvaAmount   Int     @map("tva_amount")
+  amountTtc   Int     @map("amount_ttc")
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id])
+  invoice Invoice  @relation(fields: [invoiceId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("invoice_items")
 }
 
 model SalePayment {

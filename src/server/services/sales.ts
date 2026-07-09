@@ -283,7 +283,7 @@ export async function searchSales(tx: TransactionClient, query: SaleHistoryQuery
   const [items, total] = await Promise.all([
     tx.sale.findMany({
       where,
-      include: { items: true, payments: true, customer: true },
+      include: { items: true, payments: true, customer: true, invoices: { select: { id: true } } },
       orderBy: { createdAt: "desc" },
       skip: (page - 1) * pageSize,
       take: pageSize,
