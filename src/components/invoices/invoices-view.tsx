@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -21,6 +23,7 @@ interface InvoiceRow {
   issueDate: string;
   customerName: string | null;
   netToPay: number;
+  status: string;
 }
 
 interface InvoicesResponse {
@@ -51,7 +54,7 @@ export function InvoicesView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <PageHeader title={t("title")} />
 
       <div className="rounded-md border border-border">
         <Table>
@@ -61,20 +64,21 @@ export function InvoicesView() {
               <TableHead>{t("table.date")}</TableHead>
               <TableHead>{t("table.customer")}</TableHead>
               <TableHead className="text-right">{t("table.netToPay")}</TableHead>
+              <TableHead>{t("table.status")}</TableHead>
               <TableHead className="text-right">{t("table.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isError && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-destructive">
+                <TableCell colSpan={6} className="text-center text-destructive">
                   {t("loadError")}
                 </TableCell>
               </TableRow>
             )}
             {!isError && !isLoading && invoices.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="text-center text-muted-foreground">
+                <TableCell colSpan={6} className="text-center text-muted-foreground">
                   {t("empty")}
                 </TableCell>
               </TableRow>
@@ -85,6 +89,11 @@ export function InvoicesView() {
                 <TableCell>{new Date(invoice.issueDate).toLocaleDateString()}</TableCell>
                 <TableCell>{invoice.customerName ?? "—"}</TableCell>
                 <TableCell className="text-right tabular-nums">{formatDa(invoice.netToPay)}</TableCell>
+                <TableCell>
+                  <StatusBadge domain="invoice" status={invoice.status}>
+                    {t(`status.${invoice.status}`)}
+                  </StatusBadge>
+                </TableCell>
                 <TableCell className="text-right">
                   <Button variant="ghost" size="sm" asChild>
                     <a href={`/api/invoices/${invoice.id}/pdf`} target="_blank" rel="noopener noreferrer">

@@ -2,6 +2,9 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { AlertTriangle, TrendingUp, Truck } from "lucide-react";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatTile } from "@/components/ui/stat-tile";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
 
@@ -61,9 +64,31 @@ export function ProcurementReportsView() {
   const byCategory = analyticsQuery.data?.data.byCategory ?? [];
   const deliveryPerformance = deliveryQuery.data?.data ?? [];
 
+  const totalSpend = bySupplier.reduce((sum, row) => sum + row.total, 0);
+  const onTimeTotals = deliveryPerformance.reduce(
+    (acc, row) => ({ onTime: acc.onTime + row.onTimeCount, total: acc.total + row.totalCount }),
+    { onTime: 0, total: 0 },
+  );
+  const overallOnTimeRate = onTimeTotals.total > 0 ? onTimeTotals.onTime / onTimeTotals.total : null;
+
   return (
     <div className="flex flex-col gap-8">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <PageHeader title={t("title")} />
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatTile
+          label={t("reorder.title")}
+          value={reorderSuggestions.length}
+          icon={AlertTriangle}
+          tone={reorderSuggestions.length > 0 ? "warning" : "default"}
+        />
+        <StatTile label={t("spendBySupplier.title")} value={formatDa(totalSpend)} icon={TrendingUp} />
+        <StatTile
+          label={t("deliveryPerformance.title")}
+          value={overallOnTimeRate !== null ? `${Math.round(overallOnTimeRate * 100)}%` : "—"}
+          icon={Truck}
+        />
+      </div>
 
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("reorder.title")}</h2>

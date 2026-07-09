@@ -17,5 +17,5 @@ export default async function PosLayout({
     redirect(`/${locale}/login`);
   }
 
-  return <div className="min-h-screen bg-[var(--color-background)]">{children}</div>;
+  return <div className="min-h-screen bg-background">{children}</div>;
 }

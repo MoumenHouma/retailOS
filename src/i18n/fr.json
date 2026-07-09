@@ -3,7 +3,37 @@
     "appName": "RetailOS",
     "loading": "Chargement...",
     "cancel": "Annuler",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "signOut": "Déconnexion",
+    "myAccount": "Mon compte",
+    "toggleTheme": "Changer le thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système",
+    "language": "Langue"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "groups": {
+      "sales": "Ventes",
+      "purchasing": "Achats",
+      "inventory": "Stock",
+      "reports": "Rapports"
+    },
+    "pos": "Point de vente",
+    "sales": "Ventes",
+    "invoices": "Factures",
+    "purchaseOrders": "Bons de commande",
+    "supplierQuotes": "Devis fournisseurs",
+    "supplierCatalog": "Catalogue fournisseurs",
+    "suppliers": "Fournisseurs",
+    "products": "Produits",
+    "inventory": "Inventaire",
+    "warehouses": "Entrepôts",
+    "stockTransfers": "Transferts de stock",
+    "stockCounts": "Inventaires physiques",
+    "procurementReports": "Rapports d'achats"
   },
   "auth": {
     "login": {
@@ -28,7 +58,13 @@
   },
   "dashboard": {
     "welcome": "Bienvenue, {name}",
-    "tenant": "Entreprise : {tenantName}"
+    "tenant": "Entreprise : {tenantName}",
+    "kpi": {
+      "lowStock": "Produits en stock bas",
+      "openPurchaseOrders": "Bons de commande en cours",
+      "pendingStockCounts": "Inventaires en attente",
+      "todaySales": "Ventes du jour"
+    }
   },
   "suppliers": {
     "title": "Fournisseurs",
@@ -495,11 +531,20 @@
     "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
     "empty": "Aucune facture générée.",
     "loadError": "Impossible de charger les factures.",
+    "status": {
+      "draft": "Brouillon",
+      "issued": "Émise",
+      "paid": "Payée",
+      "partially_paid": "Partiellement payée",
+      "overdue": "En retard",
+      "cancelled": "Annulée"
+    },
     "table": {
       "number": "N° de facture",
       "date": "Date",
       "customer": "Client",
       "netToPay": "Net à payer",
+      "status": "Statut",
       "actions": "Actions",
       "view": "Voir le PDF"
     },

@@ -8,6 +8,7 @@ import { Search, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Select,
   SelectContent,
@@ -170,7 +171,7 @@ export function ProductsView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <PageHeader title={t("title")} />
 
       <Tabs defaultValue="products">
         <TabsList>

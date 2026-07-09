@@ -38,7 +38,7 @@ export function RegisterForm({ locale }: { locale: string }) {
   return (
     <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
       <h1 className="text-xl font-semibold">{t("title")}</h1>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-destructive">{error}</p>}
       {(
         [
           ["businessName", "text"],
@@ -60,14 +60,14 @@ export function RegisterForm({ locale }: { locale: string }) {
             name={field}
             type={type}
             required
-            className="rounded-[var(--radius)] border border-[var(--color-border)] bg-transparent px-3 py-2"
+            className="rounded-md border border-border bg-transparent px-3 py-2"
           />
         </div>
       ))}
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-[var(--radius)] bg-[var(--color-primary)] px-4 py-2 font-medium text-[var(--color-primary-foreground)] disabled:opacity-50"
+        className="rounded-md bg-primary px-4 py-2 font-medium text-primary-foreground disabled:opacity-50"
       >
         {t("submit")}
       </button>

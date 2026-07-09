@@ -3,6 +3,7 @@
 import { SessionProvider } from "next-auth/react";
 import { NextIntlClientProvider, type AbstractIntlMessages } from "next-intl";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useState, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -21,12 +22,14 @@ export function Providers({
 
   return (
     <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
-      <SessionProvider>
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <Toaster />
-        </QueryClientProvider>
-      </SessionProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <SessionProvider>
+          <QueryClientProvider client={queryClient}>
+            {children}
+            <Toaster />
+          </QueryClientProvider>
+        </SessionProvider>
+      </ThemeProvider>
     </NextIntlClientProvider>
   );
 }

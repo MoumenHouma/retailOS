@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { Trash2, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Dialog,
   DialogContent,
@@ -259,10 +260,12 @@ export function SupplierQuotesView() {
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{t("title")}</h1>
-          <NewQuoteDialog onCreated={() => queryClient.invalidateQueries({ queryKey: ["supplier-quotes"] })} />
-        </div>
+        <PageHeader
+          title={t("title")}
+          action={
+            <NewQuoteDialog onCreated={() => queryClient.invalidateQueries({ queryKey: ["supplier-quotes"] })} />
+          }
+        />
 
         <div className="rounded-md border border-border">
           <Table>

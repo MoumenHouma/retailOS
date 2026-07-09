@@ -29,14 +29,14 @@ export function ReceiptDialog({
         {sale && (
           <div className="flex flex-col gap-3">
             <p className="text-sm text-muted-foreground">{t("saleNumber", { number: sale.saleNumber })}</p>
-            {sale.isQueued && <p className="text-sm text-amber-500">{t("queuedOffline")}</p>}
-            <div className="flex justify-between text-lg font-semibold">
-              <span>{formatDa(sale.total)}</span>
+            {sale.isQueued && <p className="text-sm text-warning">{t("queuedOffline")}</p>}
+            <div className="flex justify-between text-2xl font-semibold">
+              <span className="tabular-nums">{formatDa(sale.total)}</span>
             </div>
             {sale.changeDue > 0 && (
               <p className="text-sm text-muted-foreground">{formatDa(sale.changeDue)}</p>
             )}
-            <Button type="button" onClick={onNewSale} autoFocus>
+            <Button type="button" size="lg" className="h-12 w-full text-base" onClick={onNewSale} autoFocus>
               {t("newSale")}
             </Button>
           </div>

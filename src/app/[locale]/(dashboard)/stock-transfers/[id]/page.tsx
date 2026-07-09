@@ -1,5 +1,5 @@
-import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
+import { ForbiddenState } from "@/components/layout/forbidden-state";
 import { StockTransferDetailView } from "@/components/warehouses/stock-transfer-detail-view";
 
 export default async function StockTransferDetailPage({
@@ -11,8 +11,7 @@ export default async function StockTransferDetailPage({
   const { id } = await params;
 
   if (!session?.user.permissions.includes("inventory:read")) {
-    const t = await getTranslations("stockTransfers");
-    return <p className="text-[var(--color-muted-foreground)]">{t("forbidden")}</p>;
+    return <ForbiddenState />;
   }
 
   return <StockTransferDetailView id={id} />;

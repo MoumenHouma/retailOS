@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -27,12 +28,6 @@ interface CountsResponse {
 }
 
 const PAGE_SIZE = 20;
-const STATUS_BADGE_VARIANT: Record<CountStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  in_progress: "outline",
-  pending_review: "secondary",
-  approved: "default",
-  cancelled: "destructive",
-};
 
 async function fetchCounts(params: { status: CountStatus | "all"; page: number }): Promise<CountsResponse> {
   const searchParams = new URLSearchParams({ page: String(params.page), pageSize: String(PAGE_SIZE) });
@@ -58,15 +53,17 @@ export function StockCountsView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <Button asChild>
-          <Link href="/stock-counts/new">
-            <Plus />
-            {t("newCount")}
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={t("title")}
+        action={
+          <Button asChild>
+            <Link href="/stock-counts/new">
+              <Plus />
+              {t("newCount")}
+            </Link>
+          </Button>
+        }
+      />
 
       <Select
         value={status}
@@ -124,7 +121,9 @@ export function StockCountsView() {
                 <TableCell>{new Date(count.startedAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">{count.items.length}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_BADGE_VARIANT[count.status]}>{t(`status.${count.status}`)}</Badge>
+                  <StatusBadge domain="count" status={count.status}>
+                    {t(`status.${count.status}`)}
+                  </StatusBadge>
                 </TableCell>
               </TableRow>
             ))}

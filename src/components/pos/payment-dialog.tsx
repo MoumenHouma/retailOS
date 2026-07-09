@@ -233,7 +233,7 @@ export function PaymentDialog({
               />
             )}
             <DialogFooter>
-              <Button type="submit" disabled={submitting}>
+              <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={submitting}>
                 {submitting ? t("submitting") : t("submit")}
               </Button>
             </DialogFooter>

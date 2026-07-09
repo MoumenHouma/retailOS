@@ -5,7 +5,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -89,13 +90,15 @@ export function StockCountDetailView({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{count.countNumber}</h1>
-          <p className="text-sm text-muted-foreground">{count.store.name}</p>
-        </div>
-        <Badge>{t(`status.${count.status}`)}</Badge>
-      </div>
+      <PageHeader
+        title={count.countNumber}
+        description={count.store.name}
+        action={
+          <StatusBadge domain="count" status={count.status}>
+            {t(`status.${count.status}`)}
+          </StatusBadge>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {count.status === "in_progress" && (

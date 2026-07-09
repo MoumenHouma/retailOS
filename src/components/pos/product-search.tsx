@@ -104,7 +104,7 @@ export function ProductSearch({ isOnline }: { isOnline: boolean }) {
         onBlur={() => setTimeout(() => setOpen(false), 150)}
         onKeyDown={handleKeyDown}
         placeholder={t("searchPlaceholder")}
-        className="pl-8 text-base"
+        className="h-11 pl-9 text-base"
       />
       {open && debounced.trim().length > 0 && (
         <div className="absolute z-10 mt-1 w-full rounded-md border border-border bg-popover shadow-md">
@@ -118,7 +118,7 @@ export function ProductSearch({ isOnline }: { isOnline: boolean }) {
                     type="button"
                     onMouseDown={(event) => event.preventDefault()}
                     onClick={() => handleAdd(product)}
-                    className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
+                    className="flex w-full items-center justify-between px-4 py-3 text-left text-sm hover:bg-accent"
                   >
                     <span>{product.name}</span>
                     <span className="text-muted-foreground">{formatDa(product.sellingPrice)}</span>

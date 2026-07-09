@@ -3,7 +3,37 @@
     "appName": "RetailOS",
     "loading": "...جارٍ التحميل",
     "cancel": "إلغاء",
-    "save": "حفظ"
+    "save": "حفظ",
+    "forbidden": "ليس لديك صلاحية الوصول إلى هذه الصفحة.",
+    "signOut": "تسجيل الخروج",
+    "myAccount": "حسابي",
+    "toggleTheme": "تبديل المظهر",
+    "light": "فاتح",
+    "dark": "داكن",
+    "system": "النظام",
+    "language": "اللغة"
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "groups": {
+      "sales": "المبيعات",
+      "purchasing": "المشتريات",
+      "inventory": "المخزون",
+      "reports": "التقارير"
+    },
+    "pos": "نقطة البيع",
+    "sales": "المبيعات",
+    "invoices": "الفواتير",
+    "purchaseOrders": "أوامر الشراء",
+    "supplierQuotes": "عروض أسعار الموردين",
+    "supplierCatalog": "كتالوج الموردين",
+    "suppliers": "الموردون",
+    "products": "المنتجات",
+    "inventory": "الجرد",
+    "warehouses": "المستودعات",
+    "stockTransfers": "تحويلات المخزون",
+    "stockCounts": "الجرد الفعلي",
+    "procurementReports": "تقارير المشتريات"
   },
   "auth": {
     "login": {
@@ -28,7 +58,13 @@
   },
   "dashboard": {
     "welcome": "مرحباً، {name}",
-    "tenant": "المؤسسة: {tenantName}"
+    "tenant": "المؤسسة: {tenantName}",
+    "kpi": {
+      "lowStock": "منتجات منخفضة المخزون",
+      "openPurchaseOrders": "أوامر شراء قيد التنفيذ",
+      "pendingStockCounts": "جرد بانتظار المعالجة",
+      "todaySales": "مبيعات اليوم"
+    }
   },
   "suppliers": {
     "title": "الموردون",
@@ -495,11 +531,20 @@
     "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
     "empty": "لم يتم إنشاء أي فاتورة.",
     "loadError": "تعذر تحميل الفواتير.",
+    "status": {
+      "draft": "مسودة",
+      "issued": "صادرة",
+      "paid": "مدفوعة",
+      "partially_paid": "مدفوعة جزئياً",
+      "overdue": "متأخرة",
+      "cancelled": "ملغاة"
+    },
     "table": {
       "number": "رقم الفاتورة",
       "date": "التاريخ",
       "customer": "الزبون",
       "netToPay": "صافي المستحق",
+      "status": "الحالة",
       "actions": "الإجراءات",
       "view": "عرض PDF"
     },

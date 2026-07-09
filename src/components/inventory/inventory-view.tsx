@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
 import {
   Select,
   SelectContent,
@@ -161,14 +162,16 @@ export function InventoryView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        {stores.length > 0 && products.length > 0 ? (
-          <StockAdjustmentDialog products={products} stores={stores} onAdjusted={refreshAfterAdjustment} />
-        ) : (
-          <Button disabled>{t("adjustStock")}</Button>
-        )}
-      </div>
+      <PageHeader
+        title={t("title")}
+        action={
+          stores.length > 0 && products.length > 0 ? (
+            <StockAdjustmentDialog products={products} stores={stores} onAdjusted={refreshAfterAdjustment} />
+          ) : (
+            <Button disabled>{t("adjustStock")}</Button>
+          )
+        }
+      />
 
       <Tabs defaultValue="levels">
         <TabsList>

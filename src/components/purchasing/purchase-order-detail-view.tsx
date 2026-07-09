@@ -7,7 +7,8 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Table,
   TableBody,
@@ -143,12 +144,14 @@ export function PurchaseOrderDetailView({ id }: { id: string }) {
   if (editing) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-semibold">{purchaseOrder.poNumber}</h1>
-          <Button variant="outline" onClick={() => setEditing(false)}>
-            {t("form.cancelEdit")}
-          </Button>
-        </div>
+        <PageHeader
+          title={purchaseOrder.poNumber}
+          action={
+            <Button variant="outline" onClick={() => setEditing(false)}>
+              {t("form.cancelEdit")}
+            </Button>
+          }
+        />
         <PurchaseOrderForm
           storeId={purchaseOrder.storeId}
           purchaseOrder={{
@@ -169,15 +172,15 @@ export function PurchaseOrderDetailView({ id }: { id: string }) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">{purchaseOrder.poNumber}</h1>
-          <p className="text-sm text-muted-foreground">
-            {purchaseOrder.supplier.name} — {purchaseOrder.store.name}
-          </p>
-        </div>
-        <Badge>{t(`status.${purchaseOrder.status}`)}</Badge>
-      </div>
+      <PageHeader
+        title={purchaseOrder.poNumber}
+        description={`${purchaseOrder.supplier.name} — ${purchaseOrder.store.name}`}
+        action={
+          <StatusBadge domain="po" status={purchaseOrder.status}>
+            {t(`status.${purchaseOrder.status}`)}
+          </StatusBadge>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {editable && (

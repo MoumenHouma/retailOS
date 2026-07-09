@@ -6,7 +6,8 @@ import { useTranslations } from "next-intl";
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -28,13 +29,6 @@ interface TransfersResponse {
 }
 
 const PAGE_SIZE = 20;
-const STATUS_BADGE_VARIANT: Record<TransferStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "outline",
-  pending: "secondary",
-  in_transit: "default",
-  received: "default",
-  cancelled: "destructive",
-};
 
 async function fetchTransfers(params: { status: TransferStatus | "all"; page: number }): Promise<TransfersResponse> {
   const searchParams = new URLSearchParams({ page: String(params.page), pageSize: String(PAGE_SIZE) });
@@ -60,15 +54,17 @@ export function StockTransfersView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <Button asChild>
-          <Link href="/stock-transfers/new">
-            <Plus />
-            {t("newTransfer")}
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={t("title")}
+        action={
+          <Button asChild>
+            <Link href="/stock-transfers/new">
+              <Plus />
+              {t("newTransfer")}
+            </Link>
+          </Button>
+        }
+      />
 
       <Select
         value={status}
@@ -129,7 +125,9 @@ export function StockTransfersView() {
                 <TableCell>{new Date(transfer.createdAt).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">{transfer.items.length}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_BADGE_VARIANT[transfer.status]}>{t(`status.${transfer.status}`)}</Badge>
+                  <StatusBadge domain="transfer" status={transfer.status}>
+                    {t(`status.${transfer.status}`)}
+                  </StatusBadge>
                 </TableCell>
               </TableRow>
             ))}

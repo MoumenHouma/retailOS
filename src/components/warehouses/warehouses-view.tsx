@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { PageHeader } from "@/components/layout/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { WarehousesTab } from "@/components/warehouses/warehouses-tab";
 import { ZonesTab } from "@/components/warehouses/zones-tab";
@@ -11,7 +12,7 @@ export function WarehousesView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-2xl font-semibold">{t("title")}</h1>
+      <PageHeader title={t("title")} />
 
       <Tabs defaultValue="warehouses">
         <TabsList>

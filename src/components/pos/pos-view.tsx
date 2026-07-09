@@ -28,6 +28,7 @@ import { HeldSalesDialog } from "@/components/pos/held-sales-dialog";
 import { SessionReportDialog } from "@/components/pos/session-report-dialog";
 import { OfflineSyncPanel } from "@/components/pos/offline-sync-panel";
 import { toast } from "sonner";
+import { formatDa } from "@/lib/currency";
 import { cartTotals, usePosCartStore } from "@/stores/pos-cart-store";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { useProductCatalogSync } from "@/hooks/use-product-catalog-sync";
@@ -190,15 +191,21 @@ export function PosView() {
             </AlertDialogContent>
           </AlertDialog>
 
-          <Button
-            type="button"
-            size="lg"
-            className="mt-auto"
-            disabled={lines.length === 0}
-            onClick={() => setPaymentOpen(true)}
-          >
-            {t("cart.pay")}
-          </Button>
+          <div className="mt-auto flex flex-col gap-2 rounded-lg border border-border bg-primary/5 p-4">
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm font-medium text-muted-foreground">{t("cart.grandTotal")}</span>
+              <span className="text-3xl font-semibold tabular-nums">{formatDa(totals.total)}</span>
+            </div>
+            <Button
+              type="button"
+              size="lg"
+              className="h-14 w-full text-base"
+              disabled={lines.length === 0}
+              onClick={() => setPaymentOpen(true)}
+            >
+              {t("cart.pay")}
+            </Button>
+          </div>
         </div>
       </div>
 

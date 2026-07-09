@@ -139,7 +139,7 @@ export function ReturnDialog({
             })}
             <Input value={reason} onChange={(event) => setReason(event.target.value)} placeholder={t("reason")} />
             <DialogFooter>
-              <Button type="button" onClick={handleSubmit} disabled={submitting}>
+              <Button type="button" size="lg" className="h-12 w-full text-base" onClick={handleSubmit} disabled={submitting}>
                 {submitting ? t("submitting") : t("submit")}
               </Button>
             </DialogFooter>

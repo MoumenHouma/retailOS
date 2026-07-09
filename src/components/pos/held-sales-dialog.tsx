@@ -95,7 +95,7 @@ export function HeldSalesDialog({ storeId }: { storeId: string }) {
                 <button
                   type="button"
                   onClick={() => handleRecall(sale)}
-                  className="flex w-full items-center justify-between rounded-md border border-border px-3 py-2 text-left text-sm hover:bg-accent"
+                  className="flex w-full items-center justify-between rounded-md border border-border px-4 py-3 text-left text-sm hover:bg-accent"
                 >
                   <span>{sale.saleNumber}</span>
                   <span className="text-muted-foreground">

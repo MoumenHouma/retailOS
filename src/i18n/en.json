@@ -3,7 +3,37 @@
     "appName": "RetailOS",
     "loading": "Loading...",
     "cancel": "Cancel",
-    "save": "Save"
+    "save": "Save",
+    "forbidden": "You do not have permission to access this page.",
+    "signOut": "Sign out",
+    "myAccount": "My account",
+    "toggleTheme": "Toggle theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "language": "Language"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "groups": {
+      "sales": "Sales",
+      "purchasing": "Purchasing",
+      "inventory": "Inventory",
+      "reports": "Reports"
+    },
+    "pos": "Point of Sale",
+    "sales": "Sales",
+    "invoices": "Invoices",
+    "purchaseOrders": "Purchase Orders",
+    "supplierQuotes": "Supplier Quotes",
+    "supplierCatalog": "Supplier Catalog",
+    "suppliers": "Suppliers",
+    "products": "Products",
+    "inventory": "Inventory",
+    "warehouses": "Warehouses",
+    "stockTransfers": "Stock Transfers",
+    "stockCounts": "Stock Counts",
+    "procurementReports": "Procurement Reports"
   },
   "auth": {
     "login": {
@@ -28,7 +58,13 @@
   },
   "dashboard": {
     "welcome": "Welcome, {name}",
-    "tenant": "Business: {tenantName}"
+    "tenant": "Business: {tenantName}",
+    "kpi": {
+      "lowStock": "Low-stock products",
+      "openPurchaseOrders": "Open purchase orders",
+      "pendingStockCounts": "Pending stock counts",
+      "todaySales": "Today's sales"
+    }
   },
   "suppliers": {
     "title": "Suppliers",
@@ -495,11 +531,20 @@
     "forbidden": "You don't have permission to access this page.",
     "empty": "No invoices generated.",
     "loadError": "Unable to load invoices.",
+    "status": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "paid": "Paid",
+      "partially_paid": "Partially paid",
+      "overdue": "Overdue",
+      "cancelled": "Cancelled"
+    },
     "table": {
       "number": "Invoice #",
       "date": "Date",
       "customer": "Customer",
       "netToPay": "Net to pay",
+      "status": "Status",
       "actions": "Actions",
       "view": "View PDF"
     },

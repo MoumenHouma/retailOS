@@ -7,7 +7,8 @@ import Link from "next/link";
 import { Search, Plus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
+import { StatusBadge } from "@/components/ui/status-badge";
 import {
   Select,
   SelectContent,
@@ -50,15 +51,6 @@ interface PurchaseOrdersResponse {
 }
 
 const PAGE_SIZE = 20;
-const STATUS_BADGE_VARIANT: Record<PoStatus, "default" | "secondary" | "destructive" | "outline"> = {
-  draft: "outline",
-  pending_approval: "secondary",
-  approved: "secondary",
-  ordered: "default",
-  partially_received: "default",
-  received: "default",
-  cancelled: "destructive",
-};
 
 async function fetchPurchaseOrders(params: {
   q: string;
@@ -97,15 +89,17 @@ export function PurchaseOrdersView() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">{t("title")}</h1>
-        <Button asChild>
-          <Link href="/purchase-orders/new">
-            <Plus />
-            {t("newPurchaseOrder")}
-          </Link>
-        </Button>
-      </div>
+      <PageHeader
+        title={t("title")}
+        action={
+          <Button asChild>
+            <Link href="/purchase-orders/new">
+              <Plus />
+              {t("newPurchaseOrder")}
+            </Link>
+          </Button>
+        }
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative flex-1 min-w-[200px]">
@@ -182,7 +176,9 @@ export function PurchaseOrdersView() {
                 <TableCell className="text-right">{po.items.length}</TableCell>
                 <TableCell className="text-right tabular-nums">{formatDa(po.total)}</TableCell>
                 <TableCell>
-                  <Badge variant={STATUS_BADGE_VARIANT[po.status]}>{t(`status.${po.status}`)}</Badge>
+                  <StatusBadge domain="po" status={po.status}>
+                    {t(`status.${po.status}`)}
+                  </StatusBadge>
                 </TableCell>
               </TableRow>
             ))}

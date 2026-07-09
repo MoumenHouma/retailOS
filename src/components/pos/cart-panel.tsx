@@ -64,20 +64,20 @@ export function CartPanel() {
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11"
                           onClick={() => setQuantity(line.productId, line.quantity - 1)}
                         >
-                          <Minus className="h-3 w-3" />
+                          <Minus className="h-4 w-4" />
                         </Button>
                         <span className="w-8 text-center tabular-nums">{line.quantity}</span>
                         <Button
                           type="button"
                           variant="outline"
                           size="icon"
-                          className="h-7 w-7"
+                          className="h-11 w-11"
                           onClick={() => setQuantity(line.productId, line.quantity + 1)}
                         >
-                          <Plus className="h-3 w-3" />
+                          <Plus className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>

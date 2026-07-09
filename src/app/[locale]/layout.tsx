@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { routing, APP_TIME_ZONE } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
+import { cairo, lexend, sourceSans3 } from "@/lib/fonts";
 import "../globals.css";
 
 export const metadata: Metadata = {
@@ -30,8 +31,8 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
-      <body className="antialiased">
+    <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"} suppressHydrationWarning>
+      <body className={`antialiased ${lexend.variable} ${sourceSans3.variable} ${cairo.variable}`}>
         <Providers messages={messages} locale={locale} timeZone={APP_TIME_ZONE}>
           {children}
         </Providers>

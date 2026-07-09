@@ -108,7 +108,7 @@ export function CloseSessionDialog({ sessionId, onClosed }: { sessionId: string;
                 )}
               />
               <DialogFooter>
-                <Button type="submit" disabled={form.formState.isSubmitting}>
+                <Button type="submit" size="lg" className="h-12 w-full text-base" disabled={form.formState.isSubmitting}>
                   {form.formState.isSubmitting ? t("closing") : t("closeSubmit")}
                 </Button>
               </DialogFooter>
