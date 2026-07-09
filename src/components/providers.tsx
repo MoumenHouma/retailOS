@@ -10,15 +10,17 @@ export function Providers({
   children,
   messages,
   locale,
+  timeZone,
 }: {
   children: ReactNode;
   messages: AbstractIntlMessages;
   locale: string;
+  timeZone: string;
 }) {
   const [queryClient] = useState(() => new QueryClient());
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
+    <NextIntlClientProvider locale={locale} messages={messages} timeZone={timeZone}>
       <SessionProvider>
         <QueryClientProvider client={queryClient}>
           {children}

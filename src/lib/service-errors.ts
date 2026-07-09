@@ -13,6 +13,10 @@ import {
 import { EmptySaleError, PaymentMismatchError, SaleNotHeldError } from "@/server/services/sales";
 import { InvalidReturnQuantityError } from "@/server/services/returns";
 import { InvoiceAlreadyExistsError, SaleNotFoundError } from "@/server/services/invoices";
+import {
+  InvalidPoStatusTransitionError,
+  MissingUnitPriceError,
+} from "@/server/services/purchase-orders";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -57,6 +61,9 @@ export function mapServiceError(error: unknown) {
   }
   if (error instanceof SaleNotFoundError) {
     return apiError("NOT_FOUND", error.message, 404);
+  }
+  if (error instanceof InvalidPoStatusTransitionError || error instanceof MissingUnitPriceError) {
+    return apiError("VALIDATION", error.message, 422);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);

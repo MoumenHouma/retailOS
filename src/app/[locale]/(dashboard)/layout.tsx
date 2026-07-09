@@ -36,7 +36,12 @@ export default async function DashboardLayout({
           <Link href={`/${locale}/sales`} className="hover:text-[var(--color-foreground)]">
             Ventes
           </Link>
-          <span>Achats</span>
+          <Link href={`/${locale}/purchase-orders`} className="hover:text-[var(--color-foreground)]">
+            Achats
+          </Link>
+          <Link href={`/${locale}/supplier-quotes`} className="hover:text-[var(--color-foreground)]">
+            Devis fournisseurs
+          </Link>
           <Link href={`/${locale}/invoices`} className="hover:text-[var(--color-foreground)]">
             Finances
           </Link>

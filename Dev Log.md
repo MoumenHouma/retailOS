@@ -4,6 +4,24 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-09 — Phase 3 Chunk A: Purchasing Core
+
+**Done (per [[PHASE3_PURCHASING_PLAN]] Chunk A), starting Phase 3 the same day Phase 2 wrapped:**
+- Schema: `PurchaseOrder`/`PurchaseOrderItem` (DATABASE.md §8.4-8.5), `PoStatus` enum matching the doc's actual value list — `draft, pending_approval, approved, ordered, partially_received, received, cancelled`, deliberately **no** `closed` state despite ARCHITECTURE.md's flow diagram showing one (concrete enum wins, same class of doc/reality mismatch as Phase 2's `sale_discounts`). `Store.poCounter` reuses the `saleCounter` gapless-numbering pattern (`PO-000001`) since POs are store-scoped. Net-new `SupplierQuote`/`SupplierQuoteItem` (undocumented in DATABASE.md, designed from scratch) for side-by-side supplier price comparison.
+- `purchase-orders.ts`: `createPurchaseOrder` prices lines from `SupplierProduct.unitPrice` when the caller omits a price, throwing `MissingUnitPriceError` if neither is available — mirrors POS's "server resolves price, never trust client input" rule, adapted for negotiated cost rather than `Product.sellingPrice`. Full status lifecycle: `submitForApproval` → `approvePurchaseOrder` (gated on `purchases:approve`) → `markOrdered`, plus `cancelPurchaseOrder` (not explicitly in the plan doc, added as the natural completion of the lifecycle since `cancelled` already exists in the enum). `supplier-quotes.ts`: `createQuote`, `compareQuotes(productIds, supplierIds?)`.
+- Routes: `/api/purchase-orders` (+ `[id]`, `/submit`, `/approve`, `/order`, `/cancel`), `/api/supplier-quotes` (+ `/compare`).
+- Frontend: PO list + create/edit form (supplier picker with per-supplier price prefill via `SupplierProduct`, product picker, line-item table with running TVA/total), detail view with permission-gated action buttons for each status transition, Supplier Quotes page with a comparison view (add products as chips, renders a supplier × product price matrix).
+
+**Bug found and fixed during verification:**
+- **`NextIntlClientProvider` never received a `timeZone` prop**, app-wide, since Phase 0 — only the server-side `getRequestConfig` (`src/i18n/request.ts`) had `timeZone: "Africa/Algiers"` configured. Client components calling `useTranslations`/date formatting had no timeZone context, which next-intl surfaces as an `ENVIRONMENT_FALLBACK` error (thrown, not just a console warning, in this version) the first time a client component actually exercises formatting that needs it — first hit was `SupplierQuotesView`. Fixed by extracting `APP_TIME_ZONE` into `src/i18n/routing.ts` and threading it through `layout.tsx` → `Providers` → `NextIntlClientProvider`. Pre-existing app-wide gap, not Phase-3-specific; just the first component to trip it.
+
+**Not a bug, but worth recording (verification-harness flakiness, not app flakiness):** this Docker dev environment's on-demand compilation made the verification Playwright script wildly inconsistent run-to-run — first hits to never-before-compiled routes and API endpoints regularly took 10-30s (once 34.9s for `/purchase-orders/[id]`), enough to blow past naive fixed timeouts and `waitForTimeout(1500)`-style waits. Fixed the *script* (not the app) by switching to `page.waitForResponse(...)` keyed to the actual network call instead of arbitrary sleeps, and widening action-button-click timeouts to 30-35s. Once every route had been hit once in a given container's lifetime, subsequent runs were fast and fully green (11/11 checks, plus the quote comparison matrix confirmed separately). Same family of gotcha as the recurring "on-demand compilation vs Prisma transaction timeout" issue from earlier chunks — worth remembering for Chunk B onward.
+
+**Open items for later chunks:**
+- Next up per [[PHASE3_PURCHASING_PLAN]] is Chunk B (Delivery & Receiving) — `PurchaseDelivery`/`ProductBatch`/`PurchaseReturn`, needs Chunk A's `PurchaseOrder` to receive against.
+
+---
+
 ## 2026-07-09 — Phase 2 Chunk D: Offline Sync — Phase 2 complete
 
 **Done (per [[PHASE2_POS_PLAN]] Chunk D), closing out Phase 2 the same day as A/B/C:**

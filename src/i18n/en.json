@@ -510,6 +510,109 @@
       "total": "{count} invoice(s)"
     }
   },
+  "purchaseOrders": {
+    "title": "Purchase Orders",
+    "newPurchaseOrder": "New purchase order",
+    "forbidden": "You don't have permission to access this page.",
+    "noStore": "Your account isn't assigned to a store.",
+    "searchPlaceholder": "Search a purchase order (number)...",
+    "empty": "No purchase orders found.",
+    "loadError": "Unable to load purchase orders.",
+    "loading": "Loading...",
+    "actionError": "Something went wrong.",
+    "expectedDeliveryDate": "Expected delivery date",
+    "filter": { "all": "All" },
+    "status": {
+      "draft": "Draft",
+      "pending_approval": "Pending approval",
+      "approved": "Approved",
+      "ordered": "Ordered",
+      "partially_received": "Partially received",
+      "received": "Received",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "poNumber": "PO #",
+      "supplier": "Supplier",
+      "date": "Date",
+      "items": "Items",
+      "total": "Total",
+      "status": "Status",
+      "ordered": "Ordered",
+      "received": "Received"
+    },
+    "actions": {
+      "edit": "Edit",
+      "submit": "Submit for approval",
+      "submitSuccess": "Purchase order submitted for approval.",
+      "approve": "Approve",
+      "approveSuccess": "Purchase order approved.",
+      "markOrdered": "Mark as ordered",
+      "orderSuccess": "Purchase order marked as ordered.",
+      "cancel": "Cancel",
+      "cancelSuccess": "Purchase order cancelled."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} purchase order(s)"
+    },
+    "form": {
+      "supplier": "Supplier",
+      "selectSupplier": "Select a supplier",
+      "expectedDeliveryDate": "Expected delivery date",
+      "notes": "Notes",
+      "items": "Items",
+      "product": "Product",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price (DA)",
+      "lineTotal": "Total",
+      "subtotal": "Subtotal",
+      "tva": "VAT",
+      "total": "Total",
+      "addProductPlaceholder": "Search a product to add...",
+      "noProductsFound": "No products found.",
+      "supplierRequired": "Select a supplier.",
+      "itemsRequired": "Add at least one item.",
+      "submit": "Create draft",
+      "submitting": "Creating...",
+      "success": "Purchase order created successfully.",
+      "editSubmit": "Save",
+      "editSubmitting": "Saving...",
+      "editSuccess": "Purchase order updated successfully.",
+      "cancelEdit": "Cancel",
+      "error": "Unable to save this purchase order.",
+      "loadSuppliersError": "Unable to load suppliers."
+    }
+  },
+  "supplierQuotes": {
+    "title": "Supplier Quotes",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No quotes recorded.",
+    "table": {
+      "supplier": "Supplier",
+      "validUntil": "Valid until",
+      "items": "Items"
+    },
+    "comparison": {
+      "title": "Quote comparison",
+      "empty": "No quotes for these products."
+    },
+    "form": {
+      "title": "New quote",
+      "supplier": "Supplier",
+      "validUntil": "Valid until",
+      "product": "Product",
+      "quantity": "Quantity",
+      "unitPrice": "Unit price (DA)",
+      "validationError": "Select a supplier and add at least one item.",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Quote created successfully.",
+      "error": "Unable to create this quote."
+    }
+  },
   "inventory": {
     "title": "Inventory",
     "forbidden": "You don't have permission to access this page.",

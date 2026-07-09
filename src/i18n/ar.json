@@ -510,6 +510,109 @@
       "total": "{count} فاتورة"
     }
   },
+  "purchaseOrders": {
+    "title": "أوامر الشراء",
+    "newPurchaseOrder": "أمر شراء جديد",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "noStore": "حسابك غير مرتبط بأي متجر.",
+    "searchPlaceholder": "البحث عن أمر شراء (الرقم)...",
+    "empty": "لم يتم العثور على أي أمر شراء.",
+    "loadError": "تعذر تحميل أوامر الشراء.",
+    "loading": "جارٍ التحميل...",
+    "actionError": "حدث خطأ ما.",
+    "expectedDeliveryDate": "تاريخ التسليم المتوقع",
+    "filter": { "all": "الكل" },
+    "status": {
+      "draft": "مسودة",
+      "pending_approval": "بانتظار الموافقة",
+      "approved": "تمت الموافقة",
+      "ordered": "تم الطلب",
+      "partially_received": "استلام جزئي",
+      "received": "تم الاستلام",
+      "cancelled": "ملغى"
+    },
+    "table": {
+      "poNumber": "رقم الأمر",
+      "supplier": "المورد",
+      "date": "التاريخ",
+      "items": "العناصر",
+      "total": "المجموع",
+      "status": "الحالة",
+      "ordered": "مطلوب",
+      "received": "مستلم"
+    },
+    "actions": {
+      "edit": "تعديل",
+      "submit": "إرسال للموافقة",
+      "submitSuccess": "تم إرسال أمر الشراء للموافقة.",
+      "approve": "موافقة",
+      "approveSuccess": "تمت الموافقة على أمر الشراء.",
+      "markOrdered": "وضع علامة كـ مطلوب",
+      "orderSuccess": "تم وضع علامة على أمر الشراء كـ مطلوب.",
+      "cancel": "إلغاء",
+      "cancelSuccess": "تم إلغاء أمر الشراء."
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} أمر شراء"
+    },
+    "form": {
+      "supplier": "المورد",
+      "selectSupplier": "اختر مورداً",
+      "expectedDeliveryDate": "تاريخ التسليم المتوقع",
+      "notes": "ملاحظات",
+      "items": "العناصر",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "unitPrice": "سعر الوحدة (دج)",
+      "lineTotal": "المجموع",
+      "subtotal": "المجموع الفرعي",
+      "tva": "الرسم على القيمة المضافة",
+      "total": "المجموع",
+      "addProductPlaceholder": "البحث عن منتج لإضافته...",
+      "noProductsFound": "لم يتم العثور على أي منتج.",
+      "supplierRequired": "اختر مورداً.",
+      "itemsRequired": "أضف عنصراً واحداً على الأقل.",
+      "submit": "إنشاء مسودة",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء أمر الشراء بنجاح.",
+      "editSubmit": "حفظ",
+      "editSubmitting": "جارٍ الحفظ...",
+      "editSuccess": "تم تحديث أمر الشراء بنجاح.",
+      "cancelEdit": "إلغاء",
+      "error": "تعذر حفظ أمر الشراء هذا.",
+      "loadSuppliersError": "تعذر تحميل الموردين."
+    }
+  },
+  "supplierQuotes": {
+    "title": "عروض أسعار الموردين",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لا توجد عروض أسعار مسجلة.",
+    "table": {
+      "supplier": "المورد",
+      "validUntil": "صالح حتى",
+      "items": "العناصر"
+    },
+    "comparison": {
+      "title": "مقارنة العروض",
+      "empty": "لا توجد عروض لهذه المنتجات."
+    },
+    "form": {
+      "title": "عرض سعر جديد",
+      "supplier": "المورد",
+      "validUntil": "صالح حتى",
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "unitPrice": "سعر الوحدة (دج)",
+      "validationError": "اختر مورداً وأضف عنصراً واحداً على الأقل.",
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء عرض السعر بنجاح.",
+      "error": "تعذر إنشاء عرض السعر هذا."
+    }
+  },
   "inventory": {
     "title": "المخزون",
     "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",

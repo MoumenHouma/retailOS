@@ -85,6 +85,10 @@ model Tenant {
   invoiceSequence  InvoiceSequence?
   invoices         Invoice[]
   invoiceItems     InvoiceItem[]
+  purchaseOrders     PurchaseOrder[]
+  purchaseOrderItems PurchaseOrderItem[]
+  supplierQuotes     SupplierQuote[]
+  supplierQuoteItems SupplierQuoteItem[]
 
   @@map("tenants")
 }
@@ -105,6 +109,10 @@ model Store {
   // same store, giving gapless per-store sale numbers without a separate
   // sequence/counter table or raw SQL row-locking.
   saleCounter Int     @default(0) @map("sale_counter")
+  // Same gapless-per-store-counter pattern as saleCounter, for PO-000001
+  // style purchase order numbering (purchase orders are store-scoped, not
+  // tenant-wide, so this fits better than an InvoiceSequence-style table).
+  poCounter Int       @default(0) @map("po_counter")
   settings  Json      @default("{}")
   isActive  Boolean   @default(true) @map("is_active")
   createdAt DateTime  @default(now()) @map("created_at")
@@ -119,6 +127,7 @@ model Store {
   posSessions    PosSession[]
   sales          Sale[]
   saleReturns    SaleReturn[]
+  purchaseOrders PurchaseOrder[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -154,6 +163,8 @@ model User {
   salesAsCashier            Sale[]            @relation("SaleCashier")
   saleReturnsCreated        SaleReturn[]      @relation("SaleReturnCreatedBy")
   invoicesCreated           Invoice[]         @relation("InvoiceCreatedBy")
+  purchaseOrdersCreated     PurchaseOrder[]   @relation("PurchaseOrderCreatedBy")
+  purchaseOrdersApproved    PurchaseOrder[]   @relation("PurchaseOrderApprovedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -345,6 +356,8 @@ model Product {
   saleItems        SaleItem[]
   saleReturnItems  SaleReturnItem[]
   invoiceItems     InvoiceItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  supplierQuoteItems SupplierQuoteItem[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -482,6 +495,8 @@ model Supplier {
   tenant           Tenant            @relation(fields: [tenantId], references: [id])
   contacts         SupplierContact[]
   supplierProducts SupplierProduct[]
+  purchaseOrders   PurchaseOrder[]
+  supplierQuotes   SupplierQuote[]
 
   @@index([tenantId])
   @@map("suppliers")
@@ -885,4 +900,130 @@ model SaleReturnItem {
   @@index([returnId])
   @@index([saleItemId])
   @@map("sale_return_items")
+}
+
+// --- Phase 3 Chunk A: Purchasing Core ------------------------------------
+
+/// DATABASE.md §8.4's concrete enum — no "closed" value despite
+/// ARCHITECTURE.md's status list and §5.2 flow diagram both showing one
+/// after "received". The concrete schema wins (same precedent as Phase 2's
+/// sale_discounts resolution): `received` is the terminal success state.
+enum PoStatus {
+  draft
+  pending_approval
+  approved
+  ordered
+  partially_received
+  received
+  cancelled
+
+  @@map("po_status_enum")
+}
+
+model PurchaseOrder {
+  id                    String    @id @default(uuid()) @db.Uuid
+  tenantId              String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  poNumber              String    @map("po_number") @db.VarChar(50)
+  supplierId            String    @map("supplier_id") @db.Uuid
+  storeId               String    @map("store_id") @db.Uuid
+  status                PoStatus  @default(draft)
+  orderedAt             DateTime? @map("ordered_at")
+  expectedDeliveryDate  DateTime? @map("expected_delivery_date") @db.Date
+  notes                 String?
+  subtotal              Int       @default(0)
+  tvaAmount              Int      @default(0) @map("tva_amount")
+  total                  Int      @default(0)
+  currency               String   @default("DZD") @db.VarChar(3)
+  createdBy              String?  @map("created_by") @db.Uuid
+  approvedBy             String?  @map("approved_by") @db.Uuid
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  deletedAt              DateTime? @map("deleted_at")
+
+  tenant         Tenant              @relation(fields: [tenantId], references: [id])
+  supplier       Supplier            @relation(fields: [supplierId], references: [id])
+  store          Store               @relation(fields: [storeId], references: [id])
+  createdByUser  User?               @relation("PurchaseOrderCreatedBy", fields: [createdBy], references: [id])
+  approvedByUser User?               @relation("PurchaseOrderApprovedBy", fields: [approvedBy], references: [id])
+  items          PurchaseOrderItem[]
+
+  @@unique([tenantId, storeId, poNumber])
+  @@index([tenantId])
+  @@index([supplierId])
+  @@index([storeId])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id               String  @id @default(uuid()) @db.Uuid
+  tenantId         String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  poId             String  @map("po_id") @db.Uuid
+  productId        String  @map("product_id") @db.Uuid
+  quantityOrdered  Int     @map("quantity_ordered")
+  quantityReceived Int     @default(0) @map("quantity_received")
+  unitPrice        Int     @map("unit_price")
+  tvaRate          Int     @map("tva_rate") @db.SmallInt
+  subtotal         Int
+  tvaAmount        Int     @map("tva_amount")
+  total            Int
+  notes            String?
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id])
+  po      PurchaseOrder @relation(fields: [poId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([poId])
+  @@index([productId])
+  @@map("purchase_order_items")
+}
+
+/// Net-new — ARCHITECTURE.md names supplier_quotes/supplier_quote_items in
+/// its data model and roadmap Week 10 requires "supplier quote comparison,"
+/// but DATABASE.md has zero column definitions for either. Kept minimal:
+/// enough to record a supplier's quoted price per product and compare
+/// across suppliers for the same product set — not linked to a specific
+/// PurchaseOrder, since a quote informs pricing for a future PO, it isn't
+/// owned by one.
+enum SupplierQuoteStatus {
+  pending
+  received
+  expired
+
+  @@map("supplier_quote_status_enum")
+}
+
+model SupplierQuote {
+  id         String              @id @default(uuid()) @db.Uuid
+  tenantId   String              @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  supplierId String              @map("supplier_id") @db.Uuid
+  status     SupplierQuoteStatus @default(pending)
+  validUntil DateTime?           @map("valid_until") @db.Date
+  notes      String?
+  createdAt  DateTime            @default(now()) @map("created_at")
+
+  tenant   Tenant              @relation(fields: [tenantId], references: [id])
+  supplier Supplier            @relation(fields: [supplierId], references: [id])
+  items    SupplierQuoteItem[]
+
+  @@index([tenantId])
+  @@index([supplierId])
+  @@map("supplier_quotes")
+}
+
+model SupplierQuoteItem {
+  id        String @id @default(uuid()) @db.Uuid
+  tenantId  String @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  quoteId   String @map("quote_id") @db.Uuid
+  productId String @map("product_id") @db.Uuid
+  quantity  Int
+  unitPrice Int    @map("unit_price")
+
+  tenant  Tenant        @relation(fields: [tenantId], references: [id])
+  quote   SupplierQuote @relation(fields: [quoteId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+
+  @@index([tenantId])
+  @@index([quoteId])
+  @@map("supplier_quote_items")
 }

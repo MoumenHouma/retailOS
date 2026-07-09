@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getMessages, setRequestLocale } from "next-intl/server";
-import { routing } from "@/i18n/routing";
+import { routing, APP_TIME_ZONE } from "@/i18n/routing";
 import { Providers } from "@/components/providers";
 import "../globals.css";
 
@@ -32,7 +32,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} dir={locale === "ar" ? "rtl" : "ltr"}>
       <body className="antialiased">
-        <Providers messages={messages} locale={locale}>
+        <Providers messages={messages} locale={locale} timeZone={APP_TIME_ZONE}>
           {children}
         </Providers>
       </body>

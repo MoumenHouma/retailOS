@@ -510,6 +510,109 @@
       "total": "{count} facture(s)"
     }
   },
+  "purchaseOrders": {
+    "title": "Bons de commande",
+    "newPurchaseOrder": "Nouveau bon de commande",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "noStore": "Votre compte n'est associé à aucun magasin.",
+    "searchPlaceholder": "Rechercher un bon de commande (n°)...",
+    "empty": "Aucun bon de commande trouvé.",
+    "loadError": "Impossible de charger les bons de commande.",
+    "loading": "Chargement...",
+    "actionError": "Une erreur est survenue.",
+    "expectedDeliveryDate": "Date de livraison prévue",
+    "filter": { "all": "Tous" },
+    "status": {
+      "draft": "Brouillon",
+      "pending_approval": "En attente d'approbation",
+      "approved": "Approuvé",
+      "ordered": "Commandé",
+      "partially_received": "Partiellement reçu",
+      "received": "Reçu",
+      "cancelled": "Annulé"
+    },
+    "table": {
+      "poNumber": "N° de commande",
+      "supplier": "Fournisseur",
+      "date": "Date",
+      "items": "Articles",
+      "total": "Total",
+      "status": "Statut",
+      "ordered": "Commandé",
+      "received": "Reçu"
+    },
+    "actions": {
+      "edit": "Modifier",
+      "submit": "Soumettre pour approbation",
+      "submitSuccess": "Bon de commande soumis pour approbation.",
+      "approve": "Approuver",
+      "approveSuccess": "Bon de commande approuvé.",
+      "markOrdered": "Marquer comme commandé",
+      "orderSuccess": "Bon de commande marqué comme commandé.",
+      "cancel": "Annuler",
+      "cancelSuccess": "Bon de commande annulé."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} bon(s) de commande"
+    },
+    "form": {
+      "supplier": "Fournisseur",
+      "selectSupplier": "Sélectionner un fournisseur",
+      "expectedDeliveryDate": "Date de livraison prévue",
+      "notes": "Notes",
+      "items": "Articles",
+      "product": "Produit",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire (DA)",
+      "lineTotal": "Total",
+      "subtotal": "Sous-total",
+      "tva": "TVA",
+      "total": "Total",
+      "addProductPlaceholder": "Rechercher un produit à ajouter...",
+      "noProductsFound": "Aucun produit trouvé.",
+      "supplierRequired": "Sélectionnez un fournisseur.",
+      "itemsRequired": "Ajoutez au moins un article.",
+      "submit": "Créer le brouillon",
+      "submitting": "Création...",
+      "success": "Bon de commande créé avec succès.",
+      "editSubmit": "Enregistrer",
+      "editSubmitting": "Enregistrement...",
+      "editSuccess": "Bon de commande mis à jour avec succès.",
+      "cancelEdit": "Annuler",
+      "error": "Impossible d'enregistrer ce bon de commande.",
+      "loadSuppliersError": "Impossible de charger les fournisseurs."
+    }
+  },
+  "supplierQuotes": {
+    "title": "Devis fournisseurs",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucun devis enregistré.",
+    "table": {
+      "supplier": "Fournisseur",
+      "validUntil": "Valide jusqu'au",
+      "items": "Articles"
+    },
+    "comparison": {
+      "title": "Comparaison des devis",
+      "empty": "Aucun devis pour ces produits."
+    },
+    "form": {
+      "title": "Nouveau devis",
+      "supplier": "Fournisseur",
+      "validUntil": "Valide jusqu'au",
+      "product": "Produit",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire (DA)",
+      "validationError": "Sélectionnez un fournisseur et ajoutez au moins un article.",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Devis créé avec succès.",
+      "error": "Impossible de créer ce devis."
+    }
+  },
   "inventory": {
     "title": "Inventaire",
     "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
