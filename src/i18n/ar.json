@@ -92,6 +92,39 @@
       "editSubmitting": "جارٍ الحفظ...",
       "editSuccess": "تم تحديث المورد بنجاح.",
       "editError": "تعذر تحديث هذا المورد."
+    },
+    "linkedProducts": {
+      "trigger": "المنتجات المرتبطة",
+      "dialogTitle": "المنتجات المرتبطة — {name}",
+      "dialogDescription": "أدر المنتجات التي يوردها هذا المورد.",
+      "table": {
+        "product": "المنتج",
+        "supplierSku": "مرجع المورد",
+        "unitPrice": "سعر الوحدة",
+        "minOrderQty": "الكمية الدنيا",
+        "preferred": "مفضل",
+        "actions": "الإجراءات"
+      },
+      "preferredBadge": "مفضل",
+      "form": {
+        "product": "المنتج *",
+        "supplierSku": "مرجع المورد",
+        "unitPrice": "سعر الوحدة (دج)",
+        "minOrderQuantity": "الكمية الدنيا للطلب",
+        "deliveryTimeDays": "مدة التوريد (أيام)",
+        "isPreferred": "المورد المفضل لهذا المنتج",
+        "submit": "ربط",
+        "submitting": "جارٍ الربط...",
+        "success": "تم ربط المنتج بنجاح.",
+        "error": "تعذر ربط هذا المنتج."
+      },
+      "delete": {
+        "confirm": "هل تريد إزالة هذا المنتج من المورد؟",
+        "success": "تمت إزالة الرابط.",
+        "error": "تعذر إزالة هذا الرابط."
+      },
+      "empty": "لا توجد منتجات مرتبطة.",
+      "loadError": "تعذر تحميل المنتجات المرتبطة."
     }
   },
   "products": {

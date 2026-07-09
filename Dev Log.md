@@ -17,6 +17,7 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 - Added **edit UI** for products and suppliers: the create dialogs (`ProductFormDialog`, `SupplierFormDialog`) now take an optional `product`/`supplier` prop and switch between POST-create and PATCH-update — a pencil-icon button per row opens the same dialog pre-filled. Both PATCH routes already existed; only the UI was missing.
 - Added **CSV/Excel import-export UI** for products: "Exporter (CSV)"/"Exporter (Excel)" buttons (plain `<a>` downloads, not client routing — the response is a file, not a page), and an "Importer" dialog that previews the parsed rows (valid/error counts, per-row error detail) before a separate confirm step commits only the valid rows.
 - Added **multi-barcode management UI**: a barcode-icon button per product row opens a dialog listing all barcodes for that product (type, primary badge), with add/set-primary/remove actions wired to the existing `/api/products/[id]/barcodes[/[barcodeId]]` routes.
+- Added **supplier-product linking UI**: a link-icon button per supplier row opens a dialog listing products supplied by that supplier (supplier SKU, unit price, min order qty, preferred badge) with link/set-preferred/remove actions. Added `GET /api/suppliers/[id]/products` + `listSupplierProducts` — the route only had POST before, so there was no way to list *existing* links, which a management UI can't work without.
 - Verified every page live in a real browser (Playwright-driven headless Chromium) against the Dockerized dev stack — not just typecheck/lint.
 
 **Bugs found and fixed during verification:**
@@ -33,8 +34,8 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 - Next dev's on-demand compilation can race an in-flight request body: the *first* hit to a not-yet-compiled dynamic API route that carries a JSON body can fail with `SyntaxError: Unexpected end of JSON input` in `request.json()` (the body stream appears to get consumed/discarded during the compile-triggered re-invocation). Retrying the exact same request once the route is warm succeeds immediately. Only ever seen on the first body-carrying request to a given route per dev-server process — a dev-mode-only artifact, not reproducible against a production build.
 
 **Open items for later phases:**
-- Supplier-product linking UI (API exists via `/api/suppliers/[id]/products`).
 - Multi-store support — Inventory/adjustment UI currently assumes the single seeded "principal" store per tenant.
+- Phase 1's UI-facing scope is now complete: every Phase 1 backend feature has a corresponding UI, list pages have search/filter/sort/pagination/create/edit/delete, and the roadmap's stated exit criteria (create products, organize into categories, assign barcodes, view stock levels, register/link suppliers) are all met. Next up per [[ROADMAP]] is Phase 2 (POS).
 
 ---
 

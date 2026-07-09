@@ -92,6 +92,39 @@
       "editSubmitting": "Enregistrement...",
       "editSuccess": "Fournisseur mis à jour avec succès.",
       "editError": "Impossible de mettre à jour ce fournisseur."
+    },
+    "linkedProducts": {
+      "trigger": "Produits liés",
+      "dialogTitle": "Produits liés — {name}",
+      "dialogDescription": "Gérez les produits fournis par ce fournisseur.",
+      "table": {
+        "product": "Produit",
+        "supplierSku": "Réf. fournisseur",
+        "unitPrice": "Prix unitaire",
+        "minOrderQty": "Qté min.",
+        "preferred": "Préféré",
+        "actions": "Actions"
+      },
+      "preferredBadge": "Préféré",
+      "form": {
+        "product": "Produit *",
+        "supplierSku": "Référence fournisseur",
+        "unitPrice": "Prix unitaire (DA)",
+        "minOrderQuantity": "Quantité minimum",
+        "deliveryTimeDays": "Délai de livraison (jours)",
+        "isPreferred": "Fournisseur préféré pour ce produit",
+        "submit": "Lier",
+        "submitting": "Liaison...",
+        "success": "Produit lié avec succès.",
+        "error": "Impossible de lier ce produit."
+      },
+      "delete": {
+        "confirm": "Retirer ce produit du fournisseur ?",
+        "success": "Lien supprimé.",
+        "error": "Impossible de supprimer ce lien."
+      },
+      "empty": "Aucun produit lié.",
+      "loadError": "Impossible de charger les produits liés."
     }
   },
   "products": {

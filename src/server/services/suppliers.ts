@@ -89,6 +89,14 @@ export async function removeSupplierContact(tx: TransactionClient, contactId: st
   await tx.supplierContact.delete({ where: { id: contactId } });
 }
 
+export async function listSupplierProducts(tx: TransactionClient, supplierId: string) {
+  return tx.supplierProduct.findMany({
+    where: { supplierId },
+    include: { product: { select: { id: true, name: true, sku: true } } },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
 /** isPreferred:true unsets it on all other suppliers linked to that product first. */
 export async function linkSupplierProduct(
   tx: TransactionClient,

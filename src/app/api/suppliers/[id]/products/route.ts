@@ -5,10 +5,22 @@ import { requirePermission } from "@/lib/permissions";
 import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { LinkSupplierProductSchema } from "@/lib/validators/suppliers";
-import { linkSupplierProduct } from "@/server/services/suppliers";
+import { linkSupplierProduct, listSupplierProducts } from "@/server/services/suppliers";
 
 interface Params {
   params: Promise<{ id: string }>;
+}
+
+export async function GET(_request: NextRequest, { params }: Params) {
+  const session = await auth();
+  const { id } = await params;
+  try {
+    requirePermission(session, "suppliers:read");
+    const links = await withTenant(session!.user.tenantId, (tx) => listSupplierProducts(tx, id));
+    return apiSuccess(links);
+  } catch (error) {
+    return mapServiceError(error);
+  }
 }
 
 export async function POST(request: NextRequest, { params }: Params) {

@@ -92,6 +92,39 @@
       "editSubmitting": "Saving...",
       "editSuccess": "Supplier updated successfully.",
       "editError": "Unable to update this supplier."
+    },
+    "linkedProducts": {
+      "trigger": "Linked products",
+      "dialogTitle": "Linked products — {name}",
+      "dialogDescription": "Manage the products supplied by this supplier.",
+      "table": {
+        "product": "Product",
+        "supplierSku": "Supplier ref.",
+        "unitPrice": "Unit price",
+        "minOrderQty": "Min. qty",
+        "preferred": "Preferred",
+        "actions": "Actions"
+      },
+      "preferredBadge": "Preferred",
+      "form": {
+        "product": "Product *",
+        "supplierSku": "Supplier reference",
+        "unitPrice": "Unit price (DA)",
+        "minOrderQuantity": "Minimum order quantity",
+        "deliveryTimeDays": "Delivery time (days)",
+        "isPreferred": "Preferred supplier for this product",
+        "submit": "Link",
+        "submitting": "Linking...",
+        "success": "Product linked successfully.",
+        "error": "Unable to link this product."
+      },
+      "delete": {
+        "confirm": "Remove this product from the supplier?",
+        "success": "Link removed.",
+        "error": "Unable to remove this link."
+      },
+      "empty": "No linked products.",
+      "loadError": "Unable to load linked products."
     }
   },
   "products": {

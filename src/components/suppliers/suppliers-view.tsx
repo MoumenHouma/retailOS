@@ -24,6 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { SupplierFormDialog, type SupplierEditData } from "@/components/suppliers/supplier-form-dialog";
+import { LinkedProductsDialog } from "@/components/suppliers/linked-products-dialog";
 
 interface Supplier {
   id: string;
@@ -217,6 +218,7 @@ export function SuppliersView() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
+                  <LinkedProductsDialog supplierId={supplier.id} supplierName={supplier.name} />
                   <SupplierFormDialog
                     supplier={toEditData(supplier)}
                     onSaved={() => queryClient.invalidateQueries({ queryKey: ["suppliers"] })}
