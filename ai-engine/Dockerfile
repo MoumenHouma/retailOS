@@ -15,7 +15,14 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Warm/verify the cmdstan install Prophet needs at import time — surfaces a
 # broken Stan toolchain at build time instead of on the first real request.
-RUN python -c "import cmdstanpy; cmdstanpy.install_cmdstan()" || true
+# `timeout` (coreutils, already present in the base image) guards against
+# install_cmdstan() hanging indefinitely on a stalled network read (cmdstanpy
+# has no internal timeout on its GitHub release download) — hit this live: a
+# build hung >30min with zero output. A capped, failed install here just
+# means /forecast fails clearly at runtime instead of the whole image build
+# hanging forever.
+RUN timeout 1800 python -c "import os, cmdstanpy; cmdstanpy.install_cmdstan(cores=os.cpu_count() or 2, progress=True)" || \
+    echo "cmdstan install timed out or failed - continuing; /forecast will error clearly at runtime if this wasn't resolved"
 
 COPY . .
 

@@ -61,18 +61,31 @@ export async function getRevenueDashboard(tx: TransactionClient, query: RevenueD
 export async function getProfitAndLoss(tx: TransactionClient, query: FinancialReportQuery) {
   const { storeId, from, to } = query;
 
-  const sales = await tx.sale.findMany({
-    where: {
-      status: "completed",
-      deletedAt: null,
-      createdAt: { gte: from, lte: to },
-      ...(storeId ? { storeId } : {}),
-    },
-    select: {
-      subtotal: true,
-      items: { select: { quantity: true, costPrice: true } },
-    },
-  });
+  const expenseWhere: Prisma.ExpenseWhereInput = {
+    deletedAt: null,
+    expenseDate: { gte: from, lte: to },
+    ...(storeId ? { storeId } : {}),
+  };
+
+  // Independent reads — parallelized to stay under withTenant's 5s default
+  // transaction timeout, the same P2028 lesson Phase 4 Chunk C hit running
+  // these sequentially inside one interactive transaction. Phase 5's
+  // scenario-simulation.ts calls this under real load and hit it live.
+  const [sales, expenses] = await Promise.all([
+    tx.sale.findMany({
+      where: {
+        status: "completed",
+        deletedAt: null,
+        createdAt: { gte: from, lte: to },
+        ...(storeId ? { storeId } : {}),
+      },
+      select: {
+        subtotal: true,
+        items: { select: { quantity: true, costPrice: true } },
+      },
+    }),
+    tx.expense.findMany({ where: expenseWhere, select: { amount: true } }),
+  ]);
 
   const revenue = sales.reduce((sum, sale) => sum + sale.subtotal, 0);
   const cogs = sales.reduce(
@@ -81,13 +94,6 @@ export async function getProfitAndLoss(tx: TransactionClient, query: FinancialRe
     0,
   );
   const grossMargin = revenue - cogs;
-
-  const expenseWhere: Prisma.ExpenseWhereInput = {
-    deletedAt: null,
-    expenseDate: { gte: from, lte: to },
-    ...(storeId ? { storeId } : {}),
-  };
-  const expenses = await tx.expense.findMany({ where: expenseWhere, select: { amount: true } });
   const operatingExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
 
   return {
