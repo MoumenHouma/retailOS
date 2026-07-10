@@ -16,7 +16,7 @@ FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm exec prisma generate
-RUN pnpm exec next build
+RUN pnpm exec next build --webpack
 
 # Runtime image — only what's needed to run the standalone server.
 FROM node:22-slim AS runner

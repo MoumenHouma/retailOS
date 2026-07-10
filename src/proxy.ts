@@ -16,11 +16,11 @@ const intlMiddleware = createIntlMiddleware(routing);
 // proxy/middleware file — this was briefly a separate `src/middleware.ts`
 // (the pre-16 filename) until live verification caught "Both middleware
 // file and proxy file are detected" crashing every route with a 404. Merged
-// here instead. Node.js runtime (not Edge) because ioredis needs Node's
-// native `net` module — the next-intl half of this file runs fine under
-// Node runtime too, so one shared runtime for both halves is fine.
+// here instead. Proxy files always run on Node.js runtime in Next.js 16
+// (needed anyway since ioredis requires Node's native `net` module) —
+// declaring `runtime` explicitly is rejected at build time ("Route segment
+// config is not allowed in Proxy file"), so only `matcher` is set here.
 export const config = {
-  runtime: "nodejs",
   matcher: ["/((?!_next|.*\\..*).*)"],
 };
 
