@@ -18,6 +18,13 @@ export interface PosCartCustomer {
 interface PosCartState {
   lines: PosCartLine[];
   customer: PosCartCustomer | null;
+  // Phase 4 Chunk B: active CustomerPrice overrides for the selected
+  // customer, keyed by productId — populated by CustomerPicker whenever the
+  // customer changes. Without this, the cart/payment UI kept showing
+  // Product.sellingPrice throughout checkout even though completeSale()
+  // silently applied the customer's real price server-side, so the cashier
+  // collected (and the customer saw) the wrong total on screen.
+  customerPrices: Record<string, number>;
   discountAmount: number;
   addProduct: (product: {
     id: string;
@@ -30,6 +37,7 @@ interface PosCartState {
   setLineDiscount: (productId: string, discountAmount: number) => void;
   removeLine: (productId: string) => void;
   setCustomer: (customer: PosCartCustomer | null) => void;
+  setCustomerPrices: (prices: Record<string, number>) => void;
   setDiscountAmount: (amount: number) => void;
   loadLines: (lines: PosCartLine[], discountAmount: number) => void;
   clear: () => void;
@@ -40,10 +48,12 @@ interface PosCartState {
 export const usePosCartStore = create<PosCartState>((set) => ({
   lines: [],
   customer: null,
+  customerPrices: {},
   discountAmount: 0,
 
   addProduct: (product) =>
     set((state) => {
+      const unitPrice = state.customerPrices[product.id] ?? product.sellingPrice;
       const existing = state.lines.find((line) => line.productId === product.id);
       if (existing) {
         return {
@@ -59,7 +69,7 @@ export const usePosCartStore = create<PosCartState>((set) => ({
             productId: product.id,
             name: product.name,
             barcode: product.barcode,
-            unitPrice: product.sellingPrice,
+            unitPrice,
             tvaRate: product.tvaRate,
             quantity: 1,
             discountAmount: 0,
@@ -86,15 +96,30 @@ export const usePosCartStore = create<PosCartState>((set) => ({
   removeLine: (productId) =>
     set((state) => ({ lines: state.lines.filter((line) => line.productId !== productId) })),
 
-  setCustomer: (customer) => set({ customer }),
+  setCustomer: (customer) => set({ customer, customerPrices: {} }),
+
+  // Repricing already-in-cart lines here (not just new addProduct calls)
+  // covers picking a customer after items are already scanned — falls back
+  // to each line's existing unitPrice for any product with no override in
+  // the new map, since the client doesn't retain the original
+  // Product.sellingPrice separately once a line exists.
+  setCustomerPrices: (customerPrices) =>
+    set((state) => ({
+      customerPrices,
+      lines: state.lines.map((line) => {
+        const override = customerPrices[line.productId];
+        return override !== undefined ? { ...line, unitPrice: override } : line;
+      }),
+    })),
+
   setDiscountAmount: (discountAmount) => set({ discountAmount }),
 
   // Used to reload a recalled held ticket's items back into the working
   // cart — recall discards the held Sale row server-side, so this is the
   // only place that data survives afterward.
-  loadLines: (lines, discountAmount) => set({ lines, discountAmount, customer: null }),
+  loadLines: (lines, discountAmount) => set({ lines, discountAmount, customer: null, customerPrices: {} }),
 
-  clear: () => set({ lines: [], customer: null, discountAmount: 0 }),
+  clear: () => set({ lines: [], customer: null, customerPrices: {}, discountAmount: 0 }),
 }));
 
 export function cartTotals(lines: PosCartLine[], ticketDiscount: number) {

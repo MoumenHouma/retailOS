@@ -21,8 +21,8 @@ const PERMISSION_CATALOG: Record<
   pos: ["pos:operate", "pos:refund", "pos:discount", "pos:open_drawer"],
   purchases: ["purchases:read", "purchases:create", "purchases:approve"],
   suppliers: ["suppliers:read", "suppliers:create", "suppliers:update", "suppliers:delete"],
-  customers: ["customers:read", "customers:create"],
-  finance: ["finance:read", "finance:invoice", "finance:report"],
+  customers: ["customers:read", "customers:create", "customers:update", "customers:delete"],
+  finance: ["finance:read", "finance:invoice", "finance:report", "finance:expense", "finance:payment"],
   employees: ["employees:read", "employees:manage"],
   reports: ["reports:view", "reports:export"],
   ai: ["ai:view_recommendations", "ai:run_forecast"],
@@ -51,6 +51,11 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
     ...PERMISSION_CATALOG.reports,
     "products:read",
     "suppliers:read",
+    // Phase 4 Chunk B gap fix: needs debt/AR visibility for financial
+    // reporting but previously had no customers:* permission at all — same
+    // "found and fixed a role gap" pattern Phase 3 used for
+    // INVENTORY_CLERK + purchases:read.
+    "customers:read",
   ],
 };
 

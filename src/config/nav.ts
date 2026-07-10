@@ -12,7 +12,9 @@ import {
   Receipt,
   ShoppingCart,
   Truck,
+  Users,
   Warehouse,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -37,6 +39,7 @@ export const navGroups: NavGroup[] = [
       { href: "/pos", labelKey: "pos", icon: ShoppingCart },
       { href: "/sales", labelKey: "sales", icon: Receipt },
       { href: "/invoices", labelKey: "invoices", icon: FileText },
+      { href: "/customers", labelKey: "customers", icon: Users },
     ],
   },
   {
@@ -56,6 +59,13 @@ export const navGroups: NavGroup[] = [
       { href: "/warehouses", labelKey: "warehouses", icon: Warehouse },
       { href: "/stock-transfers", labelKey: "stockTransfers", icon: ArrowLeftRight },
       { href: "/stock-counts", labelKey: "stockCounts", icon: ClipboardCheck },
+    ],
+  },
+  {
+    labelKey: "groups.finance",
+    items: [
+      { href: "/expenses", labelKey: "expenses", icon: Wallet },
+      { href: "/finance", labelKey: "financialDashboard", icon: BarChart3 },
     ],
   },
   {

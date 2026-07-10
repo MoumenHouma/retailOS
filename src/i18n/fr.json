@@ -19,6 +19,7 @@
       "sales": "Ventes",
       "purchasing": "Achats",
       "inventory": "Stock",
+      "finance": "Finances",
       "reports": "Rapports"
     },
     "pos": "Point de vente",
@@ -33,7 +34,10 @@
     "warehouses": "Entrepôts",
     "stockTransfers": "Transferts de stock",
     "stockCounts": "Inventaires physiques",
-    "procurementReports": "Rapports d'achats"
+    "procurementReports": "Rapports d'achats",
+    "expenses": "Dépenses",
+    "financialDashboard": "Tableau de bord financier",
+    "customers": "Clients"
   },
   "auth": {
     "login": {
@@ -486,14 +490,80 @@
     }
   },
   "customers": {
+    "title": "Clients",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "searchPlaceholder": "Rechercher un client (nom, téléphone)...",
+    "empty": "Aucun client trouvé.",
+    "loadError": "Impossible de charger les clients.",
+    "loading": "Chargement...",
     "newCustomer": "Nouveau client",
+    "status": { "active": "Actif", "inactive": "Inactif" },
+    "table": {
+      "name": "Nom",
+      "phone": "Téléphone",
+      "type": "Type",
+      "loyaltyPoints": "Points fidélité",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "delete": {
+      "confirm": "Supprimer ce client ?",
+      "success": "Client supprimé.",
+      "error": "Impossible de supprimer ce client."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} client(s)"
+    },
+    "tabs": {
+      "profile": "Profil",
+      "purchaseHistory": "Historique d'achats",
+      "loyalty": "Fidélité",
+      "debts": "Dettes",
+      "pricing": "Tarifs personnalisés"
+    },
+    "detail": {
+      "loyaltyPoints": "Points fidélité",
+      "currentDebt": "Dette actuelle",
+      "totalSpent": "Total dépensé",
+      "totalPurchases": "Nombre d'achats"
+    },
+    "history": {
+      "saleNumber": "N° de vente",
+      "date": "Date",
+      "items": "Articles",
+      "total": "Total",
+      "empty": "Aucun achat pour le moment."
+    },
     "form": {
+      "title": "Nouveau client",
+      "description": "Créer une fiche client.",
+      "editTitle": "Modifier le client",
+      "editDescription": "Mettre à jour cette fiche client.",
       "name": "Nom *",
       "phone": "Téléphone",
+      "email": "E-mail",
+      "address": "Adresse",
+      "city": "Ville",
+      "nif": "NIF",
+      "customerType": "Type de client",
+      "customerTypes": {
+        "walk_in": "Client de passage",
+        "regular": "Régulier",
+        "vip": "VIP",
+        "wholesale": "Grossiste"
+      },
+      "creditLimit": "Limite de crédit (DA)",
       "submit": "Créer",
       "submitting": "Création...",
       "success": "Client créé avec succès.",
-      "error": "Impossible de créer ce client."
+      "error": "Impossible de créer ce client.",
+      "editSubmit": "Enregistrer",
+      "editSubmitting": "Enregistrement...",
+      "editSuccess": "Client mis à jour.",
+      "editError": "Impossible de mettre à jour ce client."
     }
   },
   "sales": {
@@ -553,6 +623,31 @@
       "previous": "Précédent",
       "next": "Suivant",
       "total": "{count} facture(s)"
+    },
+    "payments": {
+      "recordPayment": "Encaisser",
+      "title": "Encaissement de la facture",
+      "remaining": "Reste à payer : {amount}",
+      "amount": "Montant",
+      "paidAt": "Date de paiement",
+      "method": "Moyen de paiement",
+      "methods": {
+        "CASH": "Espèces",
+        "CARD": "Carte",
+        "CHECK": "Chèque",
+        "TRANSFER": "Virement",
+        "MIXED": "Mixte"
+      },
+      "reference": "Référence",
+      "submit": "Enregistrer le paiement",
+      "submitting": "Enregistrement...",
+      "success": "Paiement enregistré.",
+      "error": "Impossible d'enregistrer le paiement.",
+      "history": {
+        "date": "Date",
+        "amount": "Montant",
+        "method": "Moyen"
+      }
     }
   },
   "purchaseOrders": {
@@ -1014,6 +1109,212 @@
       "previous": "Précédent",
       "next": "Suivant",
       "total": "{count} ligne(s)"
+    }
+  },
+  "expenses": {
+    "title": "Dépenses",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "empty": "Aucune dépense enregistrée.",
+    "loadError": "Impossible de charger les dépenses.",
+    "tabs": { "expenses": "Dépenses", "categories": "Catégories" },
+    "table": {
+      "date": "Date",
+      "description": "Description",
+      "category": "Catégorie",
+      "amount": "Montant",
+      "paymentMethod": "Moyen de paiement",
+      "actions": "Actions"
+    },
+    "delete": {
+      "confirm": "Supprimer cette dépense ?",
+      "success": "Dépense supprimée.",
+      "error": "Impossible de supprimer la dépense."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} sur {totalPages}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "total": "{count} dépense(s)"
+    },
+    "form": {
+      "title": "Nouvelle dépense",
+      "description": "Enregistrer une dépense.",
+      "editTitle": "Modifier la dépense",
+      "editDescription": "Mettre à jour cette dépense.",
+      "descriptionLabel": "Description",
+      "category": "Catégorie",
+      "selectCategory": "Sélectionner une catégorie",
+      "store": "Magasin",
+      "allStores": "Tous les magasins",
+      "amount": "Montant (DA)",
+      "tvaRate": "Taux de TVA",
+      "expenseDate": "Date de la dépense",
+      "paymentMethod": "Moyen de paiement",
+      "paymentMethods": {
+        "CASH": "Espèces",
+        "CARD": "Carte",
+        "CHECK": "Chèque",
+        "TRANSFER": "Virement",
+        "MIXED": "Mixte"
+      },
+      "supplier": "Fournisseur",
+      "noSupplier": "Aucun fournisseur",
+      "reference": "Référence",
+      "notes": "Notes",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Dépense créée.",
+      "error": "Impossible de créer la dépense.",
+      "editSubmit": "Enregistrer",
+      "editSubmitting": "Enregistrement...",
+      "editSuccess": "Dépense mise à jour.",
+      "editError": "Impossible de mettre à jour la dépense."
+    }
+  },
+  "expenseCategories": {
+    "empty": "Aucune catégorie de dépense.",
+    "loadError": "Impossible de charger les catégories.",
+    "table": { "name": "Nom", "status": "Statut", "actions": "Actions" },
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "deactivate": {
+      "confirm": "Désactiver cette catégorie ?",
+      "success": "Catégorie désactivée.",
+      "error": "Impossible de désactiver la catégorie."
+    },
+    "form": {
+      "title": "Nouvelle catégorie",
+      "description": "Créer une catégorie de dépense.",
+      "name": "Nom",
+      "parent": "Catégorie parente",
+      "noParent": "Aucune (catégorie racine)",
+      "descriptionLabel": "Description",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Catégorie créée.",
+      "error": "Impossible de créer la catégorie."
+    }
+  },
+  "financialDashboard": {
+    "title": "Tableau de bord financier",
+    "forbidden": "Vous n'avez pas la permission d'accéder à cette page.",
+    "from": "Du",
+    "to": "Au",
+    "granularity": "Granularité",
+    "granularityOptions": { "daily": "Quotidien", "weekly": "Hebdomadaire", "monthly": "Mensuel" },
+    "profitAndLoss": {
+      "title": "Compte de résultat (simplifié)",
+      "revenue": "Chiffre d'affaires",
+      "cogs": "Coût des marchandises vendues",
+      "grossMargin": "Marge brute",
+      "operatingExpenses": "Charges d'exploitation",
+      "netProfit": "Résultat net"
+    },
+    "tvaSummary": {
+      "title": "Synthèse TVA",
+      "collected": "TVA collectée",
+      "paidPurchases": "TVA payée (achats)",
+      "paidExpenses": "TVA payée (dépenses)",
+      "net": "TVA nette"
+    },
+    "revenueDashboard": {
+      "title": "Chiffre d'affaires",
+      "empty": "Aucune vente sur cette période.",
+      "table": {
+        "period": "Période",
+        "revenue": "Chiffre d'affaires",
+        "tva": "TVA",
+        "total": "Total",
+        "saleCount": "Nb. ventes"
+      }
+    }
+  },
+  "customerDebts": {
+    "status": {
+      "outstanding": "En cours",
+      "partially_paid": "Partiellement payée",
+      "paid": "Payée",
+      "written_off": "Radiée"
+    },
+    "table": {
+      "date": "Date",
+      "dueDate": "Échéance",
+      "amount": "Montant",
+      "remaining": "Reste dû",
+      "status": "Statut",
+      "actions": "Actions",
+      "empty": "Aucune dette pour ce client."
+    },
+    "form": {
+      "title": "Nouvelle dette",
+      "description": "Enregistrer une vente à crédit.",
+      "amount": "Montant (DA)",
+      "dueDate": "Échéance",
+      "notes": "Notes",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Dette créée.",
+      "error": "Impossible de créer cette dette."
+    },
+    "payments": {
+      "recordPayment": "Encaisser",
+      "title": "Paiement de la dette",
+      "remaining": "Reste dû : {amount}",
+      "amount": "Montant",
+      "paidAt": "Date de paiement",
+      "method": "Moyen de paiement",
+      "methods": {
+        "CASH": "Espèces",
+        "CARD": "Carte",
+        "CHECK": "Chèque",
+        "TRANSFER": "Virement",
+        "MIXED": "Mixte"
+      },
+      "submit": "Enregistrer",
+      "submitting": "Enregistrement...",
+      "success": "Paiement enregistré.",
+      "error": "Impossible d'enregistrer le paiement.",
+      "history": { "date": "Date", "amount": "Montant", "method": "Moyen" }
+    }
+  },
+  "loyalty": {
+    "redeem": "Échanger des points",
+    "balance": "Solde : {balance} points",
+    "pointsToRedeem": "Points à échanger",
+    "submit": "Échanger",
+    "submitting": "Traitement...",
+    "success": "Points échangés.",
+    "error": "Impossible d'échanger ces points.",
+    "table": {
+      "date": "Date",
+      "reason": "Motif",
+      "points": "Points",
+      "balance": "Solde",
+      "empty": "Aucune transaction de fidélité."
+    }
+  },
+  "customerPricing": {
+    "form": {
+      "title": "Nouveau tarif",
+      "description": "Définir un prix spécifique pour ce client.",
+      "product": "Produit",
+      "searchProduct": "Rechercher un produit...",
+      "noProductsFound": "Aucun produit trouvé.",
+      "price": "Prix (DA)",
+      "submit": "Enregistrer",
+      "submitting": "Enregistrement...",
+      "success": "Tarif enregistré.",
+      "error": "Impossible d'enregistrer ce tarif."
+    },
+    "table": {
+      "product": "Produit",
+      "price": "Prix",
+      "actions": "Actions",
+      "empty": "Aucun tarif personnalisé pour ce client."
+    },
+    "delete": {
+      "confirm": "Supprimer ce tarif ?",
+      "success": "Tarif supprimé.",
+      "error": "Impossible de supprimer ce tarif."
     }
   }
 }

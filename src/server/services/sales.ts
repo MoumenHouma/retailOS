@@ -2,6 +2,8 @@ import type { Prisma } from "@prisma/client";
 import { recordStockMovement } from "./stock";
 import { InvalidReferenceError } from "./products";
 import { SessionClosedError } from "./pos-sessions";
+import { getEffectivePrices } from "./customer-pricing";
+import { computeEarnedPoints, earnPoints } from "./loyalty";
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -80,12 +82,22 @@ async function nextSaleNumber(tx: TransactionClient, storeId: string): Promise<s
  * the route level) but can never supply its own price, closing off a
  * tampered-request underselling path. Shared by completeSale and holdSale
  * so a held ticket's totals are priced identically to a live one.
+ *
+ * Phase 4 Chunk B touch: when customerId is present, an active
+ * CustomerPrice override for that customer+product wins over
+ * Product.sellingPrice — one additional lookup branch, not a rewrite (same
+ * "small additive touch" precedent Phase 3 Chunk B used for
+ * recordStockMovement).
  */
-async function priceItems(tx: TransactionClient, items: SaleItemInput[]) {
+async function priceItems(tx: TransactionClient, items: SaleItemInput[], customerId?: string | null) {
   const products = await tx.product.findMany({
     where: { id: { in: items.map((item) => item.productId) } },
   });
   const productById = new Map(products.map((product) => [product.id, product]));
+
+  const customerPrices = customerId
+    ? await getEffectivePrices(tx, customerId, items.map((item) => item.productId))
+    : new Map<string, number>();
 
   let subtotal = 0;
   let tvaAmount = 0;
@@ -95,11 +107,12 @@ async function priceItems(tx: TransactionClient, items: SaleItemInput[]) {
     const product = productById.get(item.productId);
     if (!product) throw new InvalidReferenceError("productId");
 
+    const unitPrice = customerPrices.get(item.productId) ?? product.sellingPrice;
     const discount = item.discountAmount ?? 0;
-    const lineSubtotal = product.sellingPrice * item.quantity - discount;
+    const lineSubtotal = unitPrice * item.quantity - discount;
     const lineTva = Math.round((lineSubtotal * product.tvaRate) / 100);
 
-    subtotal += product.sellingPrice * item.quantity;
+    subtotal += unitPrice * item.quantity;
     lineDiscountTotal += discount;
     tvaAmount += lineTva;
 
@@ -108,7 +121,7 @@ async function priceItems(tx: TransactionClient, items: SaleItemInput[]) {
       productName: product.name,
       productBarcode: product.barcode,
       quantity: item.quantity,
-      unitPrice: product.sellingPrice,
+      unitPrice,
       costPrice: product.costPrice,
       tvaRate: product.tvaRate,
       discountAmount: discount,
@@ -138,7 +151,11 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
     throw new SessionClosedError();
   }
 
-  const { itemsData, subtotal, tvaAmount, lineDiscountTotal } = await priceItems(tx, input.items);
+  const { itemsData, subtotal, tvaAmount, lineDiscountTotal } = await priceItems(
+    tx,
+    input.items,
+    input.customerId,
+  );
 
   // Ticket-level discount is applied post-tax (flat off the total), matching
   // DATABASE.md's sales.discount_amount column — it doesn't re-derive TVA.
@@ -196,6 +213,27 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
     });
   }
 
+  // Phase 4 Chunk B touch: customer-side bookkeeping on a completed sale —
+  // aggregate stats (DATABASE.md §10.1's totalPurchases/totalSpent/
+  // visitCount/lastVisitAt columns would otherwise sit permanently at 0)
+  // plus loyalty-point earning. Both are additive, post-creation writes;
+  // neither can block or roll back the sale itself.
+  if (input.customerId) {
+    await tx.customer.update({
+      where: { id: input.customerId },
+      data: {
+        totalPurchases: { increment: 1 },
+        totalSpent: { increment: sale.total },
+        visitCount: { increment: 1 },
+        lastVisitAt: new Date(),
+      },
+    });
+    const earnedPoints = computeEarnedPoints(sale.total);
+    if (earnedPoints > 0) {
+      await earnPoints(tx, { customerId: input.customerId, saleId: sale.id, points: earnedPoints });
+    }
+  }
+
   return sale;
 }
 
@@ -216,7 +254,11 @@ export async function holdSale(tx: TransactionClient, input: HoldSaleInput) {
     throw new SessionClosedError();
   }
 
-  const { itemsData, subtotal, tvaAmount, lineDiscountTotal } = await priceItems(tx, input.items);
+  const { itemsData, subtotal, tvaAmount, lineDiscountTotal } = await priceItems(
+    tx,
+    input.items,
+    input.customerId,
+  );
   const discountAmount = lineDiscountTotal + (input.discountAmount ?? 0);
   const total = subtotal - discountAmount + tvaAmount;
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+import { RecordPaymentDialog } from "@/components/invoices/record-payment-dialog";
 
 interface InvoiceRow {
   id: string;
@@ -23,6 +24,7 @@ interface InvoiceRow {
   issueDate: string;
   customerName: string | null;
   netToPay: number;
+  amountPaid: number;
   status: string;
 }
 
@@ -41,6 +43,7 @@ async function fetchInvoices(page: number): Promise<InvoicesResponse> {
 
 export function InvoicesView() {
   const t = useTranslations("invoices");
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
 
   const { data, isLoading, isError } = useQuery({
@@ -101,6 +104,12 @@ export function InvoicesView() {
                       {t("table.view")}
                     </a>
                   </Button>
+                  <RecordPaymentDialog
+                    invoiceId={invoice.id}
+                    netToPay={invoice.netToPay}
+                    amountPaid={invoice.amountPaid}
+                    onRecorded={() => queryClient.invalidateQueries({ queryKey: ["invoices"] })}
+                  />
                 </TableCell>
               </TableRow>
             ))}

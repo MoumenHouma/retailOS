@@ -19,6 +19,7 @@
       "sales": "Sales",
       "purchasing": "Purchasing",
       "inventory": "Inventory",
+      "finance": "Finance",
       "reports": "Reports"
     },
     "pos": "Point of Sale",
@@ -33,7 +34,10 @@
     "warehouses": "Warehouses",
     "stockTransfers": "Stock Transfers",
     "stockCounts": "Stock Counts",
-    "procurementReports": "Procurement Reports"
+    "procurementReports": "Procurement Reports",
+    "expenses": "Expenses",
+    "financialDashboard": "Financial Dashboard",
+    "customers": "Customers"
   },
   "auth": {
     "login": {
@@ -486,14 +490,80 @@
     }
   },
   "customers": {
+    "title": "Customers",
+    "forbidden": "You don't have permission to access this page.",
+    "searchPlaceholder": "Search a customer (name, phone)...",
+    "empty": "No customers found.",
+    "loadError": "Unable to load customers.",
+    "loading": "Loading...",
     "newCustomer": "New customer",
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "table": {
+      "name": "Name",
+      "phone": "Phone",
+      "type": "Type",
+      "loyaltyPoints": "Loyalty points",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "delete": {
+      "confirm": "Delete this customer?",
+      "success": "Customer deleted.",
+      "error": "Unable to delete this customer."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} customer(s)"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "purchaseHistory": "Purchase History",
+      "loyalty": "Loyalty",
+      "debts": "Debts",
+      "pricing": "Custom Pricing"
+    },
+    "detail": {
+      "loyaltyPoints": "Loyalty points",
+      "currentDebt": "Current debt",
+      "totalSpent": "Total spent",
+      "totalPurchases": "Total purchases"
+    },
+    "history": {
+      "saleNumber": "Sale #",
+      "date": "Date",
+      "items": "Items",
+      "total": "Total",
+      "empty": "No purchases yet."
+    },
     "form": {
+      "title": "New customer",
+      "description": "Create a customer record.",
+      "editTitle": "Edit customer",
+      "editDescription": "Update this customer record.",
       "name": "Name *",
       "phone": "Phone",
+      "email": "Email",
+      "address": "Address",
+      "city": "City",
+      "nif": "NIF",
+      "customerType": "Customer type",
+      "customerTypes": {
+        "walk_in": "Walk-in",
+        "regular": "Regular",
+        "vip": "VIP",
+        "wholesale": "Wholesale"
+      },
+      "creditLimit": "Credit limit (DA)",
       "submit": "Create",
       "submitting": "Creating...",
       "success": "Customer created successfully.",
-      "error": "Unable to create this customer."
+      "error": "Unable to create this customer.",
+      "editSubmit": "Save",
+      "editSubmitting": "Saving...",
+      "editSuccess": "Customer updated.",
+      "editError": "Unable to update this customer."
     }
   },
   "sales": {
@@ -553,6 +623,31 @@
       "previous": "Previous",
       "next": "Next",
       "total": "{count} invoice(s)"
+    },
+    "payments": {
+      "recordPayment": "Record payment",
+      "title": "Invoice payment",
+      "remaining": "Remaining balance: {amount}",
+      "amount": "Amount",
+      "paidAt": "Payment date",
+      "method": "Payment method",
+      "methods": {
+        "CASH": "Cash",
+        "CARD": "Card",
+        "CHECK": "Check",
+        "TRANSFER": "Transfer",
+        "MIXED": "Mixed"
+      },
+      "reference": "Reference",
+      "submit": "Record payment",
+      "submitting": "Recording...",
+      "success": "Payment recorded.",
+      "error": "Unable to record the payment.",
+      "history": {
+        "date": "Date",
+        "amount": "Amount",
+        "method": "Method"
+      }
     }
   },
   "purchaseOrders": {
@@ -1014,6 +1109,212 @@
       "previous": "Previous",
       "next": "Next",
       "total": "{count} row(s)"
+    }
+  },
+  "expenses": {
+    "title": "Expenses",
+    "forbidden": "You don't have permission to access this page.",
+    "empty": "No expenses recorded.",
+    "loadError": "Unable to load expenses.",
+    "tabs": { "expenses": "Expenses", "categories": "Categories" },
+    "table": {
+      "date": "Date",
+      "description": "Description",
+      "category": "Category",
+      "amount": "Amount",
+      "paymentMethod": "Payment method",
+      "actions": "Actions"
+    },
+    "delete": {
+      "confirm": "Delete this expense?",
+      "success": "Expense deleted.",
+      "error": "Unable to delete the expense."
+    },
+    "pagination": {
+      "pageInfo": "Page {page} of {totalPages}",
+      "previous": "Previous",
+      "next": "Next",
+      "total": "{count} expense(s)"
+    },
+    "form": {
+      "title": "New expense",
+      "description": "Record an expense.",
+      "editTitle": "Edit expense",
+      "editDescription": "Update this expense.",
+      "descriptionLabel": "Description",
+      "category": "Category",
+      "selectCategory": "Select a category",
+      "store": "Store",
+      "allStores": "All stores",
+      "amount": "Amount (DA)",
+      "tvaRate": "TVA rate",
+      "expenseDate": "Expense date",
+      "paymentMethod": "Payment method",
+      "paymentMethods": {
+        "CASH": "Cash",
+        "CARD": "Card",
+        "CHECK": "Check",
+        "TRANSFER": "Transfer",
+        "MIXED": "Mixed"
+      },
+      "supplier": "Supplier",
+      "noSupplier": "No supplier",
+      "reference": "Reference",
+      "notes": "Notes",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Expense created.",
+      "error": "Unable to create the expense.",
+      "editSubmit": "Save",
+      "editSubmitting": "Saving...",
+      "editSuccess": "Expense updated.",
+      "editError": "Unable to update the expense."
+    }
+  },
+  "expenseCategories": {
+    "empty": "No expense categories.",
+    "loadError": "Unable to load categories.",
+    "table": { "name": "Name", "status": "Status", "actions": "Actions" },
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "deactivate": {
+      "confirm": "Deactivate this category?",
+      "success": "Category deactivated.",
+      "error": "Unable to deactivate the category."
+    },
+    "form": {
+      "title": "New category",
+      "description": "Create an expense category.",
+      "name": "Name",
+      "parent": "Parent category",
+      "noParent": "None (root category)",
+      "descriptionLabel": "Description",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Category created.",
+      "error": "Unable to create the category."
+    }
+  },
+  "financialDashboard": {
+    "title": "Financial Dashboard",
+    "forbidden": "You don't have permission to access this page.",
+    "from": "From",
+    "to": "To",
+    "granularity": "Granularity",
+    "granularityOptions": { "daily": "Daily", "weekly": "Weekly", "monthly": "Monthly" },
+    "profitAndLoss": {
+      "title": "Profit & Loss (simplified)",
+      "revenue": "Revenue",
+      "cogs": "Cost of goods sold",
+      "grossMargin": "Gross margin",
+      "operatingExpenses": "Operating expenses",
+      "netProfit": "Net profit"
+    },
+    "tvaSummary": {
+      "title": "TVA summary",
+      "collected": "TVA collected",
+      "paidPurchases": "TVA paid (purchases)",
+      "paidExpenses": "TVA paid (expenses)",
+      "net": "Net TVA"
+    },
+    "revenueDashboard": {
+      "title": "Revenue",
+      "empty": "No sales in this period.",
+      "table": {
+        "period": "Period",
+        "revenue": "Revenue",
+        "tva": "TVA",
+        "total": "Total",
+        "saleCount": "Sale count"
+      }
+    }
+  },
+  "customerDebts": {
+    "status": {
+      "outstanding": "Outstanding",
+      "partially_paid": "Partially paid",
+      "paid": "Paid",
+      "written_off": "Written off"
+    },
+    "table": {
+      "date": "Date",
+      "dueDate": "Due date",
+      "amount": "Amount",
+      "remaining": "Remaining",
+      "status": "Status",
+      "actions": "Actions",
+      "empty": "No debts for this customer."
+    },
+    "form": {
+      "title": "New debt",
+      "description": "Record a credit sale.",
+      "amount": "Amount (DA)",
+      "dueDate": "Due date",
+      "notes": "Notes",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Debt created.",
+      "error": "Unable to create this debt."
+    },
+    "payments": {
+      "recordPayment": "Record payment",
+      "title": "Debt payment",
+      "remaining": "Remaining: {amount}",
+      "amount": "Amount",
+      "paidAt": "Payment date",
+      "method": "Payment method",
+      "methods": {
+        "CASH": "Cash",
+        "CARD": "Card",
+        "CHECK": "Check",
+        "TRANSFER": "Transfer",
+        "MIXED": "Mixed"
+      },
+      "submit": "Record payment",
+      "submitting": "Recording...",
+      "success": "Payment recorded.",
+      "error": "Unable to record the payment.",
+      "history": { "date": "Date", "amount": "Amount", "method": "Method" }
+    }
+  },
+  "loyalty": {
+    "redeem": "Redeem points",
+    "balance": "Balance: {balance} points",
+    "pointsToRedeem": "Points to redeem",
+    "submit": "Redeem",
+    "submitting": "Processing...",
+    "success": "Points redeemed.",
+    "error": "Unable to redeem these points.",
+    "table": {
+      "date": "Date",
+      "reason": "Reason",
+      "points": "Points",
+      "balance": "Balance",
+      "empty": "No loyalty transactions yet."
+    }
+  },
+  "customerPricing": {
+    "form": {
+      "title": "New price",
+      "description": "Set a customer-specific price.",
+      "product": "Product",
+      "searchProduct": "Search a product...",
+      "noProductsFound": "No products found.",
+      "price": "Price (DA)",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "success": "Price saved.",
+      "error": "Unable to save this price."
+    },
+    "table": {
+      "product": "Product",
+      "price": "Price",
+      "actions": "Actions",
+      "empty": "No custom pricing for this customer."
+    },
+    "delete": {
+      "confirm": "Remove this price?",
+      "success": "Price removed.",
+      "error": "Unable to remove this price."
     }
   }
 }

@@ -31,12 +31,23 @@ async function searchCustomers(q: string): Promise<CustomerOption[]> {
   return body.data;
 }
 
+// Loads this customer's active price overrides into the cart store so the
+// POS cart/payment UI shows what they'll actually pay, not
+// Product.sellingPrice — see the doc comment on PosCartState.customerPrices.
+async function fetchCustomerPrices(customerId: string): Promise<Record<string, number>> {
+  const response = await fetch(`/api/customers/${customerId}/prices`);
+  if (!response.ok) return {};
+  const body: { data: { product: { id: string }; price: number }[] } = await response.json();
+  return Object.fromEntries(body.data.map((row) => [row.product.id, row.price]));
+}
+
 export function CustomerPicker() {
   const t = useTranslations("pos.cart");
   const tForm = useTranslations("customers.form");
   const queryClient = useQueryClient();
   const customer = usePosCartStore((state) => state.customer);
   const setCustomer = usePosCartStore((state) => state.setCustomer);
+  const setCustomerPrices = usePosCartStore((state) => state.setCustomerPrices);
 
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -49,6 +60,13 @@ export function CustomerPicker() {
     const handle = setTimeout(() => setDebounced(query), 200);
     return () => clearTimeout(handle);
   }, [query]);
+
+  async function selectCustomer(option: CustomerOption) {
+    setCustomer({ id: option.id, name: option.name });
+    setOpen(false);
+    const prices = await fetchCustomerPrices(option.id);
+    setCustomerPrices(prices);
+  }
 
   const { data: results = [] } = useQuery({
     queryKey: ["pos-customer-search", debounced],
@@ -118,10 +136,7 @@ export function CustomerPicker() {
                   <button
                     type="button"
                     className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
-                    onClick={() => {
-                      setCustomer({ id: option.id, name: option.name });
-                      setOpen(false);
-                    }}
+                    onClick={() => selectCustomer(option)}
                   >
                     <span>{option.name}</span>
                     {option.phone && <span className="text-muted-foreground">{option.phone}</span>}

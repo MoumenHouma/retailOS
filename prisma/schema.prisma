@@ -101,6 +101,13 @@ model Tenant {
   warehouses             Warehouse[]
   warehouseZones         WarehouseZone[]
   warehouseBins          WarehouseBin[]
+  expenseCategories      ExpenseCategory[]
+  expenses               Expense[]
+  invoicePayments        InvoicePayment[]
+  loyaltyPointTransactions LoyaltyPointTransaction[]
+  customerDebts            CustomerDebt[]
+  customerDebtPayments     CustomerDebtPayment[]
+  customerPrices           CustomerPrice[]
 
   @@map("tenants")
 }
@@ -150,6 +157,7 @@ model Store {
   stockTransfersTo   StockTransfer[] @relation("StockTransferToStore")
   stockCounts        StockCount[]
   warehouses         Warehouse[]
+  expenses           Expense[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -194,6 +202,9 @@ model User {
   stockTransfersReceived StockTransfer[] @relation("StockTransferReceivedBy")
   stockCountsCreated     StockCount[]    @relation("StockCountCreatedBy")
   stockCountsApproved    StockCount[]    @relation("StockCountApprovedBy")
+  expensesCreated        Expense[]         @relation("ExpenseCreatedBy")
+  invoicePaymentsRecorded InvoicePayment[] @relation("InvoicePaymentRecordedBy")
+  customerDebtPaymentsRecorded CustomerDebtPayment[] @relation("CustomerDebtPaymentRecordedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -392,6 +403,7 @@ model Product {
   purchaseReturnItems    PurchaseReturnItem[]
   stockTransferItems     StockTransferItem[]
   stockCountItems        StockCountItem[]
+  customerPrices         CustomerPrice[]
 
   @@index([tenantId])
   @@index([barcode])
@@ -541,6 +553,7 @@ model Supplier {
   supplierQuotes   SupplierQuote[]
   productBatches   ProductBatch[]
   purchaseReturns  PurchaseReturn[]
+  expenses         Expense[]
 
   @@index([tenantId])
   @@map("suppliers")
@@ -598,15 +611,30 @@ enum CustomerType {
   @@map("customer_type_enum")
 }
 
-/// Minimal for Chunk A — just enough for a POS sale to reference "who this
-/// sale is for". Loyalty/debt/segmentation columns (DATABASE.md §10) are
-/// deferred to whichever later phase actually needs them.
+/// Extended in Phase 4 Chunk B with the DATABASE.md §10.1 columns this
+/// model's original comment deferred (loyalty/debt/segmentation) — the
+/// enum-backed customerType already covered segmentation, so no separate
+/// table was needed for that half.
 model Customer {
   id           String       @id @default(uuid()) @db.Uuid
   tenantId     String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
   name         String       @db.VarChar(500)
   phone        String?      @db.VarChar(20)
+  email        String?      @db.VarChar(255)
+  address      String?
+  city         String?      @db.VarChar(100)
+  nif          String?      @db.VarChar(20)
   customerType CustomerType @default(walk_in) @map("customer_type")
+  creditLimit    Int       @default(0) @map("credit_limit")
+  // Denormalized running balance, maintained transactionally by
+  // recordDebtPayment/createDebt — same "ledger + denormalized balance"
+  // relationship as Invoice.amountPaid.
+  currentDebt    Int       @default(0) @map("current_debt")
+  loyaltyPoints  Int       @default(0) @map("loyalty_points")
+  totalPurchases Int       @default(0) @map("total_purchases")
+  totalSpent     Int       @default(0) @map("total_spent")
+  visitCount     Int       @default(0) @map("visit_count")
+  lastVisitAt    DateTime? @map("last_visit_at")
   isActive     Boolean      @default(true) @map("is_active")
   createdAt    DateTime     @default(now()) @map("created_at")
   updatedAt    DateTime     @updatedAt @map("updated_at")
@@ -615,6 +643,9 @@ model Customer {
   tenant   Tenant    @relation(fields: [tenantId], references: [id])
   sales    Sale[]
   invoices Invoice[]
+  loyaltyTransactions LoyaltyPointTransaction[]
+  debts               CustomerDebt[]
+  customerPrices      CustomerPrice[]
 
   @@index([tenantId])
   @@map("customers")
@@ -729,6 +760,7 @@ model Sale {
   payments   SalePayment[]
   returns    SaleReturn[]
   invoices   Invoice[]
+  customerDebts CustomerDebt[]
 
   @@unique([tenantId, storeId, saleNumber])
   @@index([tenantId])
@@ -829,6 +861,13 @@ model Invoice {
   taxStampAmount   Int           @map("tax_stamp_amount")
   totalTtc         Int           @map("total_ttc")
   netToPay         Int           @map("net_to_pay")
+  // Denormalized running balance, maintained transactionally by
+  // recordInvoicePayment (Phase 4 Chunk A) — same "ledger row + denormalized
+  // balance on the parent" relationship as StockMovement -> StockLevel.
+  // `overdue` is never written here: it's computed at read time from
+  // `dueDate` vs. now(), since no background-job infra exists yet to flip
+  // the stored status (that's Phase 5/6 scope).
+  amountPaid       Int           @default(0) @map("amount_paid")
   amountInWords    String        @map("amount_in_words")
   paymentTerms     String?       @map("payment_terms")
   status           InvoiceStatus @default(issued)
@@ -843,6 +882,7 @@ model Invoice {
   customer      Customer?     @relation(fields: [customerId], references: [id])
   createdByUser User?         @relation("InvoiceCreatedBy", fields: [createdBy], references: [id])
   items         InvoiceItem[]
+  payments      InvoicePayment[]
 
   @@unique([tenantId, invoiceNumber])
   @@index([tenantId])
@@ -1416,4 +1456,200 @@ model WarehouseBin {
   @@index([tenantId])
   @@index([zoneId])
   @@map("warehouse_bins")
+}
+
+// --- Phase 4 Chunk A: Financial Management -------------------------------
+
+/// Per DATABASE.md §9.4 verbatim. No deletedAt (isActive-only) — a
+/// deliberate spec-driven deviation from ProductCategory's soft-delete
+/// shape, not an oversight (see PHASE4_FINANCE_PLAN.md Chunk A).
+model ExpenseCategory {
+  id          String    @id @default(uuid()) @db.Uuid
+  tenantId    String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  parentId    String?   @map("parent_id") @db.Uuid
+  name        String    @db.VarChar(255)
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+
+  tenant   Tenant            @relation(fields: [tenantId], references: [id])
+  parent   ExpenseCategory?  @relation("ExpenseCategoryHierarchy", fields: [parentId], references: [id])
+  children ExpenseCategory[] @relation("ExpenseCategoryHierarchy")
+  expenses Expense[]
+
+  @@index([tenantId])
+  @@index([parentId])
+  @@map("expense_categories")
+}
+
+/// Per DATABASE.md §9.3 verbatim. paymentMethod reuses the existing
+/// PaymentMethodType enum rather than DATABASE.md's separately-named
+/// payment_method_enum — concrete-schema-wins precedent, same as Phase 3's
+/// po_status_enum resolution. No Store counter: `reference` is free text
+/// the user types in (an external receipt/invoice number), not a
+/// system-generated sequential number.
+model Expense {
+  id            String            @id @default(uuid()) @db.Uuid
+  tenantId      String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId       String?           @map("store_id") @db.Uuid
+  categoryId    String            @map("category_id") @db.Uuid
+  description   String            @db.VarChar(500)
+  amount        Int
+  tvaRate       Int               @default(0) @map("tva_rate") @db.SmallInt
+  expenseDate   DateTime          @map("expense_date") @db.Date
+  paymentMethod PaymentMethodType @map("payment_method")
+  reference     String?           @db.VarChar(100)
+  supplierId    String?           @map("supplier_id") @db.Uuid
+  receiptUrl    String?           @map("receipt_url") @db.VarChar(500)
+  notes         String?
+  createdBy     String?           @map("created_by") @db.Uuid
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+  deletedAt     DateTime?         @map("deleted_at")
+
+  tenant        Tenant          @relation(fields: [tenantId], references: [id])
+  store         Store?          @relation(fields: [storeId], references: [id])
+  category      ExpenseCategory @relation(fields: [categoryId], references: [id])
+  supplier      Supplier?       @relation(fields: [supplierId], references: [id])
+  createdByUser User?           @relation("ExpenseCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([storeId])
+  @@index([categoryId])
+  @@index([expenseDate])
+  @@map("expenses")
+}
+
+/// Net-new — not in DATABASE.md at all; ARCHITECTURE.md §4.7 names
+/// invoice_payments with zero columns specified. Immutable ledger,
+/// same shape as StockMovement: each row plus Invoice.amountPaid as the
+/// denormalized running balance. Fills the previously-dormant
+/// partially_paid/overdue InvoiceStatus values (see PHASE4_FINANCE_PLAN.md
+/// Chunk A).
+model InvoicePayment {
+  id            String            @id @default(uuid()) @db.Uuid
+  tenantId      String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  invoiceId     String            @map("invoice_id") @db.Uuid
+  amount        Int
+  paymentMethod PaymentMethodType @map("payment_method")
+  reference     String?           @db.VarChar(100)
+  paidAt        DateTime          @map("paid_at")
+  recordedBy    String?           @map("recorded_by") @db.Uuid
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  tenant        Tenant  @relation(fields: [tenantId], references: [id])
+  invoice       Invoice @relation(fields: [invoiceId], references: [id])
+  recordedByUser User?  @relation("InvoicePaymentRecordedBy", fields: [recordedBy], references: [id])
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("invoice_payments")
+}
+
+// --- Phase 4 Chunk B: Customer Management --------------------------------
+
+/// Per DATABASE.md §10.2 verbatim. Immutable ledger, same shape as
+/// StockMovement/InvoicePayment — Customer.loyaltyPoints is the
+/// denormalized running balance. `reason` stays a plain string (matches
+/// DATABASE.md's VARCHAR(100), never promoted to a DB enum in §14) —
+/// validated at the Zod layer instead.
+model LoyaltyPointTransaction {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  customerId   String   @map("customer_id") @db.Uuid
+  points       Int
+  balanceAfter Int      @map("balance_after")
+  reason       String   @db.VarChar(100)
+  referenceId  String?  @map("reference_id") @db.Uuid
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("loyalty_point_transactions")
+}
+
+enum DebtStatus {
+  outstanding
+  partially_paid
+  paid
+  written_off
+
+  @@map("debt_status_enum")
+}
+
+/// Per DATABASE.md §10.3 verbatim. Models a credit sale with no invoice
+/// ever generated — deliberately a separate ledger from InvoicePayment
+/// (that one backs a formal DÉCRET-05-468 document; this backs the much
+/// more common small-retail "customer tab").
+model CustomerDebt {
+  id         String     @id @default(uuid()) @db.Uuid
+  tenantId   String     @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  customerId String     @map("customer_id") @db.Uuid
+  amount     Int
+  remaining  Int
+  saleId     String?    @map("sale_id") @db.Uuid
+  dueDate    DateTime?  @map("due_date") @db.Date
+  status     DebtStatus @default(outstanding)
+  notes      String?
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  tenant   Tenant                @relation(fields: [tenantId], references: [id])
+  customer Customer              @relation(fields: [customerId], references: [id])
+  sale     Sale?                 @relation(fields: [saleId], references: [id])
+  payments CustomerDebtPayment[]
+
+  @@index([tenantId])
+  @@index([customerId])
+  @@map("customer_debts")
+}
+
+/// Net-new — undocumented in DATABASE.md; ARCHITECTURE.md names
+/// customer_debt_payments with no columns. Immutable ledger, same shape as
+/// InvoicePayment: each row plus CustomerDebt.remaining/Customer.currentDebt
+/// as the denormalized running balances.
+model CustomerDebtPayment {
+  id            String            @id @default(uuid()) @db.Uuid
+  tenantId      String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  debtId        String            @map("debt_id") @db.Uuid
+  amount        Int
+  paymentMethod PaymentMethodType @map("payment_method")
+  reference     String?           @db.VarChar(100)
+  paidAt        DateTime          @map("paid_at")
+  recordedBy    String?           @map("recorded_by") @db.Uuid
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  tenant         Tenant       @relation(fields: [tenantId], references: [id])
+  debt           CustomerDebt @relation(fields: [debtId], references: [id])
+  recordedByUser User?        @relation("CustomerDebtPaymentRecordedBy", fields: [recordedBy], references: [id])
+
+  @@index([tenantId])
+  @@index([debtId])
+  @@map("customer_debt_payments")
+}
+
+/// Net-new — not named in either source doc, a genuine schema gap like
+/// Phase 3's SupplierQuote. A flat per-customer-per-product override, same
+/// shape as SupplierProduct's per-relationship pricing row. Consumed by
+/// sales.ts's priceItems() at checkout time (see the Decision in
+/// PHASE4_FINANCE_PLAN.md Chunk B) — a row with no consumer would be an
+/// inert data-entry screen.
+model CustomerPrice {
+  id         String   @id @default(uuid()) @db.Uuid
+  tenantId   String   @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  customerId String   @map("customer_id") @db.Uuid
+  productId  String   @map("product_id") @db.Uuid
+  price      Int
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id])
+  customer Customer @relation(fields: [customerId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+
+  @@unique([tenantId, customerId, productId])
+  @@index([tenantId])
+  @@map("customer_prices")
 }

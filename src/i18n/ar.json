@@ -19,6 +19,7 @@
       "sales": "المبيعات",
       "purchasing": "المشتريات",
       "inventory": "المخزون",
+      "finance": "المالية",
       "reports": "التقارير"
     },
     "pos": "نقطة البيع",
@@ -33,7 +34,10 @@
     "warehouses": "المستودعات",
     "stockTransfers": "تحويلات المخزون",
     "stockCounts": "الجرد الفعلي",
-    "procurementReports": "تقارير المشتريات"
+    "procurementReports": "تقارير المشتريات",
+    "expenses": "المصاريف",
+    "financialDashboard": "لوحة التحكم المالية",
+    "customers": "العملاء"
   },
   "auth": {
     "login": {
@@ -486,14 +490,80 @@
     }
   },
   "customers": {
+    "title": "العملاء",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "searchPlaceholder": "...البحث عن عميل (الاسم، الهاتف)",
+    "empty": "لا يوجد عملاء.",
+    "loadError": "تعذر تحميل العملاء.",
+    "loading": "...جارٍ التحميل",
     "newCustomer": "زبون جديد",
+    "status": { "active": "نشط", "inactive": "غير نشط" },
+    "table": {
+      "name": "الاسم",
+      "phone": "الهاتف",
+      "type": "النوع",
+      "loyaltyPoints": "نقاط الولاء",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "delete": {
+      "confirm": "حذف هذا العميل؟",
+      "success": "تم حذف العميل.",
+      "error": "تعذر حذف هذا العميل."
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} عميل"
+    },
+    "tabs": {
+      "profile": "الملف الشخصي",
+      "purchaseHistory": "سجل المشتريات",
+      "loyalty": "الولاء",
+      "debts": "الديون",
+      "pricing": "أسعار مخصصة"
+    },
+    "detail": {
+      "loyaltyPoints": "نقاط الولاء",
+      "currentDebt": "الدين الحالي",
+      "totalSpent": "إجمالي الإنفاق",
+      "totalPurchases": "إجمالي المشتريات"
+    },
+    "history": {
+      "saleNumber": "رقم البيع",
+      "date": "التاريخ",
+      "items": "الأصناف",
+      "total": "الإجمالي",
+      "empty": "لا توجد مشتريات بعد."
+    },
     "form": {
+      "title": "زبون جديد",
+      "description": "إنشاء ملف عميل.",
+      "editTitle": "تعديل العميل",
+      "editDescription": "تحديث ملف هذا العميل.",
       "name": "الاسم *",
       "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "address": "العنوان",
+      "city": "المدينة",
+      "nif": "الرقم الجبائي",
+      "customerType": "نوع العميل",
+      "customerTypes": {
+        "walk_in": "زبون عابر",
+        "regular": "عادي",
+        "vip": "VIP",
+        "wholesale": "جملة"
+      },
+      "creditLimit": "سقف الائتمان (دج)",
       "submit": "إنشاء",
       "submitting": "جارٍ الإنشاء...",
       "success": "تم إنشاء الزبون بنجاح.",
-      "error": "تعذر إنشاء هذا الزبون."
+      "error": "تعذر إنشاء هذا الزبون.",
+      "editSubmit": "حفظ",
+      "editSubmitting": "...جارٍ الحفظ",
+      "editSuccess": "تم تحديث العميل.",
+      "editError": "تعذر تحديث هذا العميل."
     }
   },
   "sales": {
@@ -553,6 +623,31 @@
       "previous": "السابق",
       "next": "التالي",
       "total": "{count} فاتورة"
+    },
+    "payments": {
+      "recordPayment": "تسجيل دفعة",
+      "title": "دفعة الفاتورة",
+      "remaining": "المبلغ المتبقي: {amount}",
+      "amount": "المبلغ",
+      "paidAt": "تاريخ الدفع",
+      "method": "طريقة الدفع",
+      "methods": {
+        "CASH": "نقداً",
+        "CARD": "بطاقة",
+        "CHECK": "شيك",
+        "TRANSFER": "تحويل",
+        "MIXED": "مختلط"
+      },
+      "reference": "المرجع",
+      "submit": "تسجيل الدفعة",
+      "submitting": "...جارٍ التسجيل",
+      "success": "تم تسجيل الدفعة.",
+      "error": "تعذر تسجيل الدفعة.",
+      "history": {
+        "date": "التاريخ",
+        "amount": "المبلغ",
+        "method": "الطريقة"
+      }
     }
   },
   "purchaseOrders": {
@@ -1014,6 +1109,212 @@
       "previous": "السابق",
       "next": "التالي",
       "total": "{count} سطر"
+    }
+  },
+  "expenses": {
+    "title": "المصاريف",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "empty": "لا توجد مصاريف مسجلة.",
+    "loadError": "تعذر تحميل المصاريف.",
+    "tabs": { "expenses": "المصاريف", "categories": "الفئات" },
+    "table": {
+      "date": "التاريخ",
+      "description": "الوصف",
+      "category": "الفئة",
+      "amount": "المبلغ",
+      "paymentMethod": "طريقة الدفع",
+      "actions": "الإجراءات"
+    },
+    "delete": {
+      "confirm": "حذف هذه المصروف؟",
+      "success": "تم حذف المصروف.",
+      "error": "تعذر حذف المصروف."
+    },
+    "pagination": {
+      "pageInfo": "صفحة {page} من {totalPages}",
+      "previous": "السابق",
+      "next": "التالي",
+      "total": "{count} مصروف"
+    },
+    "form": {
+      "title": "مصروف جديد",
+      "description": "تسجيل مصروف.",
+      "editTitle": "تعديل المصروف",
+      "editDescription": "تحديث هذا المصروف.",
+      "descriptionLabel": "الوصف",
+      "category": "الفئة",
+      "selectCategory": "اختر فئة",
+      "store": "المتجر",
+      "allStores": "جميع المتاجر",
+      "amount": "المبلغ (دج)",
+      "tvaRate": "نسبة الضريبة",
+      "expenseDate": "تاريخ المصروف",
+      "paymentMethod": "طريقة الدفع",
+      "paymentMethods": {
+        "CASH": "نقداً",
+        "CARD": "بطاقة",
+        "CHECK": "شيك",
+        "TRANSFER": "تحويل",
+        "MIXED": "مختلط"
+      },
+      "supplier": "المورد",
+      "noSupplier": "بدون مورد",
+      "reference": "المرجع",
+      "notes": "ملاحظات",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "success": "تم إنشاء المصروف.",
+      "error": "تعذر إنشاء المصروف.",
+      "editSubmit": "حفظ",
+      "editSubmitting": "...جارٍ الحفظ",
+      "editSuccess": "تم تحديث المصروف.",
+      "editError": "تعذر تحديث المصروف."
+    }
+  },
+  "expenseCategories": {
+    "empty": "لا توجد فئات مصاريف.",
+    "loadError": "تعذر تحميل الفئات.",
+    "table": { "name": "الاسم", "status": "الحالة", "actions": "الإجراءات" },
+    "status": { "active": "نشطة", "inactive": "غير نشطة" },
+    "deactivate": {
+      "confirm": "تعطيل هذه الفئة؟",
+      "success": "تم تعطيل الفئة.",
+      "error": "تعذر تعطيل الفئة."
+    },
+    "form": {
+      "title": "فئة جديدة",
+      "description": "إنشاء فئة مصاريف.",
+      "name": "الاسم",
+      "parent": "الفئة الأم",
+      "noParent": "بدون (فئة جذرية)",
+      "descriptionLabel": "الوصف",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "success": "تم إنشاء الفئة.",
+      "error": "تعذر إنشاء الفئة."
+    }
+  },
+  "financialDashboard": {
+    "title": "لوحة التحكم المالية",
+    "forbidden": "ليس لديك إذن للوصول إلى هذه الصفحة.",
+    "from": "من",
+    "to": "إلى",
+    "granularity": "التجميع",
+    "granularityOptions": { "daily": "يومي", "weekly": "أسبوعي", "monthly": "شهري" },
+    "profitAndLoss": {
+      "title": "قائمة الدخل (مبسطة)",
+      "revenue": "الإيرادات",
+      "cogs": "تكلفة البضاعة المباعة",
+      "grossMargin": "الهامش الإجمالي",
+      "operatingExpenses": "المصاريف التشغيلية",
+      "netProfit": "صافي الربح"
+    },
+    "tvaSummary": {
+      "title": "ملخص الضريبة",
+      "collected": "الضريبة المحصلة",
+      "paidPurchases": "الضريبة المدفوعة (مشتريات)",
+      "paidExpenses": "الضريبة المدفوعة (مصاريف)",
+      "net": "صافي الضريبة"
+    },
+    "revenueDashboard": {
+      "title": "الإيرادات",
+      "empty": "لا توجد مبيعات خلال هذه الفترة.",
+      "table": {
+        "period": "الفترة",
+        "revenue": "الإيرادات",
+        "tva": "الضريبة",
+        "total": "الإجمالي",
+        "saleCount": "عدد المبيعات"
+      }
+    }
+  },
+  "customerDebts": {
+    "status": {
+      "outstanding": "قائم",
+      "partially_paid": "مدفوع جزئياً",
+      "paid": "مدفوع",
+      "written_off": "مشطوب"
+    },
+    "table": {
+      "date": "التاريخ",
+      "dueDate": "تاريخ الاستحقاق",
+      "amount": "المبلغ",
+      "remaining": "المتبقي",
+      "status": "الحالة",
+      "actions": "الإجراءات",
+      "empty": "لا توجد ديون لهذا العميل."
+    },
+    "form": {
+      "title": "دين جديد",
+      "description": "تسجيل بيع بالدين.",
+      "amount": "المبلغ (دج)",
+      "dueDate": "تاريخ الاستحقاق",
+      "notes": "ملاحظات",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "success": "تم إنشاء الدين.",
+      "error": "تعذر إنشاء هذا الدين."
+    },
+    "payments": {
+      "recordPayment": "تسجيل دفعة",
+      "title": "دفعة الدين",
+      "remaining": "المتبقي: {amount}",
+      "amount": "المبلغ",
+      "paidAt": "تاريخ الدفع",
+      "method": "طريقة الدفع",
+      "methods": {
+        "CASH": "نقداً",
+        "CARD": "بطاقة",
+        "CHECK": "شيك",
+        "TRANSFER": "تحويل",
+        "MIXED": "مختلط"
+      },
+      "submit": "تسجيل الدفعة",
+      "submitting": "...جارٍ التسجيل",
+      "success": "تم تسجيل الدفعة.",
+      "error": "تعذر تسجيل الدفعة.",
+      "history": { "date": "التاريخ", "amount": "المبلغ", "method": "الطريقة" }
+    }
+  },
+  "loyalty": {
+    "redeem": "استبدال النقاط",
+    "balance": "الرصيد: {balance} نقطة",
+    "pointsToRedeem": "النقاط المراد استبدالها",
+    "submit": "استبدال",
+    "submitting": "...جارٍ المعالجة",
+    "success": "تم استبدال النقاط.",
+    "error": "تعذر استبدال هذه النقاط.",
+    "table": {
+      "date": "التاريخ",
+      "reason": "السبب",
+      "points": "النقاط",
+      "balance": "الرصيد",
+      "empty": "لا توجد معاملات ولاء بعد."
+    }
+  },
+  "customerPricing": {
+    "form": {
+      "title": "سعر جديد",
+      "description": "تحديد سعر خاص بهذا العميل.",
+      "product": "المنتج",
+      "searchProduct": "...البحث عن منتج",
+      "noProductsFound": "لم يتم العثور على منتجات.",
+      "price": "السعر (دج)",
+      "submit": "حفظ",
+      "submitting": "...جارٍ الحفظ",
+      "success": "تم حفظ السعر.",
+      "error": "تعذر حفظ هذا السعر."
+    },
+    "table": {
+      "product": "المنتج",
+      "price": "السعر",
+      "actions": "الإجراءات",
+      "empty": "لا توجد أسعار مخصصة لهذا العميل."
+    },
+    "delete": {
+      "confirm": "إزالة هذا السعر؟",
+      "success": "تمت إزالة السعر.",
+      "error": "تعذر إزالة هذا السعر."
     }
   }
 }

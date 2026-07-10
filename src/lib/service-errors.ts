@@ -23,6 +23,10 @@ import {
   InvalidTransferStatusTransitionError,
 } from "@/server/services/stock-transfers";
 import { InvalidCountStatusTransitionError } from "@/server/services/stock-counts";
+import { InvoiceOverpaymentError } from "@/server/services/invoice-payments";
+import { InvalidParentError as InvalidExpenseCategoryParentError } from "@/server/services/expense-categories";
+import { InsufficientLoyaltyPointsError } from "@/server/services/loyalty";
+import { CreditLimitExceededError, DebtOverpaymentError } from "@/server/services/customer-debts";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -80,6 +84,21 @@ export function mapServiceError(error: unknown) {
     error instanceof InvalidCountStatusTransitionError
   ) {
     return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof InvoiceOverpaymentError) {
+    return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof InvalidExpenseCategoryParentError) {
+    return apiError("INVALID_REFERENCE", error.message, 422);
+  }
+  if (error instanceof InsufficientLoyaltyPointsError) {
+    return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof DebtOverpaymentError) {
+    return apiError("VALIDATION", error.message, 422);
+  }
+  if (error instanceof CreditLimitExceededError) {
+    return apiError("CREDIT_LIMIT_EXCEEDED", error.message, 422);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);
