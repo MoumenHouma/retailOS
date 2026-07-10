@@ -33,128 +33,129 @@ enum SubscriptionStatus {
 /// deliberately left off; the app layer restricts access to the session's
 /// own tenant row (`WHERE id = session.tenantId`).
 model Tenant {
-  id                  String             @id @default(uuid()) @db.Uuid
-  name                String             @db.VarChar(255)
-  slug                String             @unique @db.VarChar(100)
-  logoUrl             String?            @map("logo_url") @db.VarChar(500)
-  nif                 String             @unique @db.VarChar(20)
-  nis                 String             @db.VarChar(20)
-  rc                  String             @db.VarChar(30)
-  ai                  String?            @db.VarChar(30)
-  formeJuridique      String?            @map("forme_juridique") @db.VarChar(50)
-  address             String?
-  city                String?            @db.VarChar(100)
-  wilaya              String?            @db.VarChar(100)
-  phone               String?            @db.VarChar(20)
-  email               String?            @db.VarChar(255)
-  website             String?            @db.VarChar(500)
-  activitySector      String?            @map("activity_sector") @db.VarChar(100)
-  tvaDefaultRate      Int                @default(19) @map("tva_default_rate") @db.SmallInt
-  currency            String             @default("DZD") @db.VarChar(3)
-  locale              String             @default("fr-DZ") @db.VarChar(5)
-  subscriptionPlan    String             @default("starter") @map("subscription_plan") @db.VarChar(50)
-  subscriptionStatus  SubscriptionStatus @default(active) @map("subscription_status")
-  subscriptionEndsAt  DateTime?          @map("subscription_ends_at")
-  settings            Json               @default("{}")
-  isActive            Boolean            @default(true) @map("is_active")
-  createdAt           DateTime           @default(now()) @map("created_at")
-  updatedAt           DateTime           @updatedAt @map("updated_at")
-  deletedAt           DateTime?          @map("deleted_at")
+  id                 String             @id @default(uuid()) @db.Uuid
+  name               String             @db.VarChar(255)
+  slug               String             @unique @db.VarChar(100)
+  logoUrl            String?            @map("logo_url") @db.VarChar(500)
+  nif                String             @unique @db.VarChar(20)
+  nis                String             @db.VarChar(20)
+  rc                 String             @db.VarChar(30)
+  ai                 String?            @db.VarChar(30)
+  formeJuridique     String?            @map("forme_juridique") @db.VarChar(50)
+  address            String?
+  city               String?            @db.VarChar(100)
+  wilaya             String?            @db.VarChar(100)
+  phone              String?            @db.VarChar(20)
+  email              String?            @db.VarChar(255)
+  website            String?            @db.VarChar(500)
+  activitySector     String?            @map("activity_sector") @db.VarChar(100)
+  tvaDefaultRate     Int                @default(19) @map("tva_default_rate") @db.SmallInt
+  currency           String             @default("DZD") @db.VarChar(3)
+  locale             String             @default("fr-DZ") @db.VarChar(5)
+  subscriptionPlan   String             @default("starter") @map("subscription_plan") @db.VarChar(50)
+  subscriptionStatus SubscriptionStatus @default(active) @map("subscription_status")
+  subscriptionEndsAt DateTime?          @map("subscription_ends_at")
+  settings           Json               @default("{}")
+  isActive           Boolean            @default(true) @map("is_active")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+  deletedAt          DateTime?          @map("deleted_at")
 
-  stores           Store[]
-  users            User[]
-  roles            Role[]
-  productCategories ProductCategory[]
-  brands           Brand[]
-  units            Unit[]
-  products         Product[]
-  productBarcodes  ProductBarcode[]
-  stockMovements   StockMovement[]
-  stockLevels      StockLevel[]
-  suppliers        Supplier[]
-  supplierContacts SupplierContact[]
-  supplierProducts SupplierProduct[]
-  customers        Customer[]
-  posSessions      PosSession[]
-  posCashMovements PosCashMovement[]
-  sales            Sale[]
-  saleItems        SaleItem[]
-  salePayments     SalePayment[]
-  saleReturns      SaleReturn[]
-  saleReturnItems  SaleReturnItem[]
-  invoiceSequence  InvoiceSequence?
-  invoices         Invoice[]
-  invoiceItems     InvoiceItem[]
-  purchaseOrders     PurchaseOrder[]
-  purchaseOrderItems PurchaseOrderItem[]
-  supplierQuotes     SupplierQuote[]
-  supplierQuoteItems SupplierQuoteItem[]
-  purchaseDeliveries     PurchaseDelivery[]
-  purchaseDeliveryItems  PurchaseDeliveryItem[]
-  productBatches         ProductBatch[]
-  purchaseReturns        PurchaseReturn[]
-  purchaseReturnItems    PurchaseReturnItem[]
-  stockTransfers         StockTransfer[]
-  stockTransferItems     StockTransferItem[]
-  stockCounts            StockCount[]
-  stockCountItems        StockCountItem[]
-  warehouses             Warehouse[]
-  warehouseZones         WarehouseZone[]
-  warehouseBins          WarehouseBin[]
-  expenseCategories      ExpenseCategory[]
-  expenses               Expense[]
-  invoicePayments        InvoicePayment[]
+  stores                   Store[]
+  users                    User[]
+  roles                    Role[]
+  productCategories        ProductCategory[]
+  brands                   Brand[]
+  units                    Unit[]
+  products                 Product[]
+  productBarcodes          ProductBarcode[]
+  stockMovements           StockMovement[]
+  stockLevels              StockLevel[]
+  suppliers                Supplier[]
+  supplierContacts         SupplierContact[]
+  supplierProducts         SupplierProduct[]
+  customers                Customer[]
+  posSessions              PosSession[]
+  posCashMovements         PosCashMovement[]
+  sales                    Sale[]
+  saleItems                SaleItem[]
+  salePayments             SalePayment[]
+  saleReturns              SaleReturn[]
+  saleReturnItems          SaleReturnItem[]
+  invoiceSequence          InvoiceSequence?
+  invoices                 Invoice[]
+  invoiceItems             InvoiceItem[]
+  purchaseOrders           PurchaseOrder[]
+  purchaseOrderItems       PurchaseOrderItem[]
+  supplierQuotes           SupplierQuote[]
+  supplierQuoteItems       SupplierQuoteItem[]
+  purchaseDeliveries       PurchaseDelivery[]
+  purchaseDeliveryItems    PurchaseDeliveryItem[]
+  productBatches           ProductBatch[]
+  purchaseReturns          PurchaseReturn[]
+  purchaseReturnItems      PurchaseReturnItem[]
+  stockTransfers           StockTransfer[]
+  stockTransferItems       StockTransferItem[]
+  stockCounts              StockCount[]
+  stockCountItems          StockCountItem[]
+  warehouses               Warehouse[]
+  warehouseZones           WarehouseZone[]
+  warehouseBins            WarehouseBin[]
+  expenseCategories        ExpenseCategory[]
+  expenses                 Expense[]
+  invoicePayments          InvoicePayment[]
   loyaltyPointTransactions LoyaltyPointTransaction[]
   customerDebts            CustomerDebt[]
   customerDebtPayments     CustomerDebtPayment[]
   customerPrices           CustomerPrice[]
+  financialPeriods         FinancialPeriod[]
 
   @@map("tenants")
 }
 
 model Store {
-  id        String    @id @default(uuid()) @db.Uuid
-  tenantId  String    @map("tenant_id") @db.Uuid
-  name      String    @db.VarChar(255)
-  address   String?
-  city      String?   @db.VarChar(100)
-  wilaya    String?   @db.VarChar(100)
-  phone     String?   @db.VarChar(20)
-  email     String?   @db.VarChar(255)
-  isMain    Boolean   @default(false) @map("is_main")
-  posPrefix String    @default("POS") @map("pos_prefix") @db.VarChar(5)
+  id              String    @id @default(uuid()) @db.Uuid
+  tenantId        String    @map("tenant_id") @db.Uuid
+  name            String    @db.VarChar(255)
+  address         String?
+  city            String?   @db.VarChar(100)
+  wilaya          String?   @db.VarChar(100)
+  phone           String?   @db.VarChar(20)
+  email           String?   @db.VarChar(255)
+  isMain          Boolean   @default(false) @map("is_main")
+  posPrefix       String    @default("POS") @map("pos_prefix") @db.VarChar(5)
   // Incremented (not read) inside the same withTenant transaction as sale
   // creation — the UPDATE's row lock serializes concurrent cashiers on the
   // same store, giving gapless per-store sale numbers without a separate
   // sequence/counter table or raw SQL row-locking.
-  saleCounter Int     @default(0) @map("sale_counter")
+  saleCounter     Int       @default(0) @map("sale_counter")
   // Same gapless-per-store-counter pattern as saleCounter, for PO-000001
   // style purchase order numbering (purchase orders are store-scoped, not
   // tenant-wide, so this fits better than an InvoiceSequence-style table).
-  poCounter Int       @default(0) @map("po_counter")
+  poCounter       Int       @default(0) @map("po_counter")
   // Same pattern again, for TRF-000001/CNT-000001 stock-transfer and
   // stock-count numbering (Phase 3 Chunk C).
-  transferCounter Int @default(0) @map("transfer_counter")
-  countCounter    Int @default(0) @map("count_counter")
-  settings  Json      @default("{}")
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  transferCounter Int       @default(0) @map("transfer_counter")
+  countCounter    Int       @default(0) @map("count_counter")
+  settings        Json      @default("{}")
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+  deletedAt       DateTime? @map("deleted_at")
 
-  tenant         Tenant          @relation(fields: [tenantId], references: [id])
-  userRoles      UserRole[]
-  userStores     UserStore[]
-  stockMovements StockMovement[]
-  stockLevels    StockLevel[]
-  posSessions    PosSession[]
-  sales          Sale[]
-  saleReturns    SaleReturn[]
-  purchaseOrders PurchaseOrder[]
-  productBatches ProductBatch[]
-  purchaseReturns PurchaseReturn[]
-  stockTransfersFrom StockTransfer[] @relation("StockTransferFromStore")
-  stockTransfersTo   StockTransfer[] @relation("StockTransferToStore")
+  tenant             Tenant           @relation(fields: [tenantId], references: [id])
+  userRoles          UserRole[]
+  userStores         UserStore[]
+  stockMovements     StockMovement[]
+  stockLevels        StockLevel[]
+  posSessions        PosSession[]
+  sales              Sale[]
+  saleReturns        SaleReturn[]
+  purchaseOrders     PurchaseOrder[]
+  productBatches     ProductBatch[]
+  purchaseReturns    PurchaseReturn[]
+  stockTransfersFrom StockTransfer[]  @relation("StockTransferFromStore")
+  stockTransfersTo   StockTransfer[]  @relation("StockTransferToStore")
   stockCounts        StockCount[]
   warehouses         Warehouse[]
   expenses           Expense[]
@@ -165,46 +166,47 @@ model Store {
 }
 
 model User {
-  id                   String    @id @default(uuid()) @db.Uuid
-  tenantId             String    @map("tenant_id") @db.Uuid
-  email                String    @unique @db.VarChar(255)
-  passwordHash         String    @map("password_hash") @db.VarChar(255)
-  firstName            String    @map("first_name") @db.VarChar(100)
-  lastName             String    @map("last_name") @db.VarChar(100)
-  phone                String?   @db.VarChar(20)
-  avatarUrl            String?   @map("avatar_url") @db.VarChar(500)
-  isActive             Boolean   @default(true) @map("is_active")
-  emailVerifiedAt      DateTime? @map("email_verified_at")
-  lastLoginAt          DateTime? @map("last_login_at")
-  failedLoginAttempts  Int       @default(0) @map("failed_login_attempts")
-  lockedUntil          DateTime? @map("locked_until")
-  createdAt            DateTime  @default(now()) @map("created_at")
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  deletedAt             DateTime? @map("deleted_at")
+  id                  String    @id @default(uuid()) @db.Uuid
+  tenantId            String    @map("tenant_id") @db.Uuid
+  email               String    @unique @db.VarChar(255)
+  passwordHash        String    @map("password_hash") @db.VarChar(255)
+  firstName           String    @map("first_name") @db.VarChar(100)
+  lastName            String    @map("last_name") @db.VarChar(100)
+  phone               String?   @db.VarChar(20)
+  avatarUrl           String?   @map("avatar_url") @db.VarChar(500)
+  isActive            Boolean   @default(true) @map("is_active")
+  emailVerifiedAt     DateTime? @map("email_verified_at")
+  lastLoginAt         DateTime? @map("last_login_at")
+  failedLoginAttempts Int       @default(0) @map("failed_login_attempts")
+  lockedUntil         DateTime? @map("locked_until")
+  createdAt           DateTime  @default(now()) @map("created_at")
+  updatedAt           DateTime  @updatedAt @map("updated_at")
+  deletedAt           DateTime? @map("deleted_at")
 
-  tenant          Tenant      @relation(fields: [tenantId], references: [id])
-  userRoles       UserRole[]
-  userStores      UserStore[]
-  productsCreated       Product[]       @relation("ProductCreatedBy")
-  productsUpdated       Product[]       @relation("ProductUpdatedBy")
-  stockMovementsCreated StockMovement[] @relation("StockMovementCreatedBy")
-  posSessionsAsCashier      PosSession[]      @relation("PosSessionCashier")
-  posCashMovementsCreated   PosCashMovement[] @relation("PosCashMovementCreatedBy")
-  salesAsCashier            Sale[]            @relation("SaleCashier")
-  saleReturnsCreated        SaleReturn[]      @relation("SaleReturnCreatedBy")
-  invoicesCreated           Invoice[]         @relation("InvoiceCreatedBy")
-  purchaseOrdersCreated     PurchaseOrder[]   @relation("PurchaseOrderCreatedBy")
-  purchaseOrdersApproved    PurchaseOrder[]   @relation("PurchaseOrderApprovedBy")
-  purchaseDeliveriesReceived PurchaseDelivery[] @relation("PurchaseDeliveryReceivedBy")
-  purchaseReturnsCreated     PurchaseReturn[]   @relation("PurchaseReturnCreatedBy")
-  stockTransfersCreated  StockTransfer[] @relation("StockTransferCreatedBy")
-  stockTransfersApproved StockTransfer[] @relation("StockTransferApprovedBy")
-  stockTransfersReceived StockTransfer[] @relation("StockTransferReceivedBy")
-  stockCountsCreated     StockCount[]    @relation("StockCountCreatedBy")
-  stockCountsApproved    StockCount[]    @relation("StockCountApprovedBy")
-  expensesCreated        Expense[]         @relation("ExpenseCreatedBy")
-  invoicePaymentsRecorded InvoicePayment[] @relation("InvoicePaymentRecordedBy")
+  tenant                       Tenant                @relation(fields: [tenantId], references: [id])
+  userRoles                    UserRole[]
+  userStores                   UserStore[]
+  productsCreated              Product[]             @relation("ProductCreatedBy")
+  productsUpdated              Product[]             @relation("ProductUpdatedBy")
+  stockMovementsCreated        StockMovement[]       @relation("StockMovementCreatedBy")
+  posSessionsAsCashier         PosSession[]          @relation("PosSessionCashier")
+  posCashMovementsCreated      PosCashMovement[]     @relation("PosCashMovementCreatedBy")
+  salesAsCashier               Sale[]                @relation("SaleCashier")
+  saleReturnsCreated           SaleReturn[]          @relation("SaleReturnCreatedBy")
+  invoicesCreated              Invoice[]             @relation("InvoiceCreatedBy")
+  purchaseOrdersCreated        PurchaseOrder[]       @relation("PurchaseOrderCreatedBy")
+  purchaseOrdersApproved       PurchaseOrder[]       @relation("PurchaseOrderApprovedBy")
+  purchaseDeliveriesReceived   PurchaseDelivery[]    @relation("PurchaseDeliveryReceivedBy")
+  purchaseReturnsCreated       PurchaseReturn[]      @relation("PurchaseReturnCreatedBy")
+  stockTransfersCreated        StockTransfer[]       @relation("StockTransferCreatedBy")
+  stockTransfersApproved       StockTransfer[]       @relation("StockTransferApprovedBy")
+  stockTransfersReceived       StockTransfer[]       @relation("StockTransferReceivedBy")
+  stockCountsCreated           StockCount[]          @relation("StockCountCreatedBy")
+  stockCountsApproved          StockCount[]          @relation("StockCountApprovedBy")
+  expensesCreated              Expense[]             @relation("ExpenseCreatedBy")
+  invoicePaymentsRecorded      InvoicePayment[]      @relation("InvoicePaymentRecordedBy")
   customerDebtPaymentsRecorded CustomerDebtPayment[] @relation("CustomerDebtPaymentRecordedBy")
+  financialPeriodsClosed       FinancialPeriod[]     @relation("FinancialPeriodClosedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -257,10 +259,10 @@ model RolePermission {
 /// Postgres, so this table gets its own surrogate id plus a regular unique
 /// index instead of `@@id([userId, roleId, storeId])`.
 model UserRole {
-  id       String  @id @default(uuid()) @db.Uuid
-  userId   String  @map("user_id") @db.Uuid
-  roleId   String  @map("role_id") @db.Uuid
-  storeId  String? @map("store_id") @db.Uuid
+  id      String  @id @default(uuid()) @db.Uuid
+  userId  String  @map("user_id") @db.Uuid
+  roleId  String  @map("role_id") @db.Uuid
+  storeId String? @map("store_id") @db.Uuid
 
   user  User   @relation(fields: [userId], references: [id])
   role  Role   @relation(fields: [roleId], references: [id])
@@ -373,37 +375,40 @@ model Product {
   maxStockLevel  Int?      @map("max_stock_level")
   // reorderPoint/safetyStock stay null in Phase 1 — computed by the AI/
   // optimization engine, which doesn't exist until Phase 5.
-  reorderPoint Int?      @map("reorder_point")
-  safetyStock  Int?      @map("safety_stock")
-  imageUrl     String?   @map("image_url") @db.VarChar(500)
-  isActive     Boolean   @default(true) @map("is_active")
-  createdBy    String?   @map("created_by") @db.Uuid
-  updatedBy    String?   @map("updated_by") @db.Uuid
-  createdAt    DateTime  @default(now()) @map("created_at")
-  updatedAt    DateTime  @updatedAt @map("updated_at")
-  deletedAt    DateTime? @map("deleted_at")
+  reorderPoint   Int?      @map("reorder_point")
+  safetyStock    Int?      @map("safety_stock")
+  imageUrl       String?   @map("image_url") @db.VarChar(500)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdBy      String?   @map("created_by") @db.Uuid
+  updatedBy      String?   @map("updated_by") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
 
-  tenant        Tenant            @relation(fields: [tenantId], references: [id])
-  category      ProductCategory?  @relation(fields: [categoryId], references: [id])
-  brand         Brand?            @relation(fields: [brandId], references: [id])
-  unit          Unit              @relation(fields: [unitId], references: [id])
-  createdByUser  User?            @relation("ProductCreatedBy", fields: [createdBy], references: [id])
-  updatedByUser  User?            @relation("ProductUpdatedBy", fields: [updatedBy], references: [id])
-  barcodes         ProductBarcode[]
-  stockMovements   StockMovement[]
-  stockLevels      StockLevel[]
-  supplierProducts SupplierProduct[]
-  saleItems        SaleItem[]
-  saleReturnItems  SaleReturnItem[]
-  invoiceItems     InvoiceItem[]
-  purchaseOrderItems PurchaseOrderItem[]
-  supplierQuoteItems SupplierQuoteItem[]
-  batches                ProductBatch[]
-  purchaseDeliveryItems  PurchaseDeliveryItem[]
-  purchaseReturnItems    PurchaseReturnItem[]
-  stockTransferItems     StockTransferItem[]
-  stockCountItems        StockCountItem[]
-  customerPrices         CustomerPrice[]
+  tenant                Tenant                 @relation(fields: [tenantId], references: [id])
+  category              ProductCategory?       @relation(fields: [categoryId], references: [id])
+  brand                 Brand?                 @relation(fields: [brandId], references: [id])
+  unit                  Unit                   @relation(fields: [unitId], references: [id])
+  createdByUser         User?                  @relation("ProductCreatedBy", fields: [createdBy], references: [id])
+  updatedByUser         User?                  @relation("ProductUpdatedBy", fields: [updatedBy], references: [id])
+  barcodes              ProductBarcode[]
+  stockMovements        StockMovement[]
+  stockLevels           StockLevel[]
+  supplierProducts      SupplierProduct[]
+  saleItems             SaleItem[]
+  saleReturnItems       SaleReturnItem[]
+  invoiceItems          InvoiceItem[]
+  purchaseOrderItems    PurchaseOrderItem[]
+  supplierQuoteItems    SupplierQuoteItem[]
+  batches               ProductBatch[]
+  purchaseDeliveryItems PurchaseDeliveryItem[]
+  purchaseReturnItems   PurchaseReturnItem[]
+  stockTransferItems    StockTransferItem[]
+  stockCountItems       StockCountItem[]
+  customerPrices        CustomerPrice[]
+  // name GIN trgm index hand-appended in migration.sql — pg_trgm has no
+  // Prisma-native index-type syntax, same "hand-append what Prisma can't
+  // express" rule already used for RLS/CHECK constraints project-wide.
 
   @@index([tenantId])
   @@index([barcode])
@@ -411,9 +416,6 @@ model Product {
   @@index([categoryId])
   @@index([brandId])
   @@map("products")
-  // name GIN trgm index hand-appended in migration.sql — pg_trgm has no
-  // Prisma-native index-type syntax, same "hand-append what Prisma can't
-  // express" rule already used for RLS/CHECK constraints project-wide.
 }
 
 model ProductBarcode {
@@ -468,22 +470,22 @@ model StockMovement {
   referenceType String?           @map("reference_type") @db.VarChar(50)
   // product_batches now exists (Phase 3 Chunk B) — FK added below. Still
   // null on every movement type except PURCHASE_IN lines that carry a batch.
-  batchId   String?  @map("batch_id") @db.Uuid
+  batchId       String?           @map("batch_id") @db.Uuid
   // Nullable FK-for-future-detail, same pattern as batchId — records
   // *where physically* a delivery was put away or a count line was found,
   // without being load-bearing for on-hand-quantity math (StockLevel's
   // aggregation key stays (tenant_id, product_id, store_id) unchanged).
-  binId     String?  @map("bin_id") @db.Uuid
-  notes     String?
-  createdBy String?  @map("created_by") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at")
+  binId         String?           @map("bin_id") @db.Uuid
+  notes         String?
+  createdBy     String?           @map("created_by") @db.Uuid
+  createdAt     DateTime          @default(now()) @map("created_at")
 
-  tenant        Tenant         @relation(fields: [tenantId], references: [id])
-  product       Product        @relation(fields: [productId], references: [id])
-  store         Store          @relation(fields: [storeId], references: [id])
-  createdByUser User?          @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
-  batch         ProductBatch?  @relation(fields: [batchId], references: [id])
-  bin           WarehouseBin?  @relation(fields: [binId], references: [id])
+  tenant        Tenant        @relation(fields: [tenantId], references: [id])
+  product       Product       @relation(fields: [productId], references: [id])
+  store         Store         @relation(fields: [storeId], references: [id])
+  createdByUser User?         @relation("StockMovementCreatedBy", fields: [createdBy], references: [id])
+  batch         ProductBatch? @relation(fields: [batchId], references: [id])
+  bin           WarehouseBin? @relation(fields: [binId], references: [id])
 
   @@index([tenantId])
   @@index([productId])
@@ -539,12 +541,12 @@ model Supplier {
   leadTimeDays  Int       @default(3) @map("lead_time_days")
   // MCDA composite score — stays null in Phase 1, no AI/optimization engine
   // until Phase 5.
-  rating    Decimal?  @db.Decimal(3, 2)
-  notes     String?
-  isActive  Boolean   @default(true) @map("is_active")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  rating        Decimal?  @db.Decimal(3, 2)
+  notes         String?
+  isActive      Boolean   @default(true) @map("is_active")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
 
   tenant           Tenant            @relation(fields: [tenantId], references: [id])
   contacts         SupplierContact[]
@@ -616,33 +618,33 @@ enum CustomerType {
 /// enum-backed customerType already covered segmentation, so no separate
 /// table was needed for that half.
 model Customer {
-  id           String       @id @default(uuid()) @db.Uuid
-  tenantId     String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  name         String       @db.VarChar(500)
-  phone        String?      @db.VarChar(20)
-  email        String?      @db.VarChar(255)
-  address      String?
-  city         String?      @db.VarChar(100)
-  nif          String?      @db.VarChar(20)
-  customerType CustomerType @default(walk_in) @map("customer_type")
-  creditLimit    Int       @default(0) @map("credit_limit")
+  id             String       @id @default(uuid()) @db.Uuid
+  tenantId       String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name           String       @db.VarChar(500)
+  phone          String?      @db.VarChar(20)
+  email          String?      @db.VarChar(255)
+  address        String?
+  city           String?      @db.VarChar(100)
+  nif            String?      @db.VarChar(20)
+  customerType   CustomerType @default(walk_in) @map("customer_type")
+  creditLimit    Int          @default(0) @map("credit_limit")
   // Denormalized running balance, maintained transactionally by
   // recordDebtPayment/createDebt — same "ledger + denormalized balance"
   // relationship as Invoice.amountPaid.
-  currentDebt    Int       @default(0) @map("current_debt")
-  loyaltyPoints  Int       @default(0) @map("loyalty_points")
-  totalPurchases Int       @default(0) @map("total_purchases")
-  totalSpent     Int       @default(0) @map("total_spent")
-  visitCount     Int       @default(0) @map("visit_count")
-  lastVisitAt    DateTime? @map("last_visit_at")
-  isActive     Boolean      @default(true) @map("is_active")
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  deletedAt    DateTime?    @map("deleted_at")
+  currentDebt    Int          @default(0) @map("current_debt")
+  loyaltyPoints  Int          @default(0) @map("loyalty_points")
+  totalPurchases Int          @default(0) @map("total_purchases")
+  totalSpent     Int          @default(0) @map("total_spent")
+  visitCount     Int          @default(0) @map("visit_count")
+  lastVisitAt    DateTime?    @map("last_visit_at")
+  isActive       Boolean      @default(true) @map("is_active")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  deletedAt      DateTime?    @map("deleted_at")
 
-  tenant   Tenant    @relation(fields: [tenantId], references: [id])
-  sales    Sale[]
-  invoices Invoice[]
+  tenant              Tenant                    @relation(fields: [tenantId], references: [id])
+  sales               Sale[]
+  invoices            Invoice[]
   loyaltyTransactions LoyaltyPointTransaction[]
   debts               CustomerDebt[]
   customerPrices      CustomerPrice[]
@@ -700,14 +702,14 @@ enum CashMovementType {
 }
 
 model PosCashMovement {
-  id           String            @id @default(uuid()) @db.Uuid
-  tenantId     String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  sessionId    String            @map("session_id") @db.Uuid
-  movementType CashMovementType  @map("movement_type")
+  id           String           @id @default(uuid()) @db.Uuid
+  tenantId     String           @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  sessionId    String           @map("session_id") @db.Uuid
+  movementType CashMovementType @map("movement_type")
   amount       Int
   reason       String?
-  createdBy    String            @map("created_by") @db.Uuid
-  createdAt    DateTime          @default(now()) @map("created_at")
+  createdBy    String           @map("created_by") @db.Uuid
+  createdAt    DateTime         @default(now()) @map("created_at")
 
   tenant        Tenant     @relation(fields: [tenantId], references: [id])
   session       PosSession @relation(fields: [sessionId], references: [id])
@@ -751,15 +753,15 @@ model Sale {
   updatedAt      DateTime   @updatedAt @map("updated_at")
   deletedAt      DateTime?  @map("deleted_at")
 
-  tenant     Tenant        @relation(fields: [tenantId], references: [id])
-  store      Store         @relation(fields: [storeId], references: [id])
-  posSession PosSession?   @relation(fields: [posSessionId], references: [id])
-  customer   Customer?     @relation(fields: [customerId], references: [id])
-  cashier    User          @relation("SaleCashier", fields: [cashierId], references: [id])
-  items      SaleItem[]
-  payments   SalePayment[]
-  returns    SaleReturn[]
-  invoices   Invoice[]
+  tenant        Tenant         @relation(fields: [tenantId], references: [id])
+  store         Store          @relation(fields: [storeId], references: [id])
+  posSession    PosSession?    @relation(fields: [posSessionId], references: [id])
+  customer      Customer?      @relation(fields: [customerId], references: [id])
+  cashier       User           @relation("SaleCashier", fields: [cashierId], references: [id])
+  items         SaleItem[]
+  payments      SalePayment[]
+  returns       SaleReturn[]
+  invoices      Invoice[]
   customerDebts CustomerDebt[]
 
   @@unique([tenantId, storeId, saleNumber])
@@ -788,7 +790,7 @@ model SaleItem {
   // product_batches now exists (Phase 3 Chunk B) — FK added below. Not
   // populated by completeSale yet; FIFO/FEFO batch consumption on sale is
   // out of this chunk's scope (see Dev Log open items).
-  batchId String? @map("batch_id") @db.Uuid
+  batchId        String? @map("batch_id") @db.Uuid
 
   tenant      Tenant           @relation(fields: [tenantId], references: [id])
   sale        Sale             @relation(fields: [saleId], references: [id])
@@ -840,47 +842,47 @@ enum InvoiceStatus {
 }
 
 model Invoice {
-  id               String        @id @default(uuid()) @db.Uuid
-  tenantId         String        @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  invoiceNumber    String        @map("invoice_number") @db.VarChar(20)
-  saleId           String?       @map("sale_id") @db.Uuid
-  customerId       String?       @map("customer_id") @db.Uuid
+  id              String        @id @default(uuid()) @db.Uuid
+  tenantId        String        @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  invoiceNumber   String        @map("invoice_number") @db.VarChar(20)
+  saleId          String?       @map("sale_id") @db.Uuid
+  customerId      String?       @map("customer_id") @db.Uuid
   // Snapshots — an invoice must stay legible even if the Customer record
   // is later edited or deleted.
-  customerName     String?       @map("customer_name") @db.VarChar(500)
-  customerAddress  String?       @map("customer_address")
-  customerNif      String?       @map("customer_nif") @db.VarChar(20)
-  issueDate        DateTime      @map("issue_date") @db.Date
-  dueDate          DateTime?     @map("due_date") @db.Date
-  subtotal         Int
-  discountAmount   Int           @default(0) @map("discount_amount")
-  tvaAmount        Int           @map("tva_amount")
+  customerName    String?       @map("customer_name") @db.VarChar(500)
+  customerAddress String?       @map("customer_address")
+  customerNif     String?       @map("customer_nif") @db.VarChar(20)
+  issueDate       DateTime      @map("issue_date") @db.Date
+  dueDate         DateTime?     @map("due_date") @db.Date
+  subtotal        Int
+  discountAmount  Int           @default(0) @map("discount_amount")
+  tvaAmount       Int           @map("tva_amount")
   // { "19": amount, "9": amount, "0": amount } — one bucket per TVA rate
   // present on the sale's line items, per DATABASE.md §9.1.
-  tvaDetails       Json          @map("tva_details")
-  taxStampAmount   Int           @map("tax_stamp_amount")
-  totalTtc         Int           @map("total_ttc")
-  netToPay         Int           @map("net_to_pay")
+  tvaDetails      Json          @map("tva_details")
+  taxStampAmount  Int           @map("tax_stamp_amount")
+  totalTtc        Int           @map("total_ttc")
+  netToPay        Int           @map("net_to_pay")
   // Denormalized running balance, maintained transactionally by
   // recordInvoicePayment (Phase 4 Chunk A) — same "ledger row + denormalized
   // balance on the parent" relationship as StockMovement -> StockLevel.
   // `overdue` is never written here: it's computed at read time from
   // `dueDate` vs. now(), since no background-job infra exists yet to flip
   // the stored status (that's Phase 5/6 scope).
-  amountPaid       Int           @default(0) @map("amount_paid")
-  amountInWords    String        @map("amount_in_words")
-  paymentTerms     String?       @map("payment_terms")
-  status           InvoiceStatus @default(issued)
-  notes            String?
-  pdfUrl           String?       @map("pdf_url") @db.VarChar(500)
-  createdBy        String?       @map("created_by") @db.Uuid
-  createdAt        DateTime      @default(now()) @map("created_at")
-  updatedAt        DateTime      @updatedAt @map("updated_at")
+  amountPaid      Int           @default(0) @map("amount_paid")
+  amountInWords   String        @map("amount_in_words")
+  paymentTerms    String?       @map("payment_terms")
+  status          InvoiceStatus @default(issued)
+  notes           String?
+  pdfUrl          String?       @map("pdf_url") @db.VarChar(500)
+  createdBy       String?       @map("created_by") @db.Uuid
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
 
-  tenant        Tenant        @relation(fields: [tenantId], references: [id])
-  sale          Sale?         @relation(fields: [saleId], references: [id])
-  customer      Customer?     @relation(fields: [customerId], references: [id])
-  createdByUser User?         @relation("InvoiceCreatedBy", fields: [createdBy], references: [id])
+  tenant        Tenant           @relation(fields: [tenantId], references: [id])
+  sale          Sale?            @relation(fields: [saleId], references: [id])
+  customer      Customer?        @relation(fields: [customerId], references: [id])
+  createdByUser User?            @relation("InvoiceCreatedBy", fields: [createdBy], references: [id])
   items         InvoiceItem[]
   payments      InvoicePayment[]
 
@@ -942,16 +944,16 @@ enum ReturnStatus {
 }
 
 model SaleReturn {
-  id              String       @id @default(uuid()) @db.Uuid
-  tenantId        String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  storeId         String       @map("store_id") @db.Uuid
-  originalSaleId  String       @map("original_sale_id") @db.Uuid
-  returnNumber    String       @map("return_number") @db.VarChar(50)
-  reason          String?
-  totalRefunded   Int          @map("total_refunded")
-  status          ReturnStatus @default(completed)
-  createdBy       String       @map("created_by") @db.Uuid
-  createdAt       DateTime     @default(now()) @map("created_at")
+  id             String       @id @default(uuid()) @db.Uuid
+  tenantId       String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId        String       @map("store_id") @db.Uuid
+  originalSaleId String       @map("original_sale_id") @db.Uuid
+  returnNumber   String       @map("return_number") @db.VarChar(50)
+  reason         String?
+  totalRefunded  Int          @map("total_refunded")
+  status         ReturnStatus @default(completed)
+  createdBy      String       @map("created_by") @db.Uuid
+  createdAt      DateTime     @default(now()) @map("created_at")
 
   tenant        Tenant           @relation(fields: [tenantId], references: [id])
   store         Store            @relation(fields: [storeId], references: [id])
@@ -966,16 +968,16 @@ model SaleReturn {
 }
 
 model SaleReturnItem {
-  id            String  @id @default(uuid()) @db.Uuid
-  tenantId      String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  returnId      String  @map("return_id") @db.Uuid
-  saleItemId    String  @map("sale_item_id") @db.Uuid
-  productId     String  @map("product_id") @db.Uuid
-  quantity      Int
-  unitPrice     Int     @map("unit_price")
-  tvaRate       Int     @map("tva_rate") @db.SmallInt
-  refundAmount  Int     @map("refund_amount")
-  reason        String?
+  id           String  @id @default(uuid()) @db.Uuid
+  tenantId     String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  returnId     String  @map("return_id") @db.Uuid
+  saleItemId   String  @map("sale_item_id") @db.Uuid
+  productId    String  @map("product_id") @db.Uuid
+  quantity     Int
+  unitPrice    Int     @map("unit_price")
+  tvaRate      Int     @map("tva_rate") @db.SmallInt
+  refundAmount Int     @map("refund_amount")
+  reason       String?
 
   tenant   Tenant     @relation(fields: [tenantId], references: [id])
   return   SaleReturn @relation(fields: [returnId], references: [id])
@@ -1007,24 +1009,24 @@ enum PoStatus {
 }
 
 model PurchaseOrder {
-  id                    String    @id @default(uuid()) @db.Uuid
-  tenantId              String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  poNumber              String    @map("po_number") @db.VarChar(50)
-  supplierId            String    @map("supplier_id") @db.Uuid
-  storeId               String    @map("store_id") @db.Uuid
-  status                PoStatus  @default(draft)
-  orderedAt             DateTime? @map("ordered_at")
-  expectedDeliveryDate  DateTime? @map("expected_delivery_date") @db.Date
-  notes                 String?
-  subtotal              Int       @default(0)
-  tvaAmount              Int      @default(0) @map("tva_amount")
-  total                  Int      @default(0)
-  currency               String   @default("DZD") @db.VarChar(3)
-  createdBy              String?  @map("created_by") @db.Uuid
-  approvedBy             String?  @map("approved_by") @db.Uuid
-  createdAt              DateTime @default(now()) @map("created_at")
-  updatedAt              DateTime @updatedAt @map("updated_at")
-  deletedAt              DateTime? @map("deleted_at")
+  id                   String    @id @default(uuid()) @db.Uuid
+  tenantId             String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  poNumber             String    @map("po_number") @db.VarChar(50)
+  supplierId           String    @map("supplier_id") @db.Uuid
+  storeId              String    @map("store_id") @db.Uuid
+  status               PoStatus  @default(draft)
+  orderedAt            DateTime? @map("ordered_at")
+  expectedDeliveryDate DateTime? @map("expected_delivery_date") @db.Date
+  notes                String?
+  subtotal             Int       @default(0)
+  tvaAmount            Int       @default(0) @map("tva_amount")
+  total                Int       @default(0)
+  currency             String    @default("DZD") @db.VarChar(3)
+  createdBy            String?   @map("created_by") @db.Uuid
+  approvedBy           String?   @map("approved_by") @db.Uuid
+  createdAt            DateTime  @default(now()) @map("created_at")
+  updatedAt            DateTime  @updatedAt @map("updated_at")
+  deletedAt            DateTime? @map("deleted_at")
 
   tenant         Tenant              @relation(fields: [tenantId], references: [id])
   supplier       Supplier            @relation(fields: [supplierId], references: [id])
@@ -1055,9 +1057,9 @@ model PurchaseOrderItem {
   total            Int
   notes            String?
 
-  tenant  Tenant        @relation(fields: [tenantId], references: [id])
-  po      PurchaseOrder @relation(fields: [poId], references: [id])
-  product Product       @relation(fields: [productId], references: [id])
+  tenant        Tenant                 @relation(fields: [tenantId], references: [id])
+  po            PurchaseOrder          @relation(fields: [poId], references: [id])
+  product       Product                @relation(fields: [productId], references: [id])
   deliveryItems PurchaseDeliveryItem[]
 
   @@index([tenantId])
@@ -1199,13 +1201,13 @@ model ProductBatch {
   store          Store?          @relation(fields: [storeId], references: [id])
   stockMovements StockMovement[]
   saleItems      SaleItem[]
+  // CHECK (quantity_remaining >= 0) hand-appended in migration.sql — same
+  // "hand-append what Prisma can't express" rule already used for
+  // stock_levels/product_categories elsewhere in this schema.
 
   @@index([tenantId])
   @@index([productId])
   @@map("product_batches")
-  // CHECK (quantity_remaining >= 0) hand-appended in migration.sql — same
-  // "hand-append what Prisma can't express" rule already used for
-  // stock_levels/product_categories elsewhere in this schema.
 }
 
 /// Net-new — ARCHITECTURE.md §5.2's Week 11 rules name "purchase_returns"
@@ -1385,9 +1387,9 @@ model StockCountItem {
   difference       Int              @default(dbgenerated("0"))
   adjustmentStatus AdjustmentStatus @default(pending) @map("adjustment_status")
 
-  tenant Tenant     @relation(fields: [tenantId], references: [id])
-  count  StockCount @relation(fields: [countId], references: [id])
-  product Product   @relation(fields: [productId], references: [id])
+  tenant  Tenant     @relation(fields: [tenantId], references: [id])
+  count   StockCount @relation(fields: [countId], references: [id])
+  product Product    @relation(fields: [productId], references: [id])
 
   @@index([tenantId])
   @@index([countId])
@@ -1432,8 +1434,8 @@ model WarehouseZone {
   code        String    @db.VarChar(20)
   deletedAt   DateTime? @map("deleted_at")
 
-  tenant    Tenant        @relation(fields: [tenantId], references: [id])
-  warehouse Warehouse     @relation(fields: [warehouseId], references: [id])
+  tenant    Tenant         @relation(fields: [tenantId], references: [id])
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id])
   bins      WarehouseBin[]
 
   @@index([tenantId])
@@ -1464,12 +1466,12 @@ model WarehouseBin {
 /// deliberate spec-driven deviation from ProductCategory's soft-delete
 /// shape, not an oversight (see PHASE4_FINANCE_PLAN.md Chunk A).
 model ExpenseCategory {
-  id          String    @id @default(uuid()) @db.Uuid
-  tenantId    String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
-  parentId    String?   @map("parent_id") @db.Uuid
-  name        String    @db.VarChar(255)
+  id          String  @id @default(uuid()) @db.Uuid
+  tenantId    String  @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  parentId    String? @map("parent_id") @db.Uuid
+  name        String  @db.VarChar(255)
   description String?
-  isActive    Boolean   @default(true) @map("is_active")
+  isActive    Boolean @default(true) @map("is_active")
 
   tenant   Tenant            @relation(fields: [tenantId], references: [id])
   parent   ExpenseCategory?  @relation("ExpenseCategoryHierarchy", fields: [parentId], references: [id])
@@ -1536,9 +1538,9 @@ model InvoicePayment {
   recordedBy    String?           @map("recorded_by") @db.Uuid
   createdAt     DateTime          @default(now()) @map("created_at")
 
-  tenant        Tenant  @relation(fields: [tenantId], references: [id])
-  invoice       Invoice @relation(fields: [invoiceId], references: [id])
-  recordedByUser User?  @relation("InvoicePaymentRecordedBy", fields: [recordedBy], references: [id])
+  tenant         Tenant  @relation(fields: [tenantId], references: [id])
+  invoice        Invoice @relation(fields: [invoiceId], references: [id])
+  recordedByUser User?   @relation("InvoicePaymentRecordedBy", fields: [recordedBy], references: [id])
 
   @@index([tenantId])
   @@index([invoiceId])
@@ -1652,4 +1654,40 @@ model CustomerPrice {
   @@unique([tenantId, customerId, productId])
   @@index([tenantId])
   @@map("customer_prices")
+}
+
+// --- Phase 4 Chunk C: Advanced Financial Reports -------------------------
+
+enum PeriodStatus {
+  open
+  closed
+
+  @@map("period_status_enum")
+}
+
+/// Net-new — ARCHITECTURE.md names financial_periods with zero columns;
+/// DATABASE.md doesn't mention it at all. Closing a period is advisory
+/// only — it does not block new Expense/Sale/Invoice rows dated inside a
+/// closed period (full ledger-locking would need write-path checks threaded
+/// through several already-shipped services, a materially bigger feature
+/// than "simplified... financial period management" implies; flagged as a
+/// candidate to tighten later if real accounting rigor is required).
+model FinancialPeriod {
+  id        String       @id @default(uuid()) @db.Uuid
+  tenantId  String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name      String       @db.VarChar(100)
+  startDate DateTime     @map("start_date") @db.Date
+  endDate   DateTime     @map("end_date") @db.Date
+  status    PeriodStatus @default(open)
+  closedAt  DateTime?    @map("closed_at")
+  closedBy  String?      @map("closed_by") @db.Uuid
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+
+  tenant       Tenant @relation(fields: [tenantId], references: [id])
+  closedByUser User?  @relation("FinancialPeriodClosedBy", fields: [closedBy], references: [id])
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@map("financial_periods")
 }

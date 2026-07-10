@@ -37,6 +37,8 @@
     "procurementReports": "Procurement Reports",
     "expenses": "Expenses",
     "financialDashboard": "Financial Dashboard",
+    "financialPeriods": "Financial Periods",
+    "financialReports": "Financial Reports",
     "customers": "Customers"
   },
   "auth": {
@@ -1315,6 +1317,93 @@
       "confirm": "Remove this price?",
       "success": "Price removed.",
       "error": "Unable to remove this price."
+    }
+  },
+  "financialPeriods": {
+    "title": "Financial Periods",
+    "empty": "No financial periods yet.",
+    "table": {
+      "name": "Name",
+      "startDate": "Start",
+      "endDate": "End",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": { "open": "Open", "closed": "Closed" },
+    "close": {
+      "action": "Close",
+      "confirm": "Close this financial period? This is advisory only — it does not block new entries dated inside this period.",
+      "success": "Period closed.",
+      "error": "Unable to close this period."
+    },
+    "form": {
+      "title": "New Period",
+      "description": "Declare a financial period (e.g. a month or a quarter).",
+      "name": "Name",
+      "namePlaceholder": "e.g. July 2026",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Period created.",
+      "error": "Unable to create this period."
+    }
+  },
+  "financialReports": {
+    "title": "Financial Reports",
+    "from": "From",
+    "to": "To",
+    "balanceSheet": {
+      "title": "Balance Sheet",
+      "description": "Simplified balance sheet, computed over all-time history (no date range).",
+      "cash": "Cash",
+      "accountsReceivable": "Accounts Receivable",
+      "inventoryValue": "Inventory Value",
+      "totalAssets": "Total Assets",
+      "totalLiabilities": "Total Liabilities",
+      "equity": "Equity"
+    },
+    "cashFlow": {
+      "title": "Cash Flow",
+      "cashIn": "Cash In",
+      "cashOut": "Cash Out",
+      "netCashFlow": "Net Cash Flow",
+      "purchasesAccrual": "Purchases (accrual, not cash-confirmed)"
+    },
+    "taxReport": {
+      "title": "Tax Report",
+      "bucket": "Bucketing",
+      "bucketOptions": { "monthly": "Monthly", "quarterly": "Quarterly" },
+      "exportCsv": "Export CSV",
+      "empty": "No data for this period.",
+      "table": {
+        "period": "Period",
+        "collected": "TVA Collected",
+        "paidPurchases": "TVA Paid (Purchases)",
+        "paidExpenses": "TVA Paid (Expenses)",
+        "net": "Net"
+      }
+    },
+    "expenseAnalysis": {
+      "title": "Expense Analysis",
+      "empty": "No expenses for this period.",
+      "table": {
+        "category": "Category",
+        "ownAmount": "Own Amount",
+        "totalAmount": "Total Amount"
+      }
+    },
+    "marginAnalysis": {
+      "title": "Margin Analysis",
+      "groupBy": "Group by",
+      "groupByOptions": { "product": "Product", "category": "Category", "brand": "Brand" },
+      "empty": "No sales for this period.",
+      "table": {
+        "label": "Name",
+        "quantity": "Quantity",
+        "revenue": "Revenue",
+        "margin": "Margin"
+      }
     }
   }
 }

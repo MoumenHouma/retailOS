@@ -37,6 +37,8 @@
     "procurementReports": "Rapports d'achats",
     "expenses": "Dépenses",
     "financialDashboard": "Tableau de bord financier",
+    "financialPeriods": "Périodes comptables",
+    "financialReports": "Rapports financiers",
     "customers": "Clients"
   },
   "auth": {
@@ -1315,6 +1317,93 @@
       "confirm": "Supprimer ce tarif ?",
       "success": "Tarif supprimé.",
       "error": "Impossible de supprimer ce tarif."
+    }
+  },
+  "financialPeriods": {
+    "title": "Périodes comptables",
+    "empty": "Aucune période comptable pour le moment.",
+    "table": {
+      "name": "Nom",
+      "startDate": "Début",
+      "endDate": "Fin",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": { "open": "Ouverte", "closed": "Fermée" },
+    "close": {
+      "action": "Fermer",
+      "confirm": "Fermer cette période comptable ? Cette action est informative uniquement — elle ne bloque pas la saisie de nouvelles écritures dans cette période.",
+      "success": "Période fermée.",
+      "error": "Impossible de fermer cette période."
+    },
+    "form": {
+      "title": "Nouvelle période",
+      "description": "Déclarer une période comptable (ex. un mois ou un trimestre).",
+      "name": "Nom",
+      "namePlaceholder": "ex. Juillet 2026",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Période créée.",
+      "error": "Impossible de créer cette période."
+    }
+  },
+  "financialReports": {
+    "title": "Rapports financiers",
+    "from": "Du",
+    "to": "Au",
+    "balanceSheet": {
+      "title": "Bilan",
+      "description": "Bilan simplifié, calculé sur l'ensemble de l'historique (pas de plage de dates).",
+      "cash": "Trésorerie",
+      "accountsReceivable": "Créances clients",
+      "inventoryValue": "Valeur du stock",
+      "totalAssets": "Total actif",
+      "totalLiabilities": "Total passif",
+      "equity": "Capitaux propres"
+    },
+    "cashFlow": {
+      "title": "Flux de trésorerie",
+      "cashIn": "Encaissements",
+      "cashOut": "Décaissements",
+      "netCashFlow": "Flux net",
+      "purchasesAccrual": "Achats (engagés, non décaissés)"
+    },
+    "taxReport": {
+      "title": "Rapport TVA",
+      "bucket": "Regroupement",
+      "bucketOptions": { "monthly": "Mensuel", "quarterly": "Trimestriel" },
+      "exportCsv": "Exporter CSV",
+      "empty": "Aucune donnée pour cette période.",
+      "table": {
+        "period": "Période",
+        "collected": "TVA collectée",
+        "paidPurchases": "TVA payée (achats)",
+        "paidExpenses": "TVA payée (dépenses)",
+        "net": "Net"
+      }
+    },
+    "expenseAnalysis": {
+      "title": "Analyse des dépenses",
+      "empty": "Aucune dépense pour cette période.",
+      "table": {
+        "category": "Catégorie",
+        "ownAmount": "Montant propre",
+        "totalAmount": "Montant cumulé"
+      }
+    },
+    "marginAnalysis": {
+      "title": "Analyse de marge",
+      "groupBy": "Regrouper par",
+      "groupByOptions": { "product": "Produit", "category": "Catégorie", "brand": "Marque" },
+      "empty": "Aucune vente pour cette période.",
+      "table": {
+        "label": "Nom",
+        "quantity": "Quantité",
+        "revenue": "Chiffre d'affaires",
+        "margin": "Marge"
+      }
     }
   }
 }

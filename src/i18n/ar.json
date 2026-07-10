@@ -37,6 +37,8 @@
     "procurementReports": "تقارير المشتريات",
     "expenses": "المصاريف",
     "financialDashboard": "لوحة التحكم المالية",
+    "financialPeriods": "الفترات المحاسبية",
+    "financialReports": "التقارير المالية",
     "customers": "العملاء"
   },
   "auth": {
@@ -1315,6 +1317,93 @@
       "confirm": "إزالة هذا السعر؟",
       "success": "تمت إزالة السعر.",
       "error": "تعذر إزالة هذا السعر."
+    }
+  },
+  "financialPeriods": {
+    "title": "الفترات المحاسبية",
+    "empty": "لا توجد فترات محاسبية بعد.",
+    "table": {
+      "name": "الاسم",
+      "startDate": "البداية",
+      "endDate": "النهاية",
+      "status": "الحالة",
+      "actions": "الإجراءات"
+    },
+    "status": { "open": "مفتوحة", "closed": "مغلقة" },
+    "close": {
+      "action": "إغلاق",
+      "confirm": "إغلاق هذه الفترة المحاسبية؟ هذا الإجراء استشاري فقط — لا يمنع إضافة قيود جديدة داخل هذه الفترة.",
+      "success": "تم إغلاق الفترة.",
+      "error": "تعذر إغلاق هذه الفترة."
+    },
+    "form": {
+      "title": "فترة جديدة",
+      "description": "تعريف فترة محاسبية (شهر أو ربع سنة مثلاً).",
+      "name": "الاسم",
+      "namePlaceholder": "مثال: يوليو 2026",
+      "startDate": "تاريخ البداية",
+      "endDate": "تاريخ النهاية",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "success": "تم إنشاء الفترة.",
+      "error": "تعذر إنشاء هذه الفترة."
+    }
+  },
+  "financialReports": {
+    "title": "التقارير المالية",
+    "from": "من",
+    "to": "إلى",
+    "balanceSheet": {
+      "title": "الميزانية العمومية",
+      "description": "ميزانية عمومية مبسطة، محسوبة على كامل التاريخ (بدون نطاق تاريخ).",
+      "cash": "السيولة النقدية",
+      "accountsReceivable": "ذمم العملاء",
+      "inventoryValue": "قيمة المخزون",
+      "totalAssets": "إجمالي الأصول",
+      "totalLiabilities": "إجمالي الخصوم",
+      "equity": "حقوق الملكية"
+    },
+    "cashFlow": {
+      "title": "التدفق النقدي",
+      "cashIn": "المقبوضات",
+      "cashOut": "المدفوعات",
+      "netCashFlow": "صافي التدفق النقدي",
+      "purchasesAccrual": "المشتريات (مستحقة، غير مدفوعة نقدًا)"
+    },
+    "taxReport": {
+      "title": "تقرير الرسم على القيمة المضافة",
+      "bucket": "التجميع",
+      "bucketOptions": { "monthly": "شهري", "quarterly": "ربع سنوي" },
+      "exportCsv": "تصدير CSV",
+      "empty": "لا توجد بيانات لهذه الفترة.",
+      "table": {
+        "period": "الفترة",
+        "collected": "الرسم المحصّل",
+        "paidPurchases": "الرسم المدفوع (مشتريات)",
+        "paidExpenses": "الرسم المدفوع (مصاريف)",
+        "net": "الصافي"
+      }
+    },
+    "expenseAnalysis": {
+      "title": "تحليل المصاريف",
+      "empty": "لا توجد مصاريف لهذه الفترة.",
+      "table": {
+        "category": "الفئة",
+        "ownAmount": "المبلغ الخاص",
+        "totalAmount": "المبلغ الإجمالي"
+      }
+    },
+    "marginAnalysis": {
+      "title": "تحليل الهامش",
+      "groupBy": "التجميع حسب",
+      "groupByOptions": { "product": "المنتج", "category": "الفئة", "brand": "العلامة التجارية" },
+      "empty": "لا توجد مبيعات لهذه الفترة.",
+      "table": {
+        "label": "الاسم",
+        "quantity": "الكمية",
+        "revenue": "رقم الأعمال",
+        "margin": "الهامش"
+      }
     }
   }
 }

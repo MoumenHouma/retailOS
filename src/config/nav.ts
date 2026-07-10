@@ -3,6 +3,7 @@ import {
   BarChart3,
   BookOpen,
   Boxes,
+  CalendarClock,
   ClipboardCheck,
   ClipboardList,
   FileSearch,
@@ -66,10 +67,14 @@ export const navGroups: NavGroup[] = [
     items: [
       { href: "/expenses", labelKey: "expenses", icon: Wallet },
       { href: "/finance", labelKey: "financialDashboard", icon: BarChart3 },
+      { href: "/financial-periods", labelKey: "financialPeriods", icon: CalendarClock },
     ],
   },
   {
     labelKey: "groups.reports",
-    items: [{ href: "/procurement-reports", labelKey: "procurementReports", icon: BarChart3 }],
+    items: [
+      { href: "/procurement-reports", labelKey: "procurementReports", icon: BarChart3 },
+      { href: "/financial-reports", labelKey: "financialReports", icon: BarChart3 },
+    ],
   },
 ];
