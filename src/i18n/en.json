@@ -49,7 +49,8 @@
     "roles": "Roles & Permissions",
     "employeePerformance": "Employee Performance",
     "aiForecasts": "Forecasts",
-    "supplierRanking": "Supplier Ranking"
+    "supplierRanking": "Supplier Ranking",
+    "aiDashboard": "AI Dashboard"
   },
   "auth": {
     "login": {
@@ -1717,5 +1718,41 @@
       "success": "Created {count} purchase recommendation(s).",
       "error": "Unable to generate purchase recommendations."
     }
+  },
+  "aiDashboard": {
+    "title": "AI Dashboard",
+    "description": "Forecasts, inventory optimization, supplier ranking, and scenario simulation, all in one place.",
+    "tiles": {
+      "pendingRecommendations": "Pending Recommendations",
+      "forecastAccuracy": "Avg. Forecast Accuracy (MAPE)",
+      "expiringBatches": "Expiring Batches at Risk",
+      "topSupplierRating": "Top Supplier Rating"
+    },
+    "links": {
+      "forecasts": "Forecasts",
+      "forecastsDescription": "Demand forecasting and inventory optimization.",
+      "supplierRanking": "Supplier Ranking",
+      "supplierRankingDescription": "AHP/TOPSIS/PROMETHEE supplier evaluation.",
+      "topSuppliers": "Top Rated Suppliers"
+    }
+  },
+  "scenarioSimulation": {
+    "title": "What-If Scenario Simulator",
+    "priceChange": "Price change (%)",
+    "demandChange": "Demand change (%)",
+    "costChange": "Cost change (%)",
+    "simulate": "Simulate",
+    "simulating": "Simulating...",
+    "netProfitDelta": "Net profit impact",
+    "chart": {
+      "revenue": "Revenue",
+      "grossMargin": "Gross Margin",
+      "netProfit": "Net Profit"
+    }
+  },
+  "recommendationsFeed": {
+    "title": "AI Recommendations",
+    "empty": "No pending recommendations.",
+    "markActioned": "Mark actioned"
   }
 }

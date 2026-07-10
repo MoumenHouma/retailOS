@@ -4,6 +4,7 @@ import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { UserMenu } from "@/components/layout/user-menu";
+import { RecommendationsBell } from "@/components/ai/recommendations-bell";
 
 export default async function DashboardLayout({
   children,
@@ -27,6 +28,7 @@ export default async function DashboardLayout({
       </aside>
       <div className="flex-1">
         <header className="flex items-center justify-end gap-2 border-b border-border px-6 py-3">
+          <RecommendationsBell canView={session.user.permissions.includes("ai:view_recommendations")} />
           <LocaleSwitcher />
           <ThemeToggle />
           <UserMenu

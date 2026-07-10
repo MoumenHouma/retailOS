@@ -49,7 +49,8 @@
     "roles": "الأدوار والصلاحيات",
     "employeePerformance": "أداء الموظفين",
     "aiForecasts": "التوقعات",
-    "supplierRanking": "تصنيف الموردين"
+    "supplierRanking": "تصنيف الموردين",
+    "aiDashboard": "لوحة تحكم الذكاء الاصطناعي"
   },
   "auth": {
     "login": {
@@ -1717,5 +1718,41 @@
       "success": "تم إنشاء {count} توصية شراء.",
       "error": "تعذر إنشاء توصيات الشراء."
     }
+  },
+  "aiDashboard": {
+    "title": "لوحة تحكم الذكاء الاصطناعي",
+    "description": "التوقعات وتحسين المخزون وتصنيف الموردين ومحاكاة السيناريوهات، كلها في مكان واحد.",
+    "tiles": {
+      "pendingRecommendations": "التوصيات المعلقة",
+      "forecastAccuracy": "متوسط دقة التوقعات (MAPE)",
+      "expiringBatches": "الدفعات المعرضة لخطر الانتهاء",
+      "topSupplierRating": "أعلى تقييم مورد"
+    },
+    "links": {
+      "forecasts": "التوقعات",
+      "forecastsDescription": "توقع الطلب وتحسين المخزون.",
+      "supplierRanking": "تصنيف الموردين",
+      "supplierRankingDescription": "تقييم الموردين باستخدام AHP/TOPSIS/PROMETHEE.",
+      "topSuppliers": "الموردون الأعلى تقييمًا"
+    }
+  },
+  "scenarioSimulation": {
+    "title": "محاكي السيناريوهات الافتراضية",
+    "priceChange": "تغير السعر (%)",
+    "demandChange": "تغير الطلب (%)",
+    "costChange": "تغير التكلفة (%)",
+    "simulate": "محاكاة",
+    "simulating": "جارٍ المحاكاة...",
+    "netProfitDelta": "الأثر على صافي الربح",
+    "chart": {
+      "revenue": "الإيرادات",
+      "grossMargin": "الهامش الإجمالي",
+      "netProfit": "صافي الربح"
+    }
+  },
+  "recommendationsFeed": {
+    "title": "توصيات الذكاء الاصطناعي",
+    "empty": "لا توجد توصيات معلقة.",
+    "markActioned": "تعليم كمُنفَّذة"
   }
 }

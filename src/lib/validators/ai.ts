@@ -44,3 +44,12 @@ export const UpdateRecommendationSchema = z.object({
   isRead: z.boolean().optional(),
   isActioned: z.boolean().optional(),
 });
+
+export const SimulateScenarioSchema = z.object({
+  storeId: z.string().uuid().optional(),
+  from: z.coerce.date(),
+  to: z.coerce.date(),
+  priceChangePct: z.number().min(-100).max(1000).optional(),
+  demandChangePct: z.number().min(-100).max(1000).optional(),
+  costChangePct: z.number().min(-100).max(1000).optional(),
+});

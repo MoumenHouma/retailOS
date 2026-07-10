@@ -6,11 +6,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ForecastsTab } from "@/components/ai/forecasts-tab";
 import { InventoryOptimizationTab } from "@/components/ai/inventory-optimization-tab";
 import { WastePreventionTab } from "@/components/ai/waste-prevention-tab";
-import { useAiNotifications } from "@/hooks/use-ai-notifications";
 
+// Note: useAiNotifications() is mounted once, globally, by
+// RecommendationsBell in the dashboard shell layout — not called again here,
+// to avoid opening a second concurrent Socket.io connection.
 export function ForecastView() {
   const t = useTranslations("aiForecasts");
-  useAiNotifications();
 
   return (
     <div className="flex flex-col gap-4">

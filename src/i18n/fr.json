@@ -49,7 +49,8 @@
     "roles": "Rôles et permissions",
     "employeePerformance": "Performance des employés",
     "aiForecasts": "Prévisions",
-    "supplierRanking": "Classement fournisseurs"
+    "supplierRanking": "Classement fournisseurs",
+    "aiDashboard": "Tableau de bord IA"
   },
   "auth": {
     "login": {
@@ -1717,5 +1718,41 @@
       "success": "{count} recommandation(s) d'achat créée(s).",
       "error": "Impossible de générer les recommandations d'achat."
     }
+  },
+  "aiDashboard": {
+    "title": "Tableau de bord IA",
+    "description": "Prévisions, optimisation des stocks, classement des fournisseurs et simulation de scénarios, en un seul endroit.",
+    "tiles": {
+      "pendingRecommendations": "Recommandations en attente",
+      "forecastAccuracy": "Précision moyenne des prévisions (MAPE)",
+      "expiringBatches": "Lots à risque d'expiration",
+      "topSupplierRating": "Meilleure note fournisseur"
+    },
+    "links": {
+      "forecasts": "Prévisions",
+      "forecastsDescription": "Prévision de la demande et optimisation des stocks.",
+      "supplierRanking": "Classement fournisseurs",
+      "supplierRankingDescription": "Évaluation des fournisseurs par AHP/TOPSIS/PROMETHEE.",
+      "topSuppliers": "Fournisseurs les mieux notés"
+    }
+  },
+  "scenarioSimulation": {
+    "title": "Simulateur de scénarios",
+    "priceChange": "Variation de prix (%)",
+    "demandChange": "Variation de la demande (%)",
+    "costChange": "Variation du coût (%)",
+    "simulate": "Simuler",
+    "simulating": "Simulation en cours...",
+    "netProfitDelta": "Impact sur le résultat net",
+    "chart": {
+      "revenue": "Chiffre d'affaires",
+      "grossMargin": "Marge brute",
+      "netProfit": "Résultat net"
+    }
+  },
+  "recommendationsFeed": {
+    "title": "Recommandations IA",
+    "empty": "Aucune recommandation en attente.",
+    "markActioned": "Marquer comme traitée"
   }
 }
