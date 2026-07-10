@@ -87,12 +87,68 @@ services:
     networks: [retailos-network]
     command: pnpm exec next dev --webpack -H 0.0.0.0 -p 3000
 
-  # python-ai: not built in Phase 0 — the AI/optimization engine is a later
-  # roadmap phase. Left here as a placeholder for when it's introduced.
-  # python-ai:
-  #   build: ./python-ai
-  #   ports: ["8000:8000"]
-  #   networks: [retailos-network]
+  # Phase 5 Chunk A: Python FastAPI microservice — Prophet forecasting, pure
+  # stateless compute. Deliberately gets no DATABASE_URL/DATABASE_APP_URL at
+  # all (see ai-engine/app/config.py) — RLS/tenant-scoping stays entirely in
+  # Next.js's withTenant.
+  python-ai:
+    build:
+      context: ./ai-engine
+    env_file: .env
+    environment:
+      INTERNAL_TOKEN: ${INTERNAL_TOKEN:-dev-internal-token}
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    networks: [retailos-network]
+
+  # Phase 5 Chunk A: BullMQ worker process — registers the forecastQueue
+  # processor (src/server/queue/worker.ts). Same image/build as `app`, just a
+  # different command, same "one Dockerfile, different command per role"
+  # shape as the app/worker split described in PHASE5_INTELLIGENCE_PLAN.md.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    env_file: .env
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      python-ai:
+        condition: service_healthy
+    networks: [retailos-network]
+    command: pnpm exec tsx watch src/server/queue/worker.ts
+
+  # Phase 5 Chunk A: standalone Socket.io realtime server
+  # (src/server/realtime/server.ts) — Next.js's App Router can't host a
+  # long-lived Socket.io server in-process, hence its own process/port.
+  realtime:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    working_dir: /app
+    env_file: .env
+    ports:
+      - "4001:4001"
+    volumes:
+      - ./:/app
+      - node_modules:/app/node_modules
+    depends_on:
+      redis:
+        condition: service_healthy
+    networks: [retailos-network]
+    command: pnpm exec tsx watch src/server/realtime/server.ts
 
 networks:
   retailos-network:

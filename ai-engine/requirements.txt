@@ -1,0 +1,7 @@
+# Plain pip, no Poetry/uv — one small dependency tree (PHASE5_INTELLIGENCE_PLAN.md).
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.1
+pandas==2.2.3
+prophet==1.1.6

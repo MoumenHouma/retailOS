@@ -114,6 +114,7 @@ model Tenant {
   attendanceRecords        AttendanceRecord[]
   commissionRules          CommissionRule[]
   saleCommissions          SaleCommission[]
+  demandForecasts          DemandForecast[]
 
   @@map("tenants")
 }
@@ -166,6 +167,7 @@ model Store {
   expenses           Expense[]
   workShifts         WorkShift[]
   attendanceRecords  AttendanceRecord[]
+  demandForecasts    DemandForecast[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -416,6 +418,7 @@ model Product {
   stockTransferItems    StockTransferItem[]
   stockCountItems       StockCountItem[]
   customerPrices        CustomerPrice[]
+  demandForecasts       DemandForecast[]
   // name GIN trgm index hand-appended in migration.sql — pg_trgm has no
   // Prisma-native index-type syntax, same "hand-append what Prisma can't
   // express" rule already used for RLS/CHECK constraints project-wide.
@@ -1895,4 +1898,37 @@ model SaleCommission {
   @@index([tenantId])
   @@index([employeeId])
   @@map("sale_commissions")
+}
+
+// --- Phase 5 Chunk A: AI Engine Setup & Forecasting -----------------------
+
+/// Per DATABASE.md §12.2 verbatim. One row per (product, store, forecastDate)
+/// — upserted idempotently by the worker's forecastQueue processor
+/// (src/server/queue/worker.ts) via the unique constraint below, so a
+/// re-run of the same date range overwrites rather than duplicates.
+/// modelUsed is a free VarChar, not an enum — future ARIMA/XGBoost models
+/// need no migration to add, same rationale DATABASE.md gives.
+model DemandForecast {
+  id                String    @id @default(uuid()) @db.Uuid
+  tenantId          String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  productId         String    @map("product_id") @db.Uuid
+  storeId           String    @map("store_id") @db.Uuid
+  forecastDate      DateTime  @map("forecast_date") @db.Date
+  predictedQuantity Int       @map("predicted_quantity")
+  predictedLower    Int?      @map("predicted_lower")
+  predictedUpper    Int?      @map("predicted_upper")
+  modelUsed         String    @map("model_used") @db.VarChar(50)
+  modelVersion      String?   @map("model_version") @db.VarChar(50)
+  accuracyMape      Decimal?  @map("accuracy_mape") @db.Decimal(5, 2)
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+  store   Store   @relation(fields: [storeId], references: [id])
+
+  @@unique([tenantId, productId, storeId, forecastDate])
+  @@index([tenantId])
+  @@index([productId])
+  @@index([storeId])
+  @@map("demand_forecasts")
 }

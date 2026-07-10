@@ -21,6 +21,7 @@
       "inventory": "Stock",
       "finance": "Finances",
       "hr": "Personnel",
+      "ai": "IA",
       "reports": "Rapports"
     },
     "pos": "Point de vente",
@@ -46,7 +47,8 @@
     "attendance": "Présences",
     "commissionRules": "Commissions",
     "roles": "Rôles et permissions",
-    "employeePerformance": "Performance des employés"
+    "employeePerformance": "Performance des employés",
+    "aiForecasts": "Prévisions"
   },
   "auth": {
     "login": {
@@ -1634,5 +1636,17 @@
       "shiftsScheduled": "Postes programmés",
       "attendanceRate": "Taux de présence"
     }
+  },
+  "aiForecasts": {
+    "title": "Prévisions de la demande",
+    "description": "Prévisions basées sur Prophet par produit et magasin, tenant compte de la saisonnalité (Ramadan, Aïd, rentrée scolaire).",
+    "selectStore": "Sélectionner un magasin",
+    "selectBoth": "Sélectionnez d'abord un produit et un magasin.",
+    "runForecast": "Lancer la prévision",
+    "running": "En cours...",
+    "runStarted": "Le calcul de prévision a démarré.",
+    "runError": "Impossible de lancer la prévision.",
+    "batchStatus": "{completed}/{total} terminés ({failed} en échec)",
+    "empty": "Aucune prévision pour ce produit/magasin — lancez-en une ci-dessus."
   }
 }

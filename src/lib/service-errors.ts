@@ -29,6 +29,7 @@ import { InsufficientLoyaltyPointsError } from "@/server/services/loyalty";
 import { CreditLimitExceededError, DebtOverpaymentError } from "@/server/services/customer-debts";
 import { PeriodAlreadyClosedError } from "@/server/services/financial-periods";
 import { AlreadyClockedInError } from "@/server/services/attendance";
+import { NoActiveScopeError } from "@/server/services/forecasting";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -107,6 +108,9 @@ export function mapServiceError(error: unknown) {
   }
   if (error instanceof AlreadyClockedInError) {
     return apiError("ALREADY_CLOCKED_IN", error.message, 409);
+  }
+  if (error instanceof NoActiveScopeError) {
+    return apiError("NO_ACTIVE_SCOPE", error.message, 422);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);

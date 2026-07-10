@@ -16,6 +16,7 @@ import {
   Receipt,
   ShieldCheck,
   ShoppingCart,
+  TrendingUp,
   Truck,
   UserSquare2,
   Users,
@@ -84,6 +85,10 @@ export const navGroups: NavGroup[] = [
       { href: "/commission-rules", labelKey: "commissionRules", icon: Percent },
       { href: "/roles", labelKey: "roles", icon: ShieldCheck },
     ],
+  },
+  {
+    labelKey: "groups.ai",
+    items: [{ href: "/ai-forecasts", labelKey: "aiForecasts", icon: TrendingUp }],
   },
   {
     labelKey: "groups.reports",

@@ -21,6 +21,7 @@
       "inventory": "Inventory",
       "finance": "Finance",
       "hr": "Staff",
+      "ai": "AI",
       "reports": "Reports"
     },
     "pos": "Point of Sale",
@@ -46,7 +47,8 @@
     "attendance": "Attendance",
     "commissionRules": "Commissions",
     "roles": "Roles & Permissions",
-    "employeePerformance": "Employee Performance"
+    "employeePerformance": "Employee Performance",
+    "aiForecasts": "Forecasts"
   },
   "auth": {
     "login": {
@@ -1634,5 +1636,17 @@
       "shiftsScheduled": "Shifts Scheduled",
       "attendanceRate": "Attendance Rate"
     }
+  },
+  "aiForecasts": {
+    "title": "Demand Forecasts",
+    "description": "Prophet-based demand forecasting per product and store, accounting for Ramadan/Eid/back-to-school seasonality.",
+    "selectStore": "Select a store",
+    "selectBoth": "Select a product and a store first.",
+    "runForecast": "Run Forecast",
+    "running": "Running...",
+    "runStarted": "Forecast run started.",
+    "runError": "Unable to start the forecast run.",
+    "batchStatus": "{completed}/{total} completed ({failed} failed)",
+    "empty": "No forecast yet for this product/store — run one above."
   }
 }

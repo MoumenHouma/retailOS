@@ -21,6 +21,7 @@
       "inventory": "المخزون",
       "finance": "المالية",
       "hr": "الموظفون",
+      "ai": "الذكاء الاصطناعي",
       "reports": "التقارير"
     },
     "pos": "نقطة البيع",
@@ -46,7 +47,8 @@
     "attendance": "الحضور",
     "commissionRules": "العمولات",
     "roles": "الأدوار والصلاحيات",
-    "employeePerformance": "أداء الموظفين"
+    "employeePerformance": "أداء الموظفين",
+    "aiForecasts": "التوقعات"
   },
   "auth": {
     "login": {
@@ -1634,5 +1636,17 @@
       "shiftsScheduled": "المناوبات المجدولة",
       "attendanceRate": "معدل الحضور"
     }
+  },
+  "aiForecasts": {
+    "title": "توقعات الطلب",
+    "description": "توقعات الطلب باستخدام Prophet لكل منتج ومتجر، مع مراعاة موسمية رمضان والأعياد والدخول المدرسي.",
+    "selectStore": "اختر متجرًا",
+    "selectBoth": "اختر منتجًا ومتجرًا أولاً.",
+    "runForecast": "تشغيل التوقع",
+    "running": "جارٍ التشغيل...",
+    "runStarted": "بدأ تشغيل التوقع.",
+    "runError": "تعذر بدء تشغيل التوقع.",
+    "batchStatus": "{completed}/{total} مكتمل ({failed} فشل)",
+    "empty": "لا توجد توقعات بعد لهذا المنتج/المتجر — قم بتشغيل واحد أعلاه."
   }
 }
