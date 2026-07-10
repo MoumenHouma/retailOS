@@ -48,7 +48,8 @@
     "commissionRules": "العمولات",
     "roles": "الأدوار والصلاحيات",
     "employeePerformance": "أداء الموظفين",
-    "aiForecasts": "التوقعات"
+    "aiForecasts": "التوقعات",
+    "supplierRanking": "تصنيف الموردين"
   },
   "auth": {
     "login": {
@@ -1647,6 +1648,74 @@
     "runStarted": "بدأ تشغيل التوقع.",
     "runError": "تعذر بدء تشغيل التوقع.",
     "batchStatus": "{completed}/{total} مكتمل ({failed} فشل)",
-    "empty": "لا توجد توقعات بعد لهذا المنتج/المتجر — قم بتشغيل واحد أعلاه."
+    "empty": "لا توجد توقعات بعد لهذا المنتج/المتجر — قم بتشغيل واحد أعلاه.",
+    "tabs": {
+      "forecasts": "التوقعات",
+      "inventoryOptimization": "تحسين المخزون",
+      "wastePrevention": "منع الهدر"
+    }
+  },
+  "inventoryOptimization": {
+    "selectStore": "اختر متجرًا",
+    "selectStoreFirst": "اختر متجرًا أولاً.",
+    "recompute": "إعادة الحساب",
+    "recomputeSuccess": "تمت إعادة حساب {count} منتج (منتجات).",
+    "recomputeError": "تعذرت إعادة الحساب.",
+    "empty": "لا توجد منتجات محسّنة بعد — قم بتشغيل توقع ثم أعد الحساب.",
+    "table": {
+      "product": "المنتج",
+      "reorderPoint": "نقطة إعادة الطلب",
+      "safetyStock": "مخزون الأمان"
+    }
+  },
+  "wastePrevention": {
+    "generate": "إنشاء التوصيات",
+    "generateSuccess": "تم إنشاء {count} توصية (توصيات).",
+    "generateError": "تعذر إنشاء التوصيات.",
+    "empty": "لا توجد دفعات معرضة لخطر الانتهاء حاليًا.",
+    "table": {
+      "product": "المنتج",
+      "quantity": "الكمية",
+      "daysUntilExpiry": "الأيام المتبقية حتى الانتهاء"
+    }
+  },
+  "supplierRanking": {
+    "title": "تصنيف الموردين",
+    "description": "صنّف الموردين باستخدام ترجيح AHP الزوجي وطريقتي TOPSIS/PROMETHEE — احصل على توصيات شراء من المورد الأعلى تصنيفًا لكل منتج.",
+    "selectSuppliers": "اختر الموردين للمقارنة (على الأقل 2)",
+    "selectAtLeastTwo": "اختر موردين اثنين على الأقل.",
+    "runEvaluation": "تشغيل التقييم",
+    "runSuccess": "اكتمل التقييم.",
+    "runError": "تعذر تشغيل التقييم.",
+    "scoreHistory": "سجل النقاط",
+    "criteria": {
+      "price": "السعر",
+      "quality": "الجودة",
+      "delivery": "مدة التسليم",
+      "reliability": "الموثوقية",
+      "paymentTerms": "شروط الدفع",
+      "productRange": "تشكيلة المنتجات"
+    },
+    "ahp": {
+      "title": "المقارنة الزوجية (AHP)",
+      "description": "لكل زوج، قيّم مدى أهمية المعيار الأول مقارنة بالثاني (1 = متساوٍ، 9 = أهم بكثير؛ اختر كسرًا إذا كان الثاني أهم).",
+      "vs": "مقابل",
+      "consistencyRatio": "نسبة الاتساق",
+      "inconsistentWarning": "يُنصح بإعادة المقارنات"
+    },
+    "method": {
+      "ahpTopsis": "AHP + TOPSIS",
+      "ahpPromethee": "AHP + PROMETHEE"
+    },
+    "table": {
+      "rank": "الترتيب",
+      "supplier": "المورد",
+      "score": "النقاط"
+    },
+    "purchaseRecommendations": {
+      "generate": "إنشاء توصيات الشراء",
+      "success": "تم إنشاء {count} توصية شراء.",
+      "error": "تعذر إنشاء توصيات الشراء."
+    }
   }
 }

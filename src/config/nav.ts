@@ -88,7 +88,10 @@ export const navGroups: NavGroup[] = [
   },
   {
     labelKey: "groups.ai",
-    items: [{ href: "/ai-forecasts", labelKey: "aiForecasts", icon: TrendingUp }],
+    items: [
+      { href: "/ai-forecasts", labelKey: "aiForecasts", icon: TrendingUp },
+      { href: "/supplier-ranking", labelKey: "supplierRanking", icon: Truck },
+    ],
   },
   {
     labelKey: "groups.reports",

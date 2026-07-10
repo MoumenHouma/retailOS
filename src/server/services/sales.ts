@@ -131,7 +131,46 @@ async function priceItems(tx: TransactionClient, items: SaleItemInput[], custome
     };
   });
 
-  return { itemsData, subtotal, tvaAmount, lineDiscountTotal };
+  return { itemsData, subtotal, tvaAmount, lineDiscountTotal, productById };
+}
+
+/**
+ * Phase 5 Chunk B touch: FEFO (first-expired-first-out) batch consumption,
+ * scoped to isExpirable products only — non-expirable products keep today's
+ * behavior untouched, minimizing blast radius on this hot path. Without
+ * this, ProductBatch.quantityRemaining never shrinks (see its own schema
+ * comment, a gap deliberately deferred since Phase 3 Chunk B), which makes
+ * Phase 5 Chunk B's expiration-risk prediction meaningless — it needs to
+ * know how much of an expiring batch is actually still on the shelf.
+ * Greedily consumes across batches (oldest expirationDate first) until the
+ * sold quantity is covered; returns the first batch touched, for
+ * SaleItem.batchId (a single nullable FK can't represent a split across
+ * batches, so only the primary one is recorded — good enough for
+ * traceability, and StockMovement rows exist per-line regardless).
+ */
+async function consumeExpirableBatch(
+  tx: TransactionClient,
+  { productId, storeId, quantity }: { productId: string; storeId: string; quantity: number },
+): Promise<string | null> {
+  const batches = await tx.productBatch.findMany({
+    where: { productId, storeId, quantityRemaining: { gt: 0 }, deletedAt: null },
+    orderBy: [{ expirationDate: "asc" }],
+  });
+
+  let remaining = quantity;
+  let primaryBatchId: string | null = null;
+  for (const batch of batches) {
+    if (remaining <= 0) break;
+    const consume = Math.min(batch.quantityRemaining, remaining);
+    if (consume <= 0) continue;
+    await tx.productBatch.update({
+      where: { id: batch.id },
+      data: { quantityRemaining: { decrement: consume } },
+    });
+    primaryBatchId ??= batch.id;
+    remaining -= consume;
+  }
+  return primaryBatchId;
 }
 
 /**
@@ -151,7 +190,7 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
     throw new SessionClosedError();
   }
 
-  const { itemsData, subtotal, tvaAmount, lineDiscountTotal } = await priceItems(
+  const { itemsData, subtotal, tvaAmount, lineDiscountTotal, productById } = await priceItems(
     tx,
     input.items,
     input.customerId,
@@ -201,7 +240,22 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
     include: { items: true, payments: true },
   });
 
-  for (const item of itemsData) {
+  for (const [i, item] of itemsData.entries()) {
+    const product = productById.get(item.productId);
+    const saleItem = sale.items[i];
+
+    let batchId: string | null = null;
+    if (product?.isExpirable) {
+      batchId = await consumeExpirableBatch(tx, {
+        productId: item.productId,
+        storeId: input.storeId,
+        quantity: item.quantity,
+      });
+      if (batchId && saleItem) {
+        await tx.saleItem.update({ where: { id: saleItem.id }, data: { batchId } });
+      }
+    }
+
     await recordStockMovement(tx, {
       productId: item.productId,
       storeId: input.storeId,
@@ -210,6 +264,7 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
       referenceId: sale.id,
       referenceType: "sale",
       createdBy: input.cashierId,
+      batchId,
     });
   }
 

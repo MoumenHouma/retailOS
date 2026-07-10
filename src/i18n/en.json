@@ -48,7 +48,8 @@
     "commissionRules": "Commissions",
     "roles": "Roles & Permissions",
     "employeePerformance": "Employee Performance",
-    "aiForecasts": "Forecasts"
+    "aiForecasts": "Forecasts",
+    "supplierRanking": "Supplier Ranking"
   },
   "auth": {
     "login": {
@@ -1647,6 +1648,74 @@
     "runStarted": "Forecast run started.",
     "runError": "Unable to start the forecast run.",
     "batchStatus": "{completed}/{total} completed ({failed} failed)",
-    "empty": "No forecast yet for this product/store — run one above."
+    "empty": "No forecast yet for this product/store — run one above.",
+    "tabs": {
+      "forecasts": "Forecasts",
+      "inventoryOptimization": "Inventory Optimization",
+      "wastePrevention": "Waste Prevention"
+    }
+  },
+  "inventoryOptimization": {
+    "selectStore": "Select a store",
+    "selectStoreFirst": "Select a store first.",
+    "recompute": "Recompute",
+    "recomputeSuccess": "Recomputed {count} product(s).",
+    "recomputeError": "Unable to recompute.",
+    "empty": "No optimized products yet — run a forecast, then recompute.",
+    "table": {
+      "product": "Product",
+      "reorderPoint": "Reorder Point",
+      "safetyStock": "Safety Stock"
+    }
+  },
+  "wastePrevention": {
+    "generate": "Generate Recommendations",
+    "generateSuccess": "Created {count} recommendation(s).",
+    "generateError": "Unable to generate recommendations.",
+    "empty": "No expiring batches at risk right now.",
+    "table": {
+      "product": "Product",
+      "quantity": "Quantity",
+      "daysUntilExpiry": "Days Until Expiry"
+    }
+  },
+  "supplierRanking": {
+    "title": "Supplier Ranking",
+    "description": "Rank suppliers with AHP pairwise weighting and TOPSIS/PROMETHEE — get purchase recommendations from the top-ranked supplier per product.",
+    "selectSuppliers": "Select suppliers to compare (at least 2)",
+    "selectAtLeastTwo": "Select at least 2 suppliers.",
+    "runEvaluation": "Run Evaluation",
+    "runSuccess": "Evaluation completed.",
+    "runError": "Unable to run the evaluation.",
+    "scoreHistory": "Score history",
+    "criteria": {
+      "price": "Price",
+      "quality": "Quality",
+      "delivery": "Delivery time",
+      "reliability": "Reliability",
+      "paymentTerms": "Payment terms",
+      "productRange": "Product range"
+    },
+    "ahp": {
+      "title": "AHP pairwise comparison",
+      "description": "For each pair, rate how much more important the first criterion is (1 = equal, 9 = extremely more important; select a fraction if the second is more important).",
+      "vs": "vs",
+      "consistencyRatio": "Consistency ratio",
+      "inconsistentWarning": "consider redoing the comparisons"
+    },
+    "method": {
+      "ahpTopsis": "AHP + TOPSIS",
+      "ahpPromethee": "AHP + PROMETHEE"
+    },
+    "table": {
+      "rank": "Rank",
+      "supplier": "Supplier",
+      "score": "Score"
+    },
+    "purchaseRecommendations": {
+      "generate": "Generate Purchase Recommendations",
+      "success": "Created {count} purchase recommendation(s).",
+      "error": "Unable to generate purchase recommendations."
+    }
   }
 }

@@ -9,6 +9,7 @@ import { bullmqConnection, type ForecastJobData } from "@/server/queue/queues";
 import { withTenant } from "@/lib/prisma";
 import { exportSalesHistory } from "@/server/services/forecasting";
 import { publishTenantEvent } from "@/server/realtime/publish";
+import { recomputeProductOptimization } from "@/server/services/inventory-optimization";
 
 const AI_ENGINE_URL = process.env.AI_ENGINE_URL ?? "http://python-ai:8000";
 const INTERNAL_TOKEN = process.env.INTERNAL_TOKEN ?? "dev-internal-token";
@@ -91,6 +92,11 @@ async function processForecastJob(job: Job<ForecastJobData>) {
       });
     }
   });
+
+  // Chunk B: a forecast completing is exactly the right moment to recompute
+  // reorder point/safety stock/EOQ off of it — chained here rather than a
+  // separate trigger, batch/on-demand either way (never on the hot POS path).
+  await withTenant(tenantId, (tx) => recomputeProductOptimization(tx, { productId, storeId }));
 
   await publishTenantEvent(tenantId, "ai:recommendation", {
     type: "forecast_ready",

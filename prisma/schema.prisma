@@ -115,6 +115,8 @@ model Tenant {
   commissionRules          CommissionRule[]
   saleCommissions          SaleCommission[]
   demandForecasts          DemandForecast[]
+  aiRecommendations        AiRecommendation[]
+  supplierEvaluations      SupplierEvaluation[]
 
   @@map("tenants")
 }
@@ -168,6 +170,7 @@ model Store {
   workShifts         WorkShift[]
   attendanceRecords  AttendanceRecord[]
   demandForecasts    DemandForecast[]
+  aiRecommendations  AiRecommendation[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -219,6 +222,7 @@ model User {
   employee                     Employee?             @relation("EmployeeUser")
   workShiftsCreated            WorkShift[]           @relation("WorkShiftCreatedBy")
   attendanceRecordsCreated     AttendanceRecord[]    @relation("AttendanceRecordCreatedBy")
+  supplierEvaluationsDone      SupplierEvaluation[]  @relation("SupplierEvaluationEvaluatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -569,6 +573,7 @@ model Supplier {
   productBatches   ProductBatch[]
   purchaseReturns  PurchaseReturn[]
   expenses         Expense[]
+  evaluations      SupplierEvaluation[]
 
   @@index([tenantId])
   @@map("suppliers")
@@ -1931,4 +1936,92 @@ model DemandForecast {
   @@index([productId])
   @@index([storeId])
   @@map("demand_forecasts")
+}
+
+// --- Phase 5 Chunk B: Inventory Optimization -------------------------------
+
+enum RecommendationType {
+  reorder
+  supplier_switch
+  price_change
+  markdown
+  promotion
+  staffing
+  waste_prevention
+
+  @@map("recommendation_type_enum")
+}
+
+enum Priority {
+  low
+  medium
+  high
+  urgent
+
+  @@map("priority_enum")
+}
+
+/// Per DATABASE.md §12.3 verbatim. Doubles as the in-app AI notification
+/// store (isRead/isActioned already give it that shape) — Chunk D's
+/// "recommendations feed" is a read/filter UI over this table, not new
+/// schema (see PHASE5_INTELLIGENCE_PLAN.md's divergence table).
+model AiRecommendation {
+  id                 String    @id @default(uuid()) @db.Uuid
+  tenantId           String    @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  storeId            String?   @map("store_id") @db.Uuid
+  recommendationType RecommendationType @map("recommendation_type")
+  title              String    @db.VarChar(500)
+  description        String
+  data               Json
+  priority           Priority  @default(medium)
+  isRead             Boolean   @default(false) @map("is_read")
+  isActioned         Boolean   @default(false) @map("is_actioned")
+  expiresAt          DateTime? @map("expires_at")
+  createdAt          DateTime  @default(now()) @map("created_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  store  Store? @relation(fields: [storeId], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, isRead])
+  @@index([storeId])
+  @@map("ai_recommendations")
+}
+
+// --- Phase 5 Chunk C: Supplier Ranking (MCDA) ------------------------------
+
+enum EvaluationMethod {
+  ahp_topsis
+  ahp_promethee
+  ahp_only
+  topsis_only
+
+  @@map("evaluation_method_enum")
+}
+
+/// Per DATABASE.md §12.1: one row per supplier per evaluation run, sharing
+/// evaluationPeriod/criteriaWeights across the run. Deviation from the
+/// doc's own example, documented: supplierScores there is illustrated
+/// keyed by supplier *name* — this keys by supplierId (UUID) instead, since
+/// names aren't stable/unique identifiers and every other JSONB payload in
+/// this schema keys by id.
+model SupplierEvaluation {
+  id                String            @id @default(uuid()) @db.Uuid
+  tenantId          String            @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  supplierId        String            @map("supplier_id") @db.Uuid
+  evaluationPeriod  String            @map("evaluation_period") @db.VarChar(50)
+  method            EvaluationMethod
+  criteriaWeights   Json              @map("criteria_weights")
+  supplierScores    Json              @map("supplier_scores")
+  consistencyRatio  Decimal?          @map("consistency_ratio") @db.Decimal(5, 4)
+  evaluatedAt       DateTime          @default(now()) @map("evaluated_at")
+  evaluatedBy       String            @map("evaluated_by") @db.Uuid
+
+  tenant          Tenant   @relation(fields: [tenantId], references: [id])
+  supplier        Supplier @relation(fields: [supplierId], references: [id])
+  evaluatedByUser User     @relation("SupplierEvaluationEvaluatedBy", fields: [evaluatedBy], references: [id])
+
+  @@index([tenantId])
+  @@index([supplierId])
+  @@map("supplier_evaluations")
 }

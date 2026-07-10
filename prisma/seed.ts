@@ -20,7 +20,17 @@ const PERMISSION_CATALOG: Record<
   inventory: ["inventory:read", "inventory:adjust", "inventory:count", "inventory:transfer"],
   pos: ["pos:operate", "pos:refund", "pos:discount", "pos:open_drawer"],
   purchases: ["purchases:read", "purchases:create", "purchases:approve"],
-  suppliers: ["suppliers:read", "suppliers:create", "suppliers:update", "suppliers:delete"],
+  suppliers: [
+    "suppliers:read",
+    "suppliers:create",
+    "suppliers:update",
+    "suppliers:delete",
+    // Phase 5 Chunk C: running an MCDA evaluation is a purchasing-strategy
+    // write action, distinct from suppliers:update's master-data-edit
+    // meaning — same "narrow, sensitivity-scoped permission" precedent as
+    // Phase 4's finance:period/employees:payroll.
+    "suppliers:evaluate",
+  ],
   customers: ["customers:read", "customers:create", "customers:update", "customers:delete"],
   finance: [
     "finance:read",
@@ -66,6 +76,12 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
     // role could already adjust/count/transfer stock but had no way to
     // view the POs it would be receiving deliveries against.
     "purchases:read",
+    // Phase 5 Chunk B gap fix: this role acts on reorder/waste
+    // recommendations day-to-day but previously had zero ai:* permission at
+    // all — same "found and fixed a role gap" pattern as purchases:read
+    // above. ai:run_forecast (triggering compute, real infra cost) stays
+    // BUSINESS_OWNER/STORE_MANAGER-only.
+    "ai:view_recommendations",
   ],
   ACCOUNTANT: [
     ...PERMISSION_CATALOG.finance,

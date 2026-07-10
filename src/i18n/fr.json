@@ -48,7 +48,8 @@
     "commissionRules": "Commissions",
     "roles": "Rôles et permissions",
     "employeePerformance": "Performance des employés",
-    "aiForecasts": "Prévisions"
+    "aiForecasts": "Prévisions",
+    "supplierRanking": "Classement fournisseurs"
   },
   "auth": {
     "login": {
@@ -1647,6 +1648,74 @@
     "runStarted": "Le calcul de prévision a démarré.",
     "runError": "Impossible de lancer la prévision.",
     "batchStatus": "{completed}/{total} terminés ({failed} en échec)",
-    "empty": "Aucune prévision pour ce produit/magasin — lancez-en une ci-dessus."
+    "empty": "Aucune prévision pour ce produit/magasin — lancez-en une ci-dessus.",
+    "tabs": {
+      "forecasts": "Prévisions",
+      "inventoryOptimization": "Optimisation des stocks",
+      "wastePrevention": "Prévention du gaspillage"
+    }
+  },
+  "inventoryOptimization": {
+    "selectStore": "Sélectionner un magasin",
+    "selectStoreFirst": "Sélectionnez d'abord un magasin.",
+    "recompute": "Recalculer",
+    "recomputeSuccess": "{count} produit(s) recalculé(s).",
+    "recomputeError": "Impossible de recalculer.",
+    "empty": "Aucun produit optimisé pour l'instant — lancez une prévision puis recalculez.",
+    "table": {
+      "product": "Produit",
+      "reorderPoint": "Point de commande",
+      "safetyStock": "Stock de sécurité"
+    }
+  },
+  "wastePrevention": {
+    "generate": "Générer les recommandations",
+    "generateSuccess": "{count} recommandation(s) créée(s).",
+    "generateError": "Impossible de générer les recommandations.",
+    "empty": "Aucun lot à risque d'expiration pour le moment.",
+    "table": {
+      "product": "Produit",
+      "quantity": "Quantité",
+      "daysUntilExpiry": "Jours avant expiration"
+    }
+  },
+  "supplierRanking": {
+    "title": "Classement des fournisseurs",
+    "description": "Classez les fournisseurs par pondération AHP par paires et TOPSIS/PROMETHEE — obtenez des recommandations d'achat auprès du fournisseur le mieux classé par produit.",
+    "selectSuppliers": "Sélectionnez les fournisseurs à comparer (au moins 2)",
+    "selectAtLeastTwo": "Sélectionnez au moins 2 fournisseurs.",
+    "runEvaluation": "Lancer l'évaluation",
+    "runSuccess": "Évaluation terminée.",
+    "runError": "Impossible de lancer l'évaluation.",
+    "scoreHistory": "Historique des scores",
+    "criteria": {
+      "price": "Prix",
+      "quality": "Qualité",
+      "delivery": "Délai de livraison",
+      "reliability": "Fiabilité",
+      "paymentTerms": "Conditions de paiement",
+      "productRange": "Gamme de produits"
+    },
+    "ahp": {
+      "title": "Comparaison par paires (AHP)",
+      "description": "Pour chaque paire, évaluez à quel point le premier critère est plus important (1 = égal, 9 = extrêmement plus important ; choisissez une fraction si le second est plus important).",
+      "vs": "vs",
+      "consistencyRatio": "Ratio de cohérence",
+      "inconsistentWarning": "envisagez de refaire les comparaisons"
+    },
+    "method": {
+      "ahpTopsis": "AHP + TOPSIS",
+      "ahpPromethee": "AHP + PROMETHEE"
+    },
+    "table": {
+      "rank": "Rang",
+      "supplier": "Fournisseur",
+      "score": "Score"
+    },
+    "purchaseRecommendations": {
+      "generate": "Générer les recommandations d'achat",
+      "success": "{count} recommandation(s) d'achat créée(s).",
+      "error": "Impossible de générer les recommandations d'achat."
+    }
   }
 }
