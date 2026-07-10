@@ -50,7 +50,12 @@
     "employeePerformance": "Performance des employés",
     "aiForecasts": "Prévisions",
     "supplierRanking": "Classement fournisseurs",
-    "aiDashboard": "Tableau de bord IA"
+    "aiDashboard": "Tableau de bord IA",
+    "salesReport": "Rapport de ventes",
+    "inventoryReport": "Rapport d'inventaire",
+    "reportSchedules": "Rapports programmés",
+    "multiStore": "Multi-magasins",
+    "subscription": "Abonnement"
   },
   "auth": {
     "login": {
@@ -80,7 +85,19 @@
       "lowStock": "Produits en stock bas",
       "openPurchaseOrders": "Bons de commande en cours",
       "pendingStockCounts": "Inventaires en attente",
-      "todaySales": "Ventes du jour"
+      "todaySales": "Ventes du jour",
+      "arOverdue": "Créances en retard",
+      "employeeHeadcount": "Effectif",
+      "aiRecommendations": "Recommandations IA",
+      "expiringBatches": "Lots bientôt expirés"
+    },
+    "customize": "Personnaliser",
+    "setup": {
+      "title": "Premiers pas",
+      "accountCreated": "Compte créé",
+      "storeAdded": "Ajouter un magasin",
+      "productsAdded": "Ajouter des produits",
+      "firstSale": "Enregistrer une première vente"
     }
   },
   "suppliers": {
@@ -1754,5 +1771,126 @@
     "title": "Recommandations IA",
     "empty": "Aucune recommandation en attente.",
     "markActioned": "Marquer comme traitée"
+  },
+  "reports": {
+    "sales": {
+      "title": "Rapport de ventes",
+      "from": "Du",
+      "to": "Au",
+      "summary": {
+        "totalRevenue": "Chiffre d'affaires total",
+        "saleCount": "Nombre de ventes",
+        "averageBasket": "Panier moyen"
+      },
+      "buckets": {
+        "title": "Ventes par période",
+        "period": "Période",
+        "revenue": "Chiffre d'affaires",
+        "saleCount": "Ventes"
+      },
+      "topProducts": {
+        "title": "Meilleurs produits",
+        "product": "Produit",
+        "quantitySold": "Quantité vendue",
+        "revenue": "Chiffre d'affaires"
+      }
+    },
+    "inventory": {
+      "title": "Rapport d'inventaire",
+      "summary": {
+        "totalStockValue": "Valeur du stock",
+        "skuCount": "Références",
+        "lowStockCount": "Stock bas",
+        "expiringCount": "Lots expirant bientôt"
+      },
+      "table": {
+        "product": "Produit",
+        "store": "Magasin",
+        "quantity": "Quantité",
+        "value": "Valeur",
+        "status": "Statut",
+        "lowStock": "Stock bas",
+        "overstock": "Surstock"
+      }
+    }
+  },
+  "reportSchedules": {
+    "title": "Rapports programmés",
+    "empty": "Aucun rapport programmé.",
+    "neverRun": "Jamais exécuté",
+    "table": {
+      "name": "Nom",
+      "reportType": "Type",
+      "frequency": "Fréquence",
+      "lastRun": "Dernière exécution",
+      "actions": "Actions"
+    },
+    "reportTypes": {
+      "sales": "Ventes",
+      "inventory": "Inventaire",
+      "purchase": "Achats",
+      "financial": "Financier",
+      "employee": "Employés"
+    },
+    "frequencies": {
+      "daily": "Quotidien",
+      "weekly": "Hebdomadaire",
+      "monthly": "Mensuel"
+    },
+    "delete": {
+      "confirm": "Supprimer ce rapport programmé ?",
+      "success": "Rapport programmé supprimé.",
+      "error": "Échec de la suppression."
+    },
+    "form": {
+      "title": "Nouveau rapport programmé",
+      "description": "Le rapport sera généré et envoyé par e-mail selon la fréquence choisie.",
+      "name": "Nom",
+      "reportType": "Type de rapport",
+      "format": "Format",
+      "frequency": "Fréquence",
+      "recipientEmails": "Destinataires (séparés par des virgules)",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "success": "Rapport programmé créé.",
+      "error": "Échec de la création.",
+      "reportTypes": {
+        "sales": "Ventes",
+        "inventory": "Inventaire",
+        "purchase": "Achats",
+        "financial": "Financier",
+        "employee": "Employés"
+      },
+      "frequencies": {
+        "daily": "Quotidien",
+        "weekly": "Hebdomadaire",
+        "monthly": "Mensuel"
+      }
+    }
+  },
+  "multiStore": {
+    "title": "Multi-magasins",
+    "description": "Vue agrégée des ventes et du stock par magasin.",
+    "table": {
+      "store": "Magasin",
+      "todaySales": "Ventes du jour",
+      "saleCount": "Nombre de ventes",
+      "lowStock": "Stock bas",
+      "main": "Principal",
+      "total": "Total"
+    }
+  },
+  "subscription": {
+    "title": "Abonnement",
+    "plan": "Formule",
+    "status": "Statut",
+    "endsAt": "Expire le",
+    "requestChange": "Demander un changement",
+    "statuses": {
+      "trial": "Essai",
+      "active": "Actif",
+      "suspended": "Suspendu",
+      "cancelled": "Annulé"
+    }
   }
 }

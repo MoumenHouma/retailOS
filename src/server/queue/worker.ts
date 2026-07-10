@@ -5,11 +5,15 @@
  * `mcdaQueue`/`simulationQueue` later.
  */
 import { Worker, type Job } from "bullmq";
-import { bullmqConnection, type ForecastJobData } from "@/server/queue/queues";
+import { bullmqConnection, type ForecastJobData, type ReportJobData } from "@/server/queue/queues";
 import { withTenant } from "@/lib/prisma";
 import { exportSalesHistory } from "@/server/services/forecasting";
 import { publishTenantEvent } from "@/server/realtime/publish";
 import { recomputeProductOptimization } from "@/server/services/inventory-optimization";
+import { generateReportForSchedule, recordScheduledReportRun } from "@/server/services/scheduled-reports";
+import { sendEmail } from "@/lib/email";
+import { uploadObject } from "@/lib/storage";
+import { logger } from "@/lib/logger";
 
 const AI_ENGINE_URL = process.env.AI_ENGINE_URL ?? "http://python-ai:8000";
 const INTERNAL_TOKEN = process.env.INTERNAL_TOKEN ?? "dev-internal-token";
@@ -123,3 +127,56 @@ forecastWorker.on("failed", (job, err) => {
 });
 
 console.log("[worker] forecastQueue worker started");
+
+/**
+ * Scheduled-report job: short read tx to generate the report data → close it
+ * → upload + email (both external I/O) outside any transaction → new short
+ * tx to record the run status. Same discipline as processForecastJob, per
+ * the Phase 4 Chunk C P2028 lesson (never hold withTenant open across slow
+ * external calls).
+ */
+async function processReportJob(job: Job<ReportJobData>) {
+  const { tenantId, scheduledReportId } = job.data;
+
+  const scheduledReport = await withTenant(tenantId, (tx) =>
+    tx.scheduledReport.findFirst({ where: { id: scheduledReportId, deletedAt: null, isActive: true } }),
+  );
+  if (!scheduledReport) {
+    return { skipped: true, reason: "not_found_or_inactive" };
+  }
+
+  try {
+    const generated = await withTenant(tenantId, (tx) => generateReportForSchedule(tx, scheduledReport));
+
+    const objectName = `reports/${tenantId}/${scheduledReport.id}/${generated.filename}`;
+    await uploadObject(objectName, generated.buffer, generated.contentType);
+
+    await sendEmail({
+      to: scheduledReport.recipientEmails,
+      subject: `RetailOS — ${scheduledReport.name}`,
+      html: `<p>Votre rapport programmé « ${scheduledReport.name} » est joint à cet e-mail.</p>`,
+      attachments: [{ filename: generated.filename, content: generated.buffer }],
+    });
+
+    await withTenant(tenantId, (tx) => recordScheduledReportRun(tx, scheduledReport.id, "success"));
+    return { success: true };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await withTenant(tenantId, (tx) => recordScheduledReportRun(tx, scheduledReport.id, "failed", message));
+    throw error;
+  }
+}
+
+const reportWorker = new Worker<ReportJobData>("report", processReportJob, {
+  connection: bullmqConnection,
+  concurrency: 2,
+});
+
+reportWorker.on("completed", (job) => {
+  logger.info("worker.report_completed", { jobId: job.id });
+});
+reportWorker.on("failed", (job, err) => {
+  logger.error("worker.report_failed", { jobId: job?.id, error: err.message });
+});
+
+console.log("[worker] reportQueue worker started");

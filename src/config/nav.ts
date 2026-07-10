@@ -74,6 +74,8 @@ export const navGroups: NavGroup[] = [
       { href: "/expenses", labelKey: "expenses", icon: Wallet },
       { href: "/finance", labelKey: "financialDashboard", icon: BarChart3 },
       { href: "/financial-periods", labelKey: "financialPeriods", icon: CalendarClock },
+      { href: "/multi-store", labelKey: "multiStore", icon: Warehouse },
+      { href: "/subscription", labelKey: "subscription", icon: Wallet },
     ],
   },
   {
@@ -97,9 +99,12 @@ export const navGroups: NavGroup[] = [
   {
     labelKey: "groups.reports",
     items: [
+      { href: "/sales-report", labelKey: "salesReport", icon: BarChart3 },
+      { href: "/inventory-report", labelKey: "inventoryReport", icon: BarChart3 },
       { href: "/procurement-reports", labelKey: "procurementReports", icon: BarChart3 },
       { href: "/financial-reports", labelKey: "financialReports", icon: BarChart3 },
       { href: "/employee-performance", labelKey: "employeePerformance", icon: BarChart3 },
+      { href: "/report-schedules", labelKey: "reportSchedules", icon: CalendarClock },
     ],
   },
 ];

@@ -117,6 +117,8 @@ model Tenant {
   demandForecasts          DemandForecast[]
   aiRecommendations        AiRecommendation[]
   supplierEvaluations      SupplierEvaluation[]
+  scheduledReports         ScheduledReport[]
+  dashboardLayouts         DashboardLayout[]
 
   @@map("tenants")
 }
@@ -223,6 +225,8 @@ model User {
   workShiftsCreated            WorkShift[]           @relation("WorkShiftCreatedBy")
   attendanceRecordsCreated     AttendanceRecord[]    @relation("AttendanceRecordCreatedBy")
   supplierEvaluationsDone      SupplierEvaluation[]  @relation("SupplierEvaluationEvaluatedBy")
+  scheduledReportsCreated      ScheduledReport[]     @relation("ScheduledReportCreatedBy")
+  dashboardLayoutsUpdated      DashboardLayout[]     @relation("DashboardLayoutUpdatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -2024,4 +2028,92 @@ model SupplierEvaluation {
   @@index([tenantId])
   @@index([supplierId])
   @@map("supplier_evaluations")
+}
+
+// --- Phase 6 Chunk A: Reports & BI -----------------------------------------
+// Net-new — ARCHITECTURE.md §4.10 names report templates but gives zero
+// schema for scheduling/dashboard config; DATABASE.md doesn't mention these
+// tables at all. Designed from scratch here, same posture as Phase 3/4's
+// genuine schema gaps.
+
+enum ReportType {
+  sales
+  inventory
+  purchase
+  financial
+  employee
+
+  @@map("report_type_enum")
+}
+
+enum ReportExportFormat {
+  pdf
+  xlsx
+  csv
+
+  @@map("report_export_format_enum")
+}
+
+enum ReportFrequency {
+  daily
+  weekly
+  monthly
+
+  @@map("report_frequency_enum")
+}
+
+enum ReportRunStatus {
+  success
+  failed
+
+  @@map("report_run_status_enum")
+}
+
+/// The five report templates (sales/inventory/purchase/financial/employee)
+/// route to fixed service functions via reportType — no generic tenant-
+/// configurable "Report" table, criteria stay in code (same precedent as
+/// Phase 5 Chunk C's fixed MCDA criteria list).
+model ScheduledReport {
+  id              String             @id @default(uuid()) @db.Uuid
+  tenantId        String             @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  reportType      ReportType         @map("report_type")
+  name            String             @db.VarChar(200)
+  filters         Json               @default("{}")
+  format          ReportExportFormat
+  frequency       ReportFrequency
+  recipientEmails String[]           @map("recipient_emails")
+  isActive        Boolean            @default(true) @map("is_active")
+  lastRunAt       DateTime?          @map("last_run_at")
+  lastRunStatus   ReportRunStatus?   @map("last_run_status")
+  lastRunError    String?            @map("last_run_error")
+  createdBy       String             @map("created_by") @db.Uuid
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+  deletedAt       DateTime?          @map("deleted_at")
+
+  tenant          Tenant @relation(fields: [tenantId], references: [id])
+  createdByUser   User   @relation("ScheduledReportCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@map("scheduled_reports")
+}
+
+/// Per-role (not per-user) KPI widget layout, matching ROADMAP.md's literal
+/// "dashboard customization (per role)" wording. A user holding multiple
+/// roles renders their first role's layout — cosmetic-only limitation,
+/// acceptable since this doesn't gate access to anything.
+model DashboardLayout {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  role      String   @db.VarChar(50)
+  widgets   Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+  updatedBy String   @map("updated_by") @db.Uuid
+
+  tenant        Tenant @relation(fields: [tenantId], references: [id])
+  updatedByUser User   @relation("DashboardLayoutUpdatedBy", fields: [updatedBy], references: [id])
+
+  @@unique([tenantId, role])
+  @@map("dashboard_layouts")
 }

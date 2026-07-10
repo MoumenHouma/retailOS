@@ -16,8 +16,15 @@ export const minioClient = new Client({
 export const STORAGE_BUCKET = process.env.S3_BUCKET!;
 
 export async function uploadPdf(objectName: string, buffer: Buffer): Promise<void> {
+  await uploadObject(objectName, buffer, "application/pdf");
+}
+
+// Generalized for Phase 6 Chunk A's scheduled reports, which can be
+// pdf/xlsx/csv — uploadPdf stays as the existing invoice-PDF call sites'
+// thin wrapper around this.
+export async function uploadObject(objectName: string, buffer: Buffer, contentType: string): Promise<void> {
   await minioClient.putObject(STORAGE_BUCKET, objectName, buffer, buffer.length, {
-    "Content-Type": "application/pdf",
+    "Content-Type": contentType,
   });
 }
 

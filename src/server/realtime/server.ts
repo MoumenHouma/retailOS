@@ -34,8 +34,10 @@ const httpServer = createServer((req, res) => {
 });
 
 const io = new Server(httpServer, {
-  // Dev-only wildcard CORS — a real deploy would scope this to APP_URL.
-  cors: { origin: "*" },
+  // Phase 6 Chunk B: scoped to APP_URL per this comment's own original TODO.
+  // Falls back to "*" only if APP_URL is unset (matches this file's prior
+  // dev-only behavior rather than breaking local dev with no .env at all).
+  cors: { origin: process.env.APP_URL ?? "*" },
   adapter: createAdapter(pubClient, subClient),
 });
 

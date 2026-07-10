@@ -13,7 +13,18 @@ const prisma = new PrismaClient({ datasourceUrl: process.env.DATABASE_URL });
 // keys) come back as `string[] | undefined`. An explicit key union avoids
 // that since these are named properties, not an index signature.
 const PERMISSION_CATALOG: Record<
-  "products" | "inventory" | "pos" | "purchases" | "suppliers" | "customers" | "finance" | "employees" | "reports" | "ai",
+  | "products"
+  | "inventory"
+  | "pos"
+  | "purchases"
+  | "suppliers"
+  | "customers"
+  | "finance"
+  | "employees"
+  | "reports"
+  | "ai"
+  | "stores"
+  | "subscription",
   string[]
 > = {
   products: ["products:read", "products:create", "products:update", "products:delete"],
@@ -47,8 +58,20 @@ const PERMISSION_CATALOG: Record<
     "employees:payroll",
     "employees:roles",
   ],
-  reports: ["reports:view", "reports:export"],
+  reports: [
+    "reports:view",
+    "reports:export",
+    // Phase 6 Chunk A: dashboard-layout editing + scheduled-report CRUD —
+    // BUSINESS_OWNER/STORE_MANAGER only, filtered out of ACCOUNTANT's
+    // `...PERMISSION_CATALOG.reports` spread below, same narrow-grant
+    // precedent as finance:period/employees:payroll.
+    "reports:customize",
+  ],
   ai: ["ai:view_recommendations", "ai:run_forecast"],
+  // Phase 6 Chunk C — BUSINESS_OWNER-only (not spread into STORE_MANAGER's
+  // ALL_PERMISSIONS the way most catalog entries are; filtered out below).
+  stores: ["stores:create", "stores:manage"],
+  subscription: ["subscription:read", "subscription:manage"],
 };
 
 const ALL_PERMISSIONS = Object.values(PERMISSION_CATALOG).flat();
@@ -65,7 +88,17 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
   // employees:manage through the Roles page would be a privilege-escalation
   // hole) while still keeping employees:schedule for day-to-day staffing.
   STORE_MANAGER: ALL_PERMISSIONS.filter(
-    (p) => p !== "employees:manage" && p !== "employees:payroll" && p !== "employees:roles",
+    (p) =>
+      p !== "employees:manage" &&
+      p !== "employees:payroll" &&
+      p !== "employees:roles" &&
+      // Phase 6 Chunk C: multi-store setup (adding stores, assigning users
+      // to them) and subscription/billing stay ownership-level, same
+      // posture as the employees:* exclusions above.
+      p !== "stores:create" &&
+      p !== "stores:manage" &&
+      p !== "subscription:read" &&
+      p !== "subscription:manage",
   ),
   CASHIER: [...PERMISSION_CATALOG.pos, "products:read", "customers:read", "customers:create"],
   INVENTORY_CLERK: [
@@ -85,7 +118,7 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
   ],
   ACCOUNTANT: [
     ...PERMISSION_CATALOG.finance,
-    ...PERMISSION_CATALOG.reports,
+    ...PERMISSION_CATALOG.reports.filter((p) => p !== "reports:customize"),
     "products:read",
     "suppliers:read",
     // Phase 4 Chunk B gap fix: needs debt/AR visibility for financial
@@ -216,6 +249,24 @@ async function main() {
       update: {},
       create: { userId: adminUser.id, storeId: store.id },
     });
+
+    // Phase 6 Chunk D: a real second store + multi-store UserStore
+    // assignment for tenant-a's demo admin — closes the gap flagged in the
+    // 2026-07-09 Dev Log entry (userStores[0] reportedly resolving empty)
+    // and gives Chunk C's multi-store dashboard/store-access-control
+    // something real to exercise without hand-editing the DB.
+    if (spec.slug === "demo-tenant-a") {
+      const secondStore =
+        (await prisma.store.findFirst({ where: { tenantId: tenant.id, isMain: false } })) ??
+        (await prisma.store.create({
+          data: { tenantId: tenant.id, name: `${spec.name} — Magasin Centre-ville`, isMain: false },
+        }));
+      await prisma.userStore.upsert({
+        where: { userId_storeId: { userId: adminUser.id, storeId: secondStore.id } },
+        update: {},
+        create: { userId: adminUser.id, storeId: secondStore.id },
+      });
+    }
 
     // Units have no compound-unique key to upsert against — guard
     // idempotency with an existence check instead, same pattern as the

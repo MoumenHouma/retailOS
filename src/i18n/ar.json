@@ -50,7 +50,12 @@
     "employeePerformance": "أداء الموظفين",
     "aiForecasts": "التوقعات",
     "supplierRanking": "تصنيف الموردين",
-    "aiDashboard": "لوحة تحكم الذكاء الاصطناعي"
+    "aiDashboard": "لوحة تحكم الذكاء الاصطناعي",
+    "salesReport": "تقرير المبيعات",
+    "inventoryReport": "تقرير المخزون",
+    "reportSchedules": "التقارير المجدولة",
+    "multiStore": "متعدد المتاجر",
+    "subscription": "الاشتراك"
   },
   "auth": {
     "login": {
@@ -80,7 +85,19 @@
       "lowStock": "منتجات منخفضة المخزون",
       "openPurchaseOrders": "أوامر شراء قيد التنفيذ",
       "pendingStockCounts": "جرد بانتظار المعالجة",
-      "todaySales": "مبيعات اليوم"
+      "todaySales": "مبيعات اليوم",
+      "arOverdue": "ذمم متأخرة",
+      "employeeHeadcount": "عدد الموظفين",
+      "aiRecommendations": "توصيات الذكاء الاصطناعي",
+      "expiringBatches": "دفعات قاربة على الانتهاء"
+    },
+    "customize": "تخصيص",
+    "setup": {
+      "title": "بداية الانطلاق",
+      "accountCreated": "تم إنشاء الحساب",
+      "storeAdded": "إضافة متجر",
+      "productsAdded": "إضافة منتجات",
+      "firstSale": "تسجيل أول عملية بيع"
     }
   },
   "suppliers": {
@@ -1754,5 +1771,126 @@
     "title": "توصيات الذكاء الاصطناعي",
     "empty": "لا توجد توصيات معلقة.",
     "markActioned": "تعليم كمُنفَّذة"
+  },
+  "reports": {
+    "sales": {
+      "title": "تقرير المبيعات",
+      "from": "من",
+      "to": "إلى",
+      "summary": {
+        "totalRevenue": "إجمالي الإيرادات",
+        "saleCount": "عدد المبيعات",
+        "averageBasket": "متوسط السلة"
+      },
+      "buckets": {
+        "title": "المبيعات حسب الفترة",
+        "period": "الفترة",
+        "revenue": "الإيرادات",
+        "saleCount": "المبيعات"
+      },
+      "topProducts": {
+        "title": "أفضل المنتجات",
+        "product": "المنتج",
+        "quantitySold": "الكمية المباعة",
+        "revenue": "الإيرادات"
+      }
+    },
+    "inventory": {
+      "title": "تقرير المخزون",
+      "summary": {
+        "totalStockValue": "قيمة المخزون",
+        "skuCount": "عدد المنتجات",
+        "lowStockCount": "مخزون منخفض",
+        "expiringCount": "دفعات قاربة على الانتهاء"
+      },
+      "table": {
+        "product": "المنتج",
+        "store": "المتجر",
+        "quantity": "الكمية",
+        "value": "القيمة",
+        "status": "الحالة",
+        "lowStock": "مخزون منخفض",
+        "overstock": "فائض مخزون"
+      }
+    }
+  },
+  "reportSchedules": {
+    "title": "التقارير المجدولة",
+    "empty": "لا توجد تقارير مجدولة.",
+    "neverRun": "لم يتم التشغيل بعد",
+    "table": {
+      "name": "الاسم",
+      "reportType": "النوع",
+      "frequency": "التكرار",
+      "lastRun": "آخر تشغيل",
+      "actions": "إجراءات"
+    },
+    "reportTypes": {
+      "sales": "المبيعات",
+      "inventory": "المخزون",
+      "purchase": "المشتريات",
+      "financial": "المالية",
+      "employee": "الموظفون"
+    },
+    "frequencies": {
+      "daily": "يومي",
+      "weekly": "أسبوعي",
+      "monthly": "شهري"
+    },
+    "delete": {
+      "confirm": "حذف هذا التقرير المجدول؟",
+      "success": "تم حذف التقرير المجدول.",
+      "error": "فشل الحذف."
+    },
+    "form": {
+      "title": "تقرير مجدول جديد",
+      "description": "سيتم إنشاء التقرير وإرساله بالبريد الإلكتروني حسب التكرار المختار.",
+      "name": "الاسم",
+      "reportType": "نوع التقرير",
+      "format": "التنسيق",
+      "frequency": "التكرار",
+      "recipientEmails": "المستلمون (مفصولون بفواصل)",
+      "submit": "إنشاء",
+      "submitting": "جارٍ الإنشاء...",
+      "success": "تم إنشاء التقرير المجدول.",
+      "error": "فشل الإنشاء.",
+      "reportTypes": {
+        "sales": "المبيعات",
+        "inventory": "المخزون",
+        "purchase": "المشتريات",
+        "financial": "المالية",
+        "employee": "الموظفون"
+      },
+      "frequencies": {
+        "daily": "يومي",
+        "weekly": "أسبوعي",
+        "monthly": "شهري"
+      }
+    }
+  },
+  "multiStore": {
+    "title": "متعدد المتاجر",
+    "description": "عرض إجمالي للمبيعات والمخزون حسب المتجر.",
+    "table": {
+      "store": "المتجر",
+      "todaySales": "مبيعات اليوم",
+      "saleCount": "عدد المبيعات",
+      "lowStock": "مخزون منخفض",
+      "main": "رئيسي",
+      "total": "الإجمالي"
+    }
+  },
+  "subscription": {
+    "title": "الاشتراك",
+    "plan": "الخطة",
+    "status": "الحالة",
+    "endsAt": "تنتهي في",
+    "requestChange": "طلب تغيير",
+    "statuses": {
+      "trial": "تجريبي",
+      "active": "نشط",
+      "suspended": "معلق",
+      "cancelled": "ملغى"
+    }
   }
 }

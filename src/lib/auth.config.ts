@@ -37,7 +37,12 @@ export const authConfig = {
         token.tenantId = user.tenantId;
         token.roles = user.roles;
         token.permissions = user.permissions;
-        token.storeId = user.storeId;
+        // Phase 6 Chunk C: storeId -> storeIds — a multi-store user was
+        // previously silently limited to one store for the whole session.
+        // storeIds is the source of truth for access checks; primaryStoreId
+        // is only a default for single-store-assuming call sites.
+        token.storeIds = user.storeIds;
+        token.primaryStoreId = user.primaryStoreId;
       }
       return token;
     },
@@ -46,7 +51,8 @@ export const authConfig = {
       session.user.tenantId = token.tenantId as string;
       session.user.roles = token.roles as string[];
       session.user.permissions = token.permissions as string[];
-      session.user.storeId = token.storeId as string | null;
+      session.user.storeIds = token.storeIds as string[];
+      session.user.primaryStoreId = token.primaryStoreId as string | null;
       return session;
     },
   },

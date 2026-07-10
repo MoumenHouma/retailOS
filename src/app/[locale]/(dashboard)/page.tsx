@@ -1,8 +1,9 @@
 import { getTranslations } from "next-intl/server";
-import { AlertTriangle, ClipboardCheck, ClipboardList, Receipt } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Circle, ClipboardCheck, ClipboardList, Receipt } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/prisma";
 import { StatTile } from "@/components/ui/stat-tile";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatDa } from "@/lib/currency";
 import { getReorderSuggestions } from "@/server/services/procurement-reports";
 
@@ -17,7 +18,7 @@ export default async function DashboardPage() {
   // Proves the full pipeline: verified session -> tenant-scoped transaction
   // -> RLS-scoped Prisma query -> only this tenant's own row can ever come
   // back.
-  const [tenant, reorderSuggestions, openPurchaseOrders, pendingStockCounts, todaySales] =
+  const [tenant, reorderSuggestions, openPurchaseOrders, pendingStockCounts, todaySales, productCount, storeCount] =
     await withTenant(tenantId, (tx) =>
       Promise.all([
         tx.tenant.findUniqueOrThrow({ where: { id: tenantId } }),
@@ -28,8 +29,20 @@ export default async function DashboardPage() {
           where: { status: "completed", createdAt: { gte: startOfToday } },
           _sum: { total: true },
         }),
+        tx.product.count({ where: { deletedAt: null } }),
+        tx.store.count({ where: { deletedAt: null, isActive: true } }),
       ]),
     );
+
+  // Phase 6 Chunk C: lightweight setup checklist for brand-new tenants — no
+  // persisted onboarding-progress table, just simple existence checks.
+  const setupSteps = [
+    { done: true, labelKey: "setup.accountCreated" },
+    { done: storeCount > 0, labelKey: "setup.storeAdded" },
+    { done: productCount > 0, labelKey: "setup.productsAdded" },
+    { done: (todaySales._sum.total ?? 0) > 0, labelKey: "setup.firstSale" },
+  ];
+  const showSetupBanner = setupSteps.some((s) => !s.done);
 
   return (
     <div className="flex flex-col gap-6">
@@ -39,6 +52,28 @@ export default async function DashboardPage() {
           {t("tenant", { tenantName: tenant.name })}
         </p>
       </div>
+
+      {showSetupBanner && (
+        <Card>
+          <CardContent className="flex flex-col gap-2 p-4">
+            <span className="text-sm font-semibold">{t("setup.title")}</span>
+            <ul className="flex flex-col gap-1">
+              {setupSteps.map((step) => (
+                <li key={step.labelKey} className="flex items-center gap-2 text-sm">
+                  {step.done ? (
+                    <CheckCircle2 className="h-4 w-4 text-success" />
+                  ) : (
+                    <Circle className="h-4 w-4 text-muted-foreground" />
+                  )}
+                  <span className={step.done ? "text-muted-foreground line-through" : ""}>
+                    {t(step.labelKey)}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatTile

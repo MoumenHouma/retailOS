@@ -1,5 +1,5 @@
 import { apiError } from "./api-response";
-import { ForbiddenError } from "./permissions";
+import { ForbiddenError, StoreAccessDeniedError } from "./permissions";
 import { InvalidParentError } from "@/server/services/categories";
 import { InUseError } from "@/server/services/brands";
 import { InvalidReferenceError } from "@/server/services/products";
@@ -30,11 +30,17 @@ import { CreditLimitExceededError, DebtOverpaymentError } from "@/server/service
 import { PeriodAlreadyClosedError } from "@/server/services/financial-periods";
 import { AlreadyClockedInError } from "@/server/services/attendance";
 import { NoActiveScopeError } from "@/server/services/forecasting";
+import { ScheduledReportNotFoundError } from "@/server/services/scheduled-reports";
+import { StoreNotFoundError } from "@/server/services/stores";
+import { UserStoreAlreadyAssignedError } from "@/server/services/user-stores";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
   if (error instanceof ForbiddenError) {
     return apiError("FORBIDDEN", error.message, 403);
+  }
+  if (error instanceof StoreAccessDeniedError) {
+    return apiError("STORE_ACCESS_DENIED", error.message, 403);
   }
   if (error instanceof InvalidParentError || error instanceof InvalidReferenceError) {
     return apiError("INVALID_REFERENCE", error.message, 422);
@@ -111,6 +117,15 @@ export function mapServiceError(error: unknown) {
   }
   if (error instanceof NoActiveScopeError) {
     return apiError("NO_ACTIVE_SCOPE", error.message, 422);
+  }
+  if (error instanceof ScheduledReportNotFoundError) {
+    return apiError("NOT_FOUND", error.message, 404);
+  }
+  if (error instanceof StoreNotFoundError) {
+    return apiError("NOT_FOUND", error.message, 404);
+  }
+  if (error instanceof UserStoreAlreadyAssignedError) {
+    return apiError("ALREADY_ASSIGNED", error.message, 409);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);

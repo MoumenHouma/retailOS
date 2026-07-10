@@ -66,6 +66,22 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           ),
         );
 
+        // Phase 6 Chunk C: every UserStore row, not just the first — a
+        // multi-store user was previously silently limited to one store for
+        // the entire session (confirmed live: `userStores[0]?.storeId`).
+        // `storeIds` is now the source of truth for access checks
+        // (requireStoreAccess in permissions.ts); `primaryStoreId` prefers
+        // the tenant's main store when the user is assigned to it, else the
+        // first assignment, purely as a default for the handful of
+        // call sites that still assume a single store (POS session start,
+        // new-PO store picker) — never for access control.
+        const storeIds = user.userStores.map((us) => us.storeId);
+        const mainStore = await prismaSuperuser.store.findFirst({
+          where: { id: { in: storeIds }, isMain: true },
+          select: { id: true },
+        });
+        const primaryStoreId = mainStore?.id ?? storeIds[0] ?? null;
+
         return {
           id: user.id,
           email: user.email,
@@ -73,7 +89,8 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
           tenantId: user.tenantId,
           roles: user.userRoles.map((ur) => ur.role.name),
           permissions,
-          storeId: user.userStores[0]?.storeId ?? null,
+          storeIds,
+          primaryStoreId,
         };
       },
     }),

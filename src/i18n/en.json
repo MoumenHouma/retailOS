@@ -50,7 +50,12 @@
     "employeePerformance": "Employee Performance",
     "aiForecasts": "Forecasts",
     "supplierRanking": "Supplier Ranking",
-    "aiDashboard": "AI Dashboard"
+    "aiDashboard": "AI Dashboard",
+    "salesReport": "Sales Report",
+    "inventoryReport": "Inventory Report",
+    "reportSchedules": "Scheduled Reports",
+    "multiStore": "Multi-Store",
+    "subscription": "Subscription"
   },
   "auth": {
     "login": {
@@ -80,7 +85,19 @@
       "lowStock": "Low-stock products",
       "openPurchaseOrders": "Open purchase orders",
       "pendingStockCounts": "Pending stock counts",
-      "todaySales": "Today's sales"
+      "todaySales": "Today's sales",
+      "arOverdue": "Overdue receivables",
+      "employeeHeadcount": "Headcount",
+      "aiRecommendations": "AI recommendations",
+      "expiringBatches": "Batches expiring soon"
+    },
+    "customize": "Customize",
+    "setup": {
+      "title": "Getting started",
+      "accountCreated": "Account created",
+      "storeAdded": "Add a store",
+      "productsAdded": "Add products",
+      "firstSale": "Record a first sale"
     }
   },
   "suppliers": {
@@ -1754,5 +1771,126 @@
     "title": "AI Recommendations",
     "empty": "No pending recommendations.",
     "markActioned": "Mark actioned"
+  },
+  "reports": {
+    "sales": {
+      "title": "Sales Report",
+      "from": "From",
+      "to": "To",
+      "summary": {
+        "totalRevenue": "Total revenue",
+        "saleCount": "Sale count",
+        "averageBasket": "Average basket"
+      },
+      "buckets": {
+        "title": "Sales by period",
+        "period": "Period",
+        "revenue": "Revenue",
+        "saleCount": "Sales"
+      },
+      "topProducts": {
+        "title": "Top products",
+        "product": "Product",
+        "quantitySold": "Quantity sold",
+        "revenue": "Revenue"
+      }
+    },
+    "inventory": {
+      "title": "Inventory Report",
+      "summary": {
+        "totalStockValue": "Stock value",
+        "skuCount": "SKUs",
+        "lowStockCount": "Low stock",
+        "expiringCount": "Batches expiring soon"
+      },
+      "table": {
+        "product": "Product",
+        "store": "Store",
+        "quantity": "Quantity",
+        "value": "Value",
+        "status": "Status",
+        "lowStock": "Low stock",
+        "overstock": "Overstock"
+      }
+    }
+  },
+  "reportSchedules": {
+    "title": "Scheduled Reports",
+    "empty": "No scheduled reports.",
+    "neverRun": "Never run",
+    "table": {
+      "name": "Name",
+      "reportType": "Type",
+      "frequency": "Frequency",
+      "lastRun": "Last run",
+      "actions": "Actions"
+    },
+    "reportTypes": {
+      "sales": "Sales",
+      "inventory": "Inventory",
+      "purchase": "Purchase",
+      "financial": "Financial",
+      "employee": "Employee"
+    },
+    "frequencies": {
+      "daily": "Daily",
+      "weekly": "Weekly",
+      "monthly": "Monthly"
+    },
+    "delete": {
+      "confirm": "Delete this scheduled report?",
+      "success": "Scheduled report deleted.",
+      "error": "Failed to delete."
+    },
+    "form": {
+      "title": "New scheduled report",
+      "description": "The report will be generated and emailed on the chosen frequency.",
+      "name": "Name",
+      "reportType": "Report type",
+      "format": "Format",
+      "frequency": "Frequency",
+      "recipientEmails": "Recipients (comma-separated)",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "success": "Scheduled report created.",
+      "error": "Failed to create.",
+      "reportTypes": {
+        "sales": "Sales",
+        "inventory": "Inventory",
+        "purchase": "Purchase",
+        "financial": "Financial",
+        "employee": "Employee"
+      },
+      "frequencies": {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly"
+      }
+    }
+  },
+  "multiStore": {
+    "title": "Multi-Store",
+    "description": "Aggregate sales and stock view across stores.",
+    "table": {
+      "store": "Store",
+      "todaySales": "Today's sales",
+      "saleCount": "Sale count",
+      "lowStock": "Low stock",
+      "main": "Main",
+      "total": "Total"
+    }
+  },
+  "subscription": {
+    "title": "Subscription",
+    "plan": "Plan",
+    "status": "Status",
+    "endsAt": "Ends on",
+    "requestChange": "Request a change",
+    "statuses": {
+      "trial": "Trial",
+      "active": "Active",
+      "suspended": "Suspended",
+      "cancelled": "Cancelled"
+    }
   }
 }

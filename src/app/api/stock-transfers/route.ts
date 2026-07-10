@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { withTenant } from "@/lib/prisma";
-import { requirePermission } from "@/lib/permissions";
+import { requirePermission, requireStoreAccess } from "@/lib/permissions";
 import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { CreateStockTransferSchema, StockTransferListQuerySchema } from "@/lib/validators/warehousing";
@@ -32,6 +32,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const parsed = CreateStockTransferSchema.safeParse(body);
     if (!parsed.success) return apiValidationError(parsed.error);
+
+    requireStoreAccess(session, parsed.data.fromStoreId);
+    requireStoreAccess(session, parsed.data.toStoreId);
 
     const transfer = await withTenant(session!.user.tenantId, (tx) =>
       createTransfer(tx, parsed.data, session!.user.id),

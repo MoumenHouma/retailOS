@@ -52,7 +52,7 @@ export function PosView() {
   const tCommon = useTranslations("common");
   const { data: authSession } = useSession();
   const queryClient = useQueryClient();
-  const storeId = authSession?.user.storeId ?? null;
+  const storeId = authSession?.user.primaryStoreId ?? null;
 
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [completedSale, setCompletedSale] = useState<CompletedSale | null>(null);

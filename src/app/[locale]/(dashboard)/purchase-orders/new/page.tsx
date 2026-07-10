@@ -13,14 +13,14 @@ export default async function NewPurchaseOrderPage() {
 
   const t = await getTranslations("purchaseOrders");
 
-  if (!session.user.storeId) {
+  if (!session.user.primaryStoreId) {
     return <p className="text-muted-foreground">{t("noStore")}</p>;
   }
 
   return (
     <div className="flex flex-col gap-4">
       <PageHeader title={t("newPurchaseOrder")} />
-      <PurchaseOrderForm storeId={session.user.storeId} />
+      <PurchaseOrderForm storeId={session.user.primaryStoreId} />
     </div>
   );
 }

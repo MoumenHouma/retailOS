@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
   try {
     requirePermission(session, "pos:operate");
     const { searchParams } = new URL(request.url);
-    const storeId = searchParams.get("storeId") ?? session!.user.storeId;
+    const storeId = searchParams.get("storeId") ?? session!.user.primaryStoreId;
     if (!storeId) return apiSuccess(null);
 
     const current = await withTenant(session!.user.tenantId, (tx) =>
