@@ -30,7 +30,13 @@ const PERMISSION_CATALOG: Record<
     "finance:payment",
     "finance:period",
   ],
-  employees: ["employees:read", "employees:manage"],
+  employees: [
+    "employees:read",
+    "employees:manage",
+    "employees:schedule",
+    "employees:payroll",
+    "employees:roles",
+  ],
   reports: ["reports:view", "reports:export"],
   ai: ["ai:view_recommendations", "ai:run_forecast"],
 };
@@ -42,7 +48,15 @@ const ALL_PERMISSIONS = Object.values(PERMISSION_CATALOG).flat();
 // src/lib/constants.ts).
 const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
   BUSINESS_OWNER: ALL_PERMISSIONS,
-  STORE_MANAGER: ALL_PERMISSIONS.filter((p) => p !== "employees:manage"),
+  // Phase 4 Chunk D: a STORE_MANAGER already couldn't self-escalate via
+  // employees:manage; widened to also exclude employees:payroll (salary
+  // visibility/edits, commission-rule configuration) and employees:roles
+  // (the RBAC admin UI itself — letting a manager grant itself
+  // employees:manage through the Roles page would be a privilege-escalation
+  // hole) while still keeping employees:schedule for day-to-day staffing.
+  STORE_MANAGER: ALL_PERMISSIONS.filter(
+    (p) => p !== "employees:manage" && p !== "employees:payroll" && p !== "employees:roles",
+  ),
   CASHIER: [...PERMISSION_CATALOG.pos, "products:read", "customers:read", "customers:create"],
   INVENTORY_CLERK: [
     ...PERMISSION_CATALOG.inventory,
@@ -63,6 +77,9 @@ const ROLE_PERMISSIONS: Record<SystemRole, string[]> = {
     // "found and fixed a role gap" pattern Phase 3 used for
     // INVENTORY_CLERK + purchases:read.
     "customers:read",
+    // Phase 4 Chunk D: headcount/payroll-cost reporting needs read access,
+    // not payroll edits or RBAC — same narrow-grant precedent as customers:read above.
+    "employees:read",
   ],
 };
 

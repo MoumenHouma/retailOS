@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 
-type StatusDomain = "po" | "transfer" | "count" | "invoice" | "sale";
+type StatusDomain = "po" | "transfer" | "count" | "invoice" | "sale" | "shift" | "attendance";
 
 type Tone = NonNullable<BadgeProps["variant"]>;
 
@@ -40,6 +40,17 @@ const STATUS_TONE_MAP: Record<StatusDomain, Record<string, Tone>> = {
     completed: "success",
     held: "warning",
     voided: "destructive",
+  },
+  shift: {
+    scheduled: "default",
+    completed: "success",
+    cancelled: "destructive",
+  },
+  attendance: {
+    present: "success",
+    late: "warning",
+    absent: "destructive",
+    on_leave: "outline",
   },
 };
 

@@ -109,6 +109,11 @@ model Tenant {
   customerDebtPayments     CustomerDebtPayment[]
   customerPrices           CustomerPrice[]
   financialPeriods         FinancialPeriod[]
+  employees                Employee[]
+  workShifts               WorkShift[]
+  attendanceRecords        AttendanceRecord[]
+  commissionRules          CommissionRule[]
+  saleCommissions          SaleCommission[]
 
   @@map("tenants")
 }
@@ -143,7 +148,7 @@ model Store {
   updatedAt       DateTime  @updatedAt @map("updated_at")
   deletedAt       DateTime? @map("deleted_at")
 
-  tenant             Tenant           @relation(fields: [tenantId], references: [id])
+  tenant             Tenant             @relation(fields: [tenantId], references: [id])
   userRoles          UserRole[]
   userStores         UserStore[]
   stockMovements     StockMovement[]
@@ -154,11 +159,13 @@ model Store {
   purchaseOrders     PurchaseOrder[]
   productBatches     ProductBatch[]
   purchaseReturns    PurchaseReturn[]
-  stockTransfersFrom StockTransfer[]  @relation("StockTransferFromStore")
-  stockTransfersTo   StockTransfer[]  @relation("StockTransferToStore")
+  stockTransfersFrom StockTransfer[]    @relation("StockTransferFromStore")
+  stockTransfersTo   StockTransfer[]    @relation("StockTransferToStore")
   stockCounts        StockCount[]
   warehouses         Warehouse[]
   expenses           Expense[]
+  workShifts         WorkShift[]
+  attendanceRecords  AttendanceRecord[]
 
   @@index([tenantId])
   @@index([tenantId, isMain])
@@ -207,6 +214,9 @@ model User {
   invoicePaymentsRecorded      InvoicePayment[]      @relation("InvoicePaymentRecordedBy")
   customerDebtPaymentsRecorded CustomerDebtPayment[] @relation("CustomerDebtPaymentRecordedBy")
   financialPeriodsClosed       FinancialPeriod[]     @relation("FinancialPeriodClosedBy")
+  employee                     Employee?             @relation("EmployeeUser")
+  workShiftsCreated            WorkShift[]           @relation("WorkShiftCreatedBy")
+  attendanceRecordsCreated     AttendanceRecord[]    @relation("AttendanceRecordCreatedBy")
 
   @@index([tenantId])
   @@map("users")
@@ -753,16 +763,17 @@ model Sale {
   updatedAt      DateTime   @updatedAt @map("updated_at")
   deletedAt      DateTime?  @map("deleted_at")
 
-  tenant        Tenant         @relation(fields: [tenantId], references: [id])
-  store         Store          @relation(fields: [storeId], references: [id])
-  posSession    PosSession?    @relation(fields: [posSessionId], references: [id])
-  customer      Customer?      @relation(fields: [customerId], references: [id])
-  cashier       User           @relation("SaleCashier", fields: [cashierId], references: [id])
+  tenant        Tenant           @relation(fields: [tenantId], references: [id])
+  store         Store            @relation(fields: [storeId], references: [id])
+  posSession    PosSession?      @relation(fields: [posSessionId], references: [id])
+  customer      Customer?        @relation(fields: [customerId], references: [id])
+  cashier       User             @relation("SaleCashier", fields: [cashierId], references: [id])
   items         SaleItem[]
   payments      SalePayment[]
   returns       SaleReturn[]
   invoices      Invoice[]
   customerDebts CustomerDebt[]
+  commissions   SaleCommission[]
 
   @@unique([tenantId, storeId, saleNumber])
   @@index([tenantId])
@@ -1690,4 +1701,198 @@ model FinancialPeriod {
   @@unique([tenantId, name])
   @@index([tenantId])
   @@map("financial_periods")
+}
+
+// --- Phase 4 Chunk D: Employee Management --------------------------------
+
+enum ContractType {
+  cdi
+  cdd
+  interim
+  freelance
+
+  @@map("contract_type_enum")
+}
+
+/// Per DATABASE.md §11.1 verbatim. userId is nullable — a worker without a
+/// system login (e.g. warehouse staff) should still be recordable as an
+/// employee; DATABASE.md doesn't state NOT NULL for this FK either. Unique
+/// so a login maps to at most one employee record.
+model Employee {
+  id           String       @id @default(uuid()) @db.Uuid
+  tenantId     String       @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  userId       String?      @unique @map("user_id") @db.Uuid
+  firstName    String       @map("first_name") @db.VarChar(100)
+  lastName     String       @map("last_name") @db.VarChar(100)
+  dateOfBirth  DateTime?    @map("date_of_birth") @db.Date
+  phone        String?      @db.VarChar(20)
+  email        String?      @db.VarChar(255)
+  address      String?
+  position     String?      @db.VarChar(100)
+  department   String?      @db.VarChar(100)
+  hireDate     DateTime?    @map("hire_date") @db.Date
+  salary       Int?
+  contractType ContractType @default(cdi) @map("contract_type")
+  isActive     Boolean      @default(true) @map("is_active")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+  deletedAt    DateTime?    @map("deleted_at")
+
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  user              User?              @relation("EmployeeUser", fields: [userId], references: [id])
+  workShifts        WorkShift[]
+  attendanceRecords AttendanceRecord[]
+  targetedByRules   CommissionRule[]   @relation("CommissionRuleTargetEmployee")
+  saleCommissions   SaleCommission[]
+
+  @@index([tenantId])
+  @@map("employees")
+}
+
+enum ShiftStatus {
+  scheduled
+  completed
+  cancelled
+
+  @@map("shift_status_enum")
+}
+
+/// Net-new — ARCHITECTURE.md names work_schedules, no columns specified.
+/// Concrete dated shifts (two DateTime spans), matching how
+/// PosSession.openedAt/closedAt already represents a span — not a
+/// recurring weekly template, which is disproportionate to "basic" work
+/// schedule management (flagged as a follow-up if real rostering is
+/// needed later).
+model WorkShift {
+  id         String      @id @default(uuid()) @db.Uuid
+  tenantId   String      @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  employeeId String      @map("employee_id") @db.Uuid
+  storeId    String      @map("store_id") @db.Uuid
+  startsAt   DateTime    @map("starts_at")
+  endsAt     DateTime    @map("ends_at")
+  status     ShiftStatus @default(scheduled)
+  notes      String?
+  createdBy  String?     @map("created_by") @db.Uuid
+  createdAt  DateTime    @default(now()) @map("created_at")
+  updatedAt  DateTime    @updatedAt @map("updated_at")
+
+  tenant            Tenant             @relation(fields: [tenantId], references: [id])
+  employee          Employee           @relation(fields: [employeeId], references: [id])
+  store             Store              @relation(fields: [storeId], references: [id])
+  createdByUser     User?              @relation("WorkShiftCreatedBy", fields: [createdBy], references: [id])
+  attendanceRecords AttendanceRecord[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([storeId])
+  @@index([startsAt])
+  @@map("work_shifts")
+}
+
+enum AttendanceStatus {
+  present
+  late
+  absent
+  on_leave
+
+  @@map("attendance_status_enum")
+}
+
+/// Net-new — ARCHITECTURE.md names attendance_records, no columns
+/// specified. Basic clock-in/out only — no biometric/geofence/break
+/// tracking, matching the roadmap's own "(basic)" qualifier verbatim.
+model AttendanceRecord {
+  id         String           @id @default(uuid()) @db.Uuid
+  tenantId   String           @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  employeeId String           @map("employee_id") @db.Uuid
+  storeId    String           @map("store_id") @db.Uuid
+  workDate   DateTime         @map("work_date") @db.Date
+  clockIn    DateTime?        @map("clock_in")
+  clockOut   DateTime?        @map("clock_out")
+  shiftId    String?          @map("shift_id") @db.Uuid
+  status     AttendanceStatus @default(present)
+  notes      String?
+  createdBy  String?          @map("created_by") @db.Uuid
+  createdAt  DateTime         @default(now()) @map("created_at")
+  updatedAt  DateTime         @updatedAt @map("updated_at")
+
+  tenant        Tenant     @relation(fields: [tenantId], references: [id])
+  employee      Employee   @relation(fields: [employeeId], references: [id])
+  store         Store      @relation(fields: [storeId], references: [id])
+  shift         WorkShift? @relation(fields: [shiftId], references: [id])
+  createdByUser User?      @relation("AttendanceRecordCreatedBy", fields: [createdBy], references: [id])
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([storeId])
+  @@index([workDate])
+  @@map("attendance_records")
+}
+
+enum CommissionScope {
+  global
+  employee
+
+  @@map("commission_scope_enum")
+}
+
+enum CommissionRateType {
+  percentage
+  fixed
+
+  @@map("commission_rate_type_enum")
+}
+
+/// Net-new — ARCHITECTURE.md names commission_rules, no columns specified.
+/// Deliberately only global/employee scopes — product/category-scoped
+/// commission would need resolving at the SaleItem level instead of the
+/// Sale level, a real complexity jump nothing else in the roadmap asks
+/// for (flagged as a follow-up, not built now).
+model CommissionRule {
+  id               String             @id @default(uuid()) @db.Uuid
+  tenantId         String             @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  name             String             @db.VarChar(100)
+  scope            CommissionScope    @default(global)
+  targetEmployeeId String?            @map("target_employee_id") @db.Uuid
+  rateType         CommissionRateType @map("rate_type")
+  rateValue        Int                @map("rate_value")
+  isActive         Boolean            @default(true) @map("is_active")
+  createdAt        DateTime           @default(now()) @map("created_at")
+  updatedAt        DateTime           @updatedAt @map("updated_at")
+
+  tenant          Tenant           @relation(fields: [tenantId], references: [id])
+  targetEmployee  Employee?        @relation("CommissionRuleTargetEmployee", fields: [targetEmployeeId], references: [id])
+  saleCommissions SaleCommission[]
+
+  @@index([tenantId])
+  @@map("commission_rules")
+}
+
+/// Net-new — ARCHITECTURE.md names commissions, no columns specified.
+/// Commission is computed against Sale.subtotal (excl. TVA/tax-stamp), not
+/// Sale.total — commission on revenue, not tax collected on the
+/// business's behalf. Deliberately NOT hooked synchronously into
+/// completeSale (see PHASE4_FINANCE_PLAN.md Chunk D) —
+/// calculateCommissionsForPeriod is a batch/on-demand service instead. The
+/// (saleId, ruleId) unique constraint makes recomputation idempotent.
+model SaleCommission {
+  id           String   @id @default(uuid()) @db.Uuid
+  tenantId     String   @default(dbgenerated("NULLIF(current_setting('app.current_tenant_id'::text, true), ''::text)::uuid")) @map("tenant_id") @db.Uuid
+  employeeId   String   @map("employee_id") @db.Uuid
+  saleId       String   @map("sale_id") @db.Uuid
+  ruleId       String   @map("rule_id") @db.Uuid
+  baseAmount   Int      @map("base_amount")
+  amount       Int
+  calculatedAt DateTime @map("calculated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  tenant   Tenant         @relation(fields: [tenantId], references: [id])
+  employee Employee       @relation(fields: [employeeId], references: [id])
+  sale     Sale           @relation(fields: [saleId], references: [id])
+  rule     CommissionRule @relation(fields: [ruleId], references: [id])
+
+  @@unique([tenantId, saleId, ruleId])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("sale_commissions")
 }

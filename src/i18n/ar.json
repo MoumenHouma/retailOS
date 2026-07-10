@@ -20,6 +20,7 @@
       "purchasing": "المشتريات",
       "inventory": "المخزون",
       "finance": "المالية",
+      "hr": "الموظفون",
       "reports": "التقارير"
     },
     "pos": "نقطة البيع",
@@ -39,7 +40,13 @@
     "financialDashboard": "لوحة التحكم المالية",
     "financialPeriods": "الفترات المحاسبية",
     "financialReports": "التقارير المالية",
-    "customers": "العملاء"
+    "customers": "العملاء",
+    "employees": "الموظفون",
+    "workSchedules": "جداول العمل",
+    "attendance": "الحضور",
+    "commissionRules": "العمولات",
+    "roles": "الأدوار والصلاحيات",
+    "employeePerformance": "أداء الموظفين"
   },
   "auth": {
     "login": {
@@ -1404,6 +1411,228 @@
         "revenue": "رقم الأعمال",
         "margin": "الهامش"
       }
+    }
+  },
+  "employees": {
+    "title": "الموظفون",
+    "searchPlaceholder": "بحث عن موظف...",
+    "loadError": "تعذر تحميل الموظفين.",
+    "empty": "لا يوجد موظفون.",
+    "loading": "...جارٍ التحميل",
+    "table": {
+      "name": "الاسم",
+      "position": "المنصب",
+      "department": "القسم",
+      "contractType": "نوع العقد",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "status": { "active": "نشط", "inactive": "غير نشط" },
+    "delete": {
+      "confirm": "حذف هذا الموظف؟",
+      "error": "فشل الحذف.",
+      "success": "تم حذف الموظف."
+    },
+    "pagination": {
+      "total": "{count, plural, =0 {لا يوجد موظفون} one {موظف واحد} other {# موظفين}}",
+      "previous": "السابق",
+      "next": "التالي",
+      "pageInfo": "صفحة {page} من {totalPages}"
+    },
+    "tabs": {
+      "profile": "الملف الشخصي",
+      "schedule": "الجدول",
+      "attendance": "الحضور",
+      "commissions": "العمولات"
+    },
+    "form": {
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "position": "المنصب",
+      "department": "القسم",
+      "hireDate": "تاريخ التوظيف",
+      "contractType": "نوع العقد",
+      "salary": "الراتب الشهري (دج)",
+      "address": "العنوان",
+      "firstName": "الاسم الأول",
+      "lastName": "اسم العائلة",
+      "contractTypes": { "cdi": "عقد دائم", "cdd": "عقد محدد المدة", "interim": "عمل مؤقت", "freelance": "عمل حر" },
+      "linkedUser": "حساب المستخدم المرتبط",
+      "noLinkedUser": "لا يوجد (بدون حساب)",
+      "title": "موظف جديد",
+      "description": "إضافة موظف إلى الفريق.",
+      "editTitle": "تعديل الموظف",
+      "editDescription": "تحديث معلومات الموظف.",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "editSubmit": "حفظ",
+      "editSubmitting": "...جارٍ الحفظ",
+      "error": "فشل الإنشاء.",
+      "success": "تم إنشاء الموظف.",
+      "editError": "فشل التحديث.",
+      "editSuccess": "تم تحديث الموظف."
+    }
+  },
+  "workSchedules": {
+    "title": "جداول العمل",
+    "store": "المتجر",
+    "weekOf": "أسبوع",
+    "empty": "لا توجد مناوبات مجدولة.",
+    "cancel": "إلغاء",
+    "cancelError": "فشل الإلغاء.",
+    "cancelSuccess": "تم إلغاء المناوبة.",
+    "table": {
+      "employee": "الموظف",
+      "store": "المتجر",
+      "starts": "البداية",
+      "ends": "النهاية",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "status": { "scheduled": "مجدولة", "completed": "منتهية", "cancelled": "ملغاة" },
+    "form": {
+      "title": "مناوبة جديدة",
+      "description": "جدولة مناوبة لموظف.",
+      "employee": "الموظف",
+      "store": "المتجر",
+      "startsAt": "البداية",
+      "endsAt": "النهاية",
+      "notes": "ملاحظات",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "error": "فشل الإنشاء.",
+      "success": "تم إنشاء المناوبة."
+    }
+  },
+  "attendance": {
+    "title": "الحضور",
+    "store": "المتجر",
+    "date": "التاريخ",
+    "clockInAction": "تسجيل الحضور",
+    "selectEmployee": "اختر موظفًا",
+    "clockIn": "تسجيل الحضور",
+    "clockOut": "تسجيل الانصراف",
+    "clockInError": "فشل تسجيل الحضور.",
+    "clockInSuccess": "تم تسجيل الحضور.",
+    "clockOutError": "فشل تسجيل الانصراف.",
+    "clockOutSuccess": "تم تسجيل الانصراف.",
+    "empty": "لا توجد سجلات حضور لهذه الفترة.",
+    "summary": { "present": "حاضرون", "stillClockedIn": "لا يزالون مسجلين" },
+    "table": {
+      "employee": "الموظف",
+      "date": "التاريخ",
+      "clockIn": "الحضور",
+      "clockOut": "الانصراف",
+      "status": "الحالة",
+      "actions": "إجراءات"
+    },
+    "statuses": { "present": "حاضر", "late": "متأخر", "absent": "غائب", "on_leave": "في إجازة" },
+    "form": {
+      "title": "إدخال يدوي",
+      "description": "تسجيل حضور أو انصراف منسي لاحقًا.",
+      "employee": "الموظف",
+      "workDate": "التاريخ",
+      "clockIn": "الحضور",
+      "clockOut": "الانصراف",
+      "status": "الحالة",
+      "statuses": { "present": "حاضر", "late": "متأخر", "absent": "غائب", "on_leave": "في إجازة" },
+      "notes": "ملاحظات",
+      "submit": "حفظ",
+      "submitting": "...جارٍ الحفظ",
+      "error": "فشل الحفظ.",
+      "success": "تم تسجيل الحضور."
+    }
+  },
+  "commissionRules": {
+    "title": "العمولات",
+    "empty": "لا توجد قواعد عمولة.",
+    "status": { "active": "نشطة", "inactive": "غير نشطة" },
+    "deactivate": {
+      "confirm": "تعطيل هذه القاعدة؟",
+      "error": "فشل التعطيل.",
+      "success": "تم تعطيل القاعدة."
+    },
+    "calculate": {
+      "from": "من",
+      "to": "إلى",
+      "submit": "حساب العمولات",
+      "running": "...جارٍ الحساب",
+      "error": "فشل الحساب.",
+      "success": "تم إنشاء {created} عمولة وتحديث {updated}، من أصل {salesScanned} عملية بيع تم فحصها."
+    },
+    "table": {
+      "name": "الاسم",
+      "scope": "النطاق",
+      "rate": "المعدل",
+      "status": "الحالة",
+      "actions": "إجراءات",
+      "date": "التاريخ",
+      "rule": "القاعدة",
+      "sale": "البيع",
+      "base": "الأساس",
+      "amount": "المبلغ"
+    },
+    "form": {
+      "title": "قاعدة عمولة جديدة",
+      "description": "تحديد قاعدة لحساب العمولة.",
+      "name": "الاسم",
+      "scope": "النطاق",
+      "scopes": { "global": "عامة", "employee": "خاصة بموظف" },
+      "targetEmployee": "الموظف المستهدف",
+      "rateType": "نوع المعدل",
+      "rateTypes": { "percentage": "نسبة مئوية", "fixed": "مبلغ ثابت" },
+      "rateValuePercent": "المعدل (%)",
+      "rateValueFixed": "المبلغ (دج)",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "error": "فشل الإنشاء.",
+      "success": "تم إنشاء القاعدة."
+    }
+  },
+  "roles": {
+    "title": "الأدوار والصلاحيات",
+    "systemRole": "نظامي",
+    "permissions": {
+      "title": "الصلاحيات",
+      "save": "حفظ",
+      "error": "فشل حفظ الصلاحيات.",
+      "success": "تم تحديث الصلاحيات."
+    },
+    "assign": {
+      "title": "المستخدمون المعينون",
+      "selectUser": "اختر مستخدمًا",
+      "allStores": "جميع المتاجر",
+      "submit": "تعيين",
+      "error": "فشل التعيين.",
+      "success": "تم تعيين المستخدم.",
+      "revokeError": "فشل الإلغاء.",
+      "revokeSuccess": "تم إلغاء التعيين.",
+      "empty": "لا يوجد مستخدمون معينون.",
+      "table": { "user": "المستخدم", "store": "المتجر", "actions": "إجراءات" }
+    },
+    "form": {
+      "title": "دور جديد",
+      "description": "إنشاء دور مخصص.",
+      "name": "الاسم",
+      "descriptionField": "الوصف",
+      "submit": "إنشاء",
+      "submitting": "...جارٍ الإنشاء",
+      "error": "فشل الإنشاء.",
+      "success": "تم إنشاء الدور."
+    }
+  },
+  "employeePerformance": {
+    "title": "أداء الموظفين",
+    "from": "من",
+    "to": "إلى",
+    "empty": "لا توجد بيانات لهذه الفترة.",
+    "table": {
+      "employee": "الموظف",
+      "salesCount": "المبيعات",
+      "salesTotal": "رقم الأعمال",
+      "commissionTotal": "العمولات",
+      "shiftsScheduled": "المناوبات المجدولة",
+      "attendanceRate": "معدل الحضور"
     }
   }
 }

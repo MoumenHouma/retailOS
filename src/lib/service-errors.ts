@@ -28,6 +28,7 @@ import { InvalidParentError as InvalidExpenseCategoryParentError } from "@/serve
 import { InsufficientLoyaltyPointsError } from "@/server/services/loyalty";
 import { CreditLimitExceededError, DebtOverpaymentError } from "@/server/services/customer-debts";
 import { PeriodAlreadyClosedError } from "@/server/services/financial-periods";
+import { AlreadyClockedInError } from "@/server/services/attendance";
 
 /** Maps known service-layer error classes to the standard API error shape/status. */
 export function mapServiceError(error: unknown) {
@@ -103,6 +104,9 @@ export function mapServiceError(error: unknown) {
   }
   if (error instanceof PeriodAlreadyClosedError) {
     return apiError("PERIOD_ALREADY_CLOSED", error.message, 409);
+  }
+  if (error instanceof AlreadyClockedInError) {
+    return apiError("ALREADY_CLOCKED_IN", error.message, 409);
   }
   if ((error as { code?: string })?.code === "P2025") {
     return apiError("NOT_FOUND", "Resource not found.", 404);

@@ -20,6 +20,7 @@
       "purchasing": "Achats",
       "inventory": "Stock",
       "finance": "Finances",
+      "hr": "Personnel",
       "reports": "Rapports"
     },
     "pos": "Point de vente",
@@ -39,7 +40,13 @@
     "financialDashboard": "Tableau de bord financier",
     "financialPeriods": "Périodes comptables",
     "financialReports": "Rapports financiers",
-    "customers": "Clients"
+    "customers": "Clients",
+    "employees": "Employés",
+    "workSchedules": "Plannings",
+    "attendance": "Présences",
+    "commissionRules": "Commissions",
+    "roles": "Rôles et permissions",
+    "employeePerformance": "Performance des employés"
   },
   "auth": {
     "login": {
@@ -1404,6 +1411,228 @@
         "revenue": "Chiffre d'affaires",
         "margin": "Marge"
       }
+    }
+  },
+  "employees": {
+    "title": "Employés",
+    "searchPlaceholder": "Rechercher un employé...",
+    "loadError": "Impossible de charger les employés.",
+    "empty": "Aucun employé trouvé.",
+    "loading": "Chargement...",
+    "table": {
+      "name": "Nom",
+      "position": "Poste",
+      "department": "Département",
+      "contractType": "Type de contrat",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": { "active": "Actif", "inactive": "Inactif" },
+    "delete": {
+      "confirm": "Supprimer cet employé ?",
+      "error": "Échec de la suppression.",
+      "success": "Employé supprimé."
+    },
+    "pagination": {
+      "total": "{count, plural, =0 {Aucun employé} one {# employé} other {# employés}}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "pageInfo": "Page {page} sur {totalPages}"
+    },
+    "tabs": {
+      "profile": "Profil",
+      "schedule": "Planning",
+      "attendance": "Présences",
+      "commissions": "Commissions"
+    },
+    "form": {
+      "phone": "Téléphone",
+      "email": "E-mail",
+      "position": "Poste",
+      "department": "Département",
+      "hireDate": "Date d'embauche",
+      "contractType": "Type de contrat",
+      "salary": "Salaire mensuel (DA)",
+      "address": "Adresse",
+      "firstName": "Prénom",
+      "lastName": "Nom",
+      "contractTypes": { "cdi": "CDI", "cdd": "CDD", "interim": "Intérim", "freelance": "Freelance" },
+      "linkedUser": "Compte utilisateur lié",
+      "noLinkedUser": "Aucun (pas de compte)",
+      "title": "Nouvel employé",
+      "description": "Ajouter un employé à l'équipe.",
+      "editTitle": "Modifier l'employé",
+      "editDescription": "Mettre à jour les informations de l'employé.",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "editSubmit": "Enregistrer",
+      "editSubmitting": "Enregistrement...",
+      "error": "Échec de la création.",
+      "success": "Employé créé.",
+      "editError": "Échec de la mise à jour.",
+      "editSuccess": "Employé mis à jour."
+    }
+  },
+  "workSchedules": {
+    "title": "Plannings",
+    "store": "Magasin",
+    "weekOf": "Semaine du",
+    "empty": "Aucun poste programmé.",
+    "cancel": "Annuler",
+    "cancelError": "Échec de l'annulation.",
+    "cancelSuccess": "Poste annulé.",
+    "table": {
+      "employee": "Employé",
+      "store": "Magasin",
+      "starts": "Début",
+      "ends": "Fin",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "status": { "scheduled": "Programmé", "completed": "Terminé", "cancelled": "Annulé" },
+    "form": {
+      "title": "Nouveau poste",
+      "description": "Programmer un poste pour un employé.",
+      "employee": "Employé",
+      "store": "Magasin",
+      "startsAt": "Début",
+      "endsAt": "Fin",
+      "notes": "Notes",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "error": "Échec de la création.",
+      "success": "Poste créé."
+    }
+  },
+  "attendance": {
+    "title": "Présences",
+    "store": "Magasin",
+    "date": "Date",
+    "clockInAction": "Pointer l'arrivée",
+    "selectEmployee": "Choisir un employé",
+    "clockIn": "Pointer l'arrivée",
+    "clockOut": "Pointer le départ",
+    "clockInError": "Échec du pointage d'arrivée.",
+    "clockInSuccess": "Arrivée pointée.",
+    "clockOutError": "Échec du pointage de départ.",
+    "clockOutSuccess": "Départ pointé.",
+    "empty": "Aucun pointage pour cette période.",
+    "summary": { "present": "Présents", "stillClockedIn": "Encore pointés" },
+    "table": {
+      "employee": "Employé",
+      "date": "Date",
+      "clockIn": "Arrivée",
+      "clockOut": "Départ",
+      "status": "Statut",
+      "actions": "Actions"
+    },
+    "statuses": { "present": "Présent", "late": "En retard", "absent": "Absent", "on_leave": "Congé" },
+    "form": {
+      "title": "Saisie manuelle",
+      "description": "Enregistrer un pointage oublié après coup.",
+      "employee": "Employé",
+      "workDate": "Date",
+      "clockIn": "Arrivée",
+      "clockOut": "Départ",
+      "status": "Statut",
+      "statuses": { "present": "Présent", "late": "En retard", "absent": "Absent", "on_leave": "Congé" },
+      "notes": "Notes",
+      "submit": "Enregistrer",
+      "submitting": "Enregistrement...",
+      "error": "Échec de l'enregistrement.",
+      "success": "Pointage enregistré."
+    }
+  },
+  "commissionRules": {
+    "title": "Commissions",
+    "empty": "Aucune règle de commission.",
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "deactivate": {
+      "confirm": "Désactiver cette règle ?",
+      "error": "Échec de la désactivation.",
+      "success": "Règle désactivée."
+    },
+    "calculate": {
+      "from": "Du",
+      "to": "Au",
+      "submit": "Calculer les commissions",
+      "running": "Calcul en cours...",
+      "error": "Échec du calcul.",
+      "success": "{created} commission(s) créée(s), {updated} mise(s) à jour ({salesScanned} vente(s) analysée(s))."
+    },
+    "table": {
+      "name": "Nom",
+      "scope": "Portée",
+      "rate": "Taux",
+      "status": "Statut",
+      "actions": "Actions",
+      "date": "Date",
+      "rule": "Règle",
+      "sale": "Vente",
+      "base": "Base",
+      "amount": "Montant"
+    },
+    "form": {
+      "title": "Nouvelle règle de commission",
+      "description": "Définir une règle de calcul de commission.",
+      "name": "Nom",
+      "scope": "Portée",
+      "scopes": { "global": "Globale", "employee": "Par employé" },
+      "targetEmployee": "Employé concerné",
+      "rateType": "Type de taux",
+      "rateTypes": { "percentage": "Pourcentage", "fixed": "Montant fixe" },
+      "rateValuePercent": "Taux (%)",
+      "rateValueFixed": "Montant (DA)",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "error": "Échec de la création.",
+      "success": "Règle créée."
+    }
+  },
+  "roles": {
+    "title": "Rôles et permissions",
+    "systemRole": "Système",
+    "permissions": {
+      "title": "Permissions",
+      "save": "Enregistrer",
+      "error": "Échec de l'enregistrement des permissions.",
+      "success": "Permissions mises à jour."
+    },
+    "assign": {
+      "title": "Utilisateurs assignés",
+      "selectUser": "Choisir un utilisateur",
+      "allStores": "Tous les magasins",
+      "submit": "Assigner",
+      "error": "Échec de l'assignation.",
+      "success": "Utilisateur assigné.",
+      "revokeError": "Échec du retrait.",
+      "revokeSuccess": "Assignation retirée.",
+      "empty": "Aucun utilisateur assigné.",
+      "table": { "user": "Utilisateur", "store": "Magasin", "actions": "Actions" }
+    },
+    "form": {
+      "title": "Nouveau rôle",
+      "description": "Créer un rôle personnalisé.",
+      "name": "Nom",
+      "descriptionField": "Description",
+      "submit": "Créer",
+      "submitting": "Création...",
+      "error": "Échec de la création.",
+      "success": "Rôle créé."
+    }
+  },
+  "employeePerformance": {
+    "title": "Performance des employés",
+    "from": "Du",
+    "to": "Au",
+    "empty": "Aucune donnée pour cette période.",
+    "table": {
+      "employee": "Employé",
+      "salesCount": "Ventes",
+      "salesTotal": "Chiffre d'affaires",
+      "commissionTotal": "Commissions",
+      "shiftsScheduled": "Postes programmés",
+      "attendanceRate": "Taux de présence"
     }
   }
 }

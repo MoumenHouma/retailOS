@@ -20,6 +20,7 @@
       "purchasing": "Purchasing",
       "inventory": "Inventory",
       "finance": "Finance",
+      "hr": "Staff",
       "reports": "Reports"
     },
     "pos": "Point of Sale",
@@ -39,7 +40,13 @@
     "financialDashboard": "Financial Dashboard",
     "financialPeriods": "Financial Periods",
     "financialReports": "Financial Reports",
-    "customers": "Customers"
+    "customers": "Customers",
+    "employees": "Employees",
+    "workSchedules": "Work Schedules",
+    "attendance": "Attendance",
+    "commissionRules": "Commissions",
+    "roles": "Roles & Permissions",
+    "employeePerformance": "Employee Performance"
   },
   "auth": {
     "login": {
@@ -1404,6 +1411,228 @@
         "revenue": "Revenue",
         "margin": "Margin"
       }
+    }
+  },
+  "employees": {
+    "title": "Employees",
+    "searchPlaceholder": "Search employees...",
+    "loadError": "Failed to load employees.",
+    "empty": "No employees found.",
+    "loading": "Loading...",
+    "table": {
+      "name": "Name",
+      "position": "Position",
+      "department": "Department",
+      "contractType": "Contract Type",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "delete": {
+      "confirm": "Delete this employee?",
+      "error": "Failed to delete.",
+      "success": "Employee deleted."
+    },
+    "pagination": {
+      "total": "{count, plural, =0 {No employees} one {# employee} other {# employees}}",
+      "previous": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {page} of {totalPages}"
+    },
+    "tabs": {
+      "profile": "Profile",
+      "schedule": "Schedule",
+      "attendance": "Attendance",
+      "commissions": "Commissions"
+    },
+    "form": {
+      "phone": "Phone",
+      "email": "Email",
+      "position": "Position",
+      "department": "Department",
+      "hireDate": "Hire Date",
+      "contractType": "Contract Type",
+      "salary": "Monthly Salary (DA)",
+      "address": "Address",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "contractTypes": { "cdi": "Permanent (CDI)", "cdd": "Fixed-term (CDD)", "interim": "Temp", "freelance": "Freelance" },
+      "linkedUser": "Linked User Account",
+      "noLinkedUser": "None (no login)",
+      "title": "New Employee",
+      "description": "Add an employee to the team.",
+      "editTitle": "Edit Employee",
+      "editDescription": "Update the employee's information.",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "editSubmit": "Save",
+      "editSubmitting": "Saving...",
+      "error": "Failed to create.",
+      "success": "Employee created.",
+      "editError": "Failed to update.",
+      "editSuccess": "Employee updated."
+    }
+  },
+  "workSchedules": {
+    "title": "Work Schedules",
+    "store": "Store",
+    "weekOf": "Week of",
+    "empty": "No shifts scheduled.",
+    "cancel": "Cancel",
+    "cancelError": "Failed to cancel.",
+    "cancelSuccess": "Shift cancelled.",
+    "table": {
+      "employee": "Employee",
+      "store": "Store",
+      "starts": "Starts",
+      "ends": "Ends",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "status": { "scheduled": "Scheduled", "completed": "Completed", "cancelled": "Cancelled" },
+    "form": {
+      "title": "New Shift",
+      "description": "Schedule a shift for an employee.",
+      "employee": "Employee",
+      "store": "Store",
+      "startsAt": "Starts",
+      "endsAt": "Ends",
+      "notes": "Notes",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "error": "Failed to create.",
+      "success": "Shift created."
+    }
+  },
+  "attendance": {
+    "title": "Attendance",
+    "store": "Store",
+    "date": "Date",
+    "clockInAction": "Clock In",
+    "selectEmployee": "Select an employee",
+    "clockIn": "Clock In",
+    "clockOut": "Clock Out",
+    "clockInError": "Failed to clock in.",
+    "clockInSuccess": "Clocked in.",
+    "clockOutError": "Failed to clock out.",
+    "clockOutSuccess": "Clocked out.",
+    "empty": "No attendance records for this period.",
+    "summary": { "present": "Present", "stillClockedIn": "Still Clocked In" },
+    "table": {
+      "employee": "Employee",
+      "date": "Date",
+      "clockIn": "Clock In",
+      "clockOut": "Clock Out",
+      "status": "Status",
+      "actions": "Actions"
+    },
+    "statuses": { "present": "Present", "late": "Late", "absent": "Absent", "on_leave": "On Leave" },
+    "form": {
+      "title": "Manual Entry",
+      "description": "Record a forgotten clock-in/out after the fact.",
+      "employee": "Employee",
+      "workDate": "Date",
+      "clockIn": "Clock In",
+      "clockOut": "Clock Out",
+      "status": "Status",
+      "statuses": { "present": "Present", "late": "Late", "absent": "Absent", "on_leave": "On Leave" },
+      "notes": "Notes",
+      "submit": "Save",
+      "submitting": "Saving...",
+      "error": "Failed to save.",
+      "success": "Attendance recorded."
+    }
+  },
+  "commissionRules": {
+    "title": "Commissions",
+    "empty": "No commission rules.",
+    "status": { "active": "Active", "inactive": "Inactive" },
+    "deactivate": {
+      "confirm": "Deactivate this rule?",
+      "error": "Failed to deactivate.",
+      "success": "Rule deactivated."
+    },
+    "calculate": {
+      "from": "From",
+      "to": "To",
+      "submit": "Calculate Commissions",
+      "running": "Calculating...",
+      "error": "Failed to calculate.",
+      "success": "{created} commission(s) created, {updated} updated ({salesScanned} sale(s) scanned)."
+    },
+    "table": {
+      "name": "Name",
+      "scope": "Scope",
+      "rate": "Rate",
+      "status": "Status",
+      "actions": "Actions",
+      "date": "Date",
+      "rule": "Rule",
+      "sale": "Sale",
+      "base": "Base",
+      "amount": "Amount"
+    },
+    "form": {
+      "title": "New Commission Rule",
+      "description": "Define a commission calculation rule.",
+      "name": "Name",
+      "scope": "Scope",
+      "scopes": { "global": "Global", "employee": "Per Employee" },
+      "targetEmployee": "Target Employee",
+      "rateType": "Rate Type",
+      "rateTypes": { "percentage": "Percentage", "fixed": "Fixed Amount" },
+      "rateValuePercent": "Rate (%)",
+      "rateValueFixed": "Amount (DA)",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "error": "Failed to create.",
+      "success": "Rule created."
+    }
+  },
+  "roles": {
+    "title": "Roles & Permissions",
+    "systemRole": "System",
+    "permissions": {
+      "title": "Permissions",
+      "save": "Save",
+      "error": "Failed to save permissions.",
+      "success": "Permissions updated."
+    },
+    "assign": {
+      "title": "Assigned Users",
+      "selectUser": "Select a user",
+      "allStores": "All Stores",
+      "submit": "Assign",
+      "error": "Failed to assign.",
+      "success": "User assigned.",
+      "revokeError": "Failed to revoke.",
+      "revokeSuccess": "Assignment revoked.",
+      "empty": "No users assigned.",
+      "table": { "user": "User", "store": "Store", "actions": "Actions" }
+    },
+    "form": {
+      "title": "New Role",
+      "description": "Create a custom role.",
+      "name": "Name",
+      "descriptionField": "Description",
+      "submit": "Create",
+      "submitting": "Creating...",
+      "error": "Failed to create.",
+      "success": "Role created."
+    }
+  },
+  "employeePerformance": {
+    "title": "Employee Performance",
+    "from": "From",
+    "to": "To",
+    "empty": "No data for this period.",
+    "table": {
+      "employee": "Employee",
+      "salesCount": "Sales",
+      "salesTotal": "Revenue",
+      "commissionTotal": "Commissions",
+      "shiftsScheduled": "Shifts Scheduled",
+      "attendanceRate": "Attendance Rate"
     }
   }
 }
