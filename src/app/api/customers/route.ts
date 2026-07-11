@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
       session!.user.tenantId,
       (tx) => searchCustomers(tx, parsed.data),
     );
-    return apiSuccess(items, { page, pageSize, total, totalPages });
+    const response = apiSuccess(items, { page, pageSize, total, totalPages });
+    response.headers.set("Cache-Control", "private, max-age=15, stale-while-revalidate=60");
+    return response;
   } catch (error) {
     return mapServiceError(error);
   }

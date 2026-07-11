@@ -5,6 +5,18 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  // next-intl@3.26's plugin injects the `next-intl/config` resolve alias
+  // under `experimental.turbo` (Turbopack's pre-Next-16 config location).
+  // Next 16 moved that to a top-level `turbopack` key and silently drops
+  // the unrecognized `experimental.turbo` key, so under Turbopack (now
+  // dev's default per docker-compose.yml) `getMessages()` couldn't resolve
+  // `next-intl/config` and every locale route 500'd. Set the alias
+  // ourselves until next-intl ships Next-16-native Turbopack support.
+  turbopack: {
+    resolveAlias: {
+      "next-intl/config": "./src/i18n/request.ts",
+    },
+  },
   // bullmq/ioredis use Node-native APIs (dynamic requires, native bindings
   // via ioredis' optional deps) that Next's bundler doesn't need to touch —
   // API routes importing src/server/queue/queues.ts already run in the Node

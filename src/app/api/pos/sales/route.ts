@@ -6,6 +6,7 @@ import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { CompleteSaleSchema, SaleHistoryQuerySchema } from "@/lib/validators/pos";
 import { completeSale, searchSales } from "@/server/services/sales";
+import { invalidateStockCache } from "@/server/services/stock";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
     const sale = await withTenant(session!.user.tenantId, (tx) =>
       completeSale(tx, { ...parsed.data, cashierId: session!.user.id }),
     );
+    invalidateStockCache(session!.user.tenantId);
     return apiSuccess(sale, undefined, 201);
   } catch (error) {
     return mapServiceError(error);

@@ -1,4 +1,6 @@
 import type { Prisma } from "@prisma/client";
+import { unstable_cache } from "next/cache";
+import { withTenant } from "@/lib/prisma";
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -46,6 +48,24 @@ export async function getReorderSuggestions(tx: TransactionClient) {
         suggestedQuantity: preferred?.minOrderQuantity ?? null,
       };
     });
+}
+
+/**
+ * Cached wrapper — getReorderSuggestions runs on every dashboard page load
+ * with a full-table StockLevel scan (see the comment above). Opens its own
+ * withTenant instead of taking the caller's `tx`: unstable_cache's cached
+ * function body runs outside the request's transaction, so it can't reuse
+ * an already-open tx. Invalidated by revalidateTag(`stock:${tenantId}`),
+ * called by every route that mutates stock (sales, adjustments, transfers,
+ * stock counts, purchase deliveries, returns) after their withTenant
+ * transaction commits.
+ */
+export function getReorderSuggestionsCached(tenantId: string) {
+  return unstable_cache(
+    () => withTenant(tenantId, (tx) => getReorderSuggestions(tx)),
+    ["reorder-suggestions", tenantId],
+    { revalidate: 60, tags: [`stock:${tenantId}`] },
+  )();
 }
 
 interface SupplierCatalogQuery {

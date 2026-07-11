@@ -1,6 +1,19 @@
 import type { Prisma, StockMovementType } from "@prisma/client";
+import { revalidateTag } from "next/cache";
 
 type TransactionClient = Prisma.TransactionClient;
+
+/**
+ * Call from a route handler after its withTenant transaction commits, on
+ * every path that ends up calling recordStockMovement (sales, adjustments,
+ * transfers, stock counts, purchase deliveries, returns). Invalidates
+ * getReorderSuggestionsCached's tag for this tenant. Deliberately not
+ * called from inside recordStockMovement itself: that runs pre-commit
+ * (would invalidate on a rollback) and has no tenantId in scope.
+ */
+export function invalidateStockCache(tenantId: string) {
+  revalidateTag(`stock:${tenantId}`);
+}
 
 export class InsufficientStockError extends Error {
   constructor(message: string) {

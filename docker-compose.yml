@@ -85,7 +85,7 @@ services:
       minio-init:
         condition: service_completed_successfully
     networks: [retailos-network]
-    command: pnpm exec next dev --webpack -H 0.0.0.0 -p 3000
+    command: pnpm exec next dev -H 0.0.0.0 -p 3000
 
   # Phase 5 Chunk A: Python FastAPI microservice — Prophet forecasting, pure
   # stateless compute. Deliberately gets no DATABASE_URL/DATABASE_APP_URL at

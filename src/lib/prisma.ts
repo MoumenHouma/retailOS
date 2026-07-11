@@ -50,12 +50,19 @@ export function withTenant<T>(
   if (!UUID_RE.test(tenantId)) {
     throw new Error(`Invalid tenant id: ${tenantId}`);
   }
-  return prisma.$transaction(async (tx) => {
-    // SET LOCAL doesn't support parameterized placeholders, hence the
-    // interpolation — safe here only because tenantId is validated above
-    // and always sourced from the server-verified session, never directly
-    // from client input.
-    await tx.$executeRawUnsafe(`SET LOCAL app.current_tenant_id = '${tenantId}'`);
-    return fn(tx);
-  });
+  return prisma.$transaction(
+    async (tx) => {
+      // SET LOCAL doesn't support parameterized placeholders, hence the
+      // interpolation — safe here only because tenantId is validated above
+      // and always sourced from the server-verified session, never directly
+      // from client input.
+      await tx.$executeRawUnsafe(`SET LOCAL app.current_tenant_id = '${tenantId}'`);
+      return fn(tx);
+    },
+    // Default Prisma transaction timeout is 5s — too tight for the heavier
+    // report services (5-8 sequential reads) and was already producing
+    // P2028 timeout errors (see Dev Log). maxWait bounds how long we queue
+    // for a pool connection before giving up.
+    { timeout: 15_000, maxWait: 10_000 },
+  );
 }

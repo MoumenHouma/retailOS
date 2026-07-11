@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/permissions";
 import { apiSuccess } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { approveCount } from "@/server/services/stock-counts";
+import { invalidateStockCache } from "@/server/services/stock";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -16,6 +17,7 @@ export async function POST(_request: NextRequest, { params }: Params) {
   try {
     requirePermission(session, "inventory:count");
     const count = await withTenant(session!.user.tenantId, (tx) => approveCount(tx, id, session!.user.id));
+    invalidateStockCache(session!.user.tenantId);
     return apiSuccess(count);
   } catch (error) {
     return mapServiceError(error);

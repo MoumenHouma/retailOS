@@ -28,11 +28,21 @@ const WINDOW_SECONDS = 60;
 const AUTH_LIMIT = 10;
 const DEFAULT_LIMIT = 120;
 
+// Atomic INCR + conditional EXPIRE in one Redis round trip instead of two
+// sequential ones (every /api/* request was paying 1-2 round trips here).
+const INCR_AND_EXPIRE_SCRIPT = `
+local c = redis.call('INCR', KEYS[1])
+if c == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+return c
+`;
+
 async function checkRateLimit(key: string, limit: number): Promise<boolean> {
-  const count = await redisConnection.incr(key);
-  if (count === 1) {
-    await redisConnection.expire(key, WINDOW_SECONDS);
-  }
+  const count = (await redisConnection.eval(
+    INCR_AND_EXPIRE_SCRIPT,
+    1,
+    key,
+    WINDOW_SECONDS,
+  )) as number;
   return count <= limit;
 }
 

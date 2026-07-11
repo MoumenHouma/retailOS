@@ -6,6 +6,7 @@ import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { ReceiveDeliverySchema } from "@/lib/validators/purchasing";
 import { listDeliveries, receiveDelivery } from "@/server/services/purchase-deliveries";
+import { invalidateStockCache } from "@/server/services/stock";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -35,6 +36,7 @@ export async function POST(request: NextRequest, { params }: Params) {
     const delivery = await withTenant(session!.user.tenantId, (tx) =>
       receiveDelivery(tx, id, parsed.data, session!.user.id),
     );
+    invalidateStockCache(session!.user.tenantId);
     return apiSuccess(delivery, undefined, 201);
   } catch (error) {
     return mapServiceError(error);

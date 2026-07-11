@@ -5,7 +5,7 @@ import { withTenant } from "@/lib/prisma";
 import { StatTile } from "@/components/ui/stat-tile";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatDa } from "@/lib/currency";
-import { getReorderSuggestions } from "@/server/services/procurement-reports";
+import { getReorderSuggestionsCached } from "@/server/services/procurement-reports";
 
 export default async function DashboardPage() {
   const t = await getTranslations("dashboard");
@@ -18,11 +18,13 @@ export default async function DashboardPage() {
   // Proves the full pipeline: verified session -> tenant-scoped transaction
   // -> RLS-scoped Prisma query -> only this tenant's own row can ever come
   // back.
-  const [tenant, reorderSuggestions, openPurchaseOrders, pendingStockCounts, todaySales, productCount, storeCount] =
-    await withTenant(tenantId, (tx) =>
+  const [
+    [tenant, openPurchaseOrders, pendingStockCounts, todaySales, productCount, storeCount],
+    reorderSuggestions,
+  ] = await Promise.all([
+    withTenant(tenantId, (tx) =>
       Promise.all([
         tx.tenant.findUniqueOrThrow({ where: { id: tenantId } }),
-        getReorderSuggestions(tx),
         tx.purchaseOrder.count({ where: { status: { notIn: ["received", "cancelled"] } } }),
         tx.stockCount.count({ where: { status: { in: ["in_progress", "pending_review"] } } }),
         tx.sale.aggregate({
@@ -32,7 +34,12 @@ export default async function DashboardPage() {
         tx.product.count({ where: { deletedAt: null } }),
         tx.store.count({ where: { deletedAt: null, isActive: true } }),
       ]),
-    );
+    ),
+    // Cached separately (60s TTL) — opens its own withTenant, not part of
+    // the transaction above, since it runs on every dashboard load and
+    // rarely changes within a minute.
+    getReorderSuggestionsCached(tenantId),
+  ]);
 
   // Phase 6 Chunk C: lightweight setup checklist for brand-new tenants — no
   // persisted onboarding-progress table, just simple existence checks.

@@ -6,6 +6,7 @@ import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { ReceiveTransferSchema } from "@/lib/validators/warehousing";
 import { receiveTransfer, getTransferById } from "@/server/services/stock-transfers";
+import { invalidateStockCache } from "@/server/services/stock";
 
 interface Params {
   params: Promise<{ id: string }>;
@@ -27,6 +28,7 @@ export async function POST(request: NextRequest, { params }: Params) {
       requireStoreAccess(session, existing.toStoreId);
       return receiveTransfer(tx, id, parsed.data, session!.user.id);
     });
+    invalidateStockCache(session!.user.tenantId);
     return apiSuccess(transfer);
   } catch (error) {
     return mapServiceError(error);
