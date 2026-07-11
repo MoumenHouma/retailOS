@@ -80,9 +80,15 @@ export async function listAttendance(tx: TransactionClient, query: AttendanceLis
       : {}),
   };
 
+  // Phase 6 findMany audit: from/to are both optional (employee-detail-view.tsx
+  // calls this with only employeeId, no date range at all), so a caller that
+  // omits both would otherwise fetch a tenant's/employee's entire attendance
+  // history unbounded. A safety-net cap, not a UX pagination control — no
+  // caller today needs more than the most recent 500 records at once.
   return tx.attendanceRecord.findMany({
     where,
     include: { employee: { select: { id: true, firstName: true, lastName: true } } },
     orderBy: { workDate: "desc" },
+    take: 500,
   });
 }

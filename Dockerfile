@@ -10,13 +10,25 @@ RUN corepack enable
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile
+# --ignore-scripts: this stage doesn't have prisma/schema.prisma yet (only
+# package.json/lockfile are copied, for layer caching), so package.json's
+# `postinstall: prisma generate` would fail here — confirmed live. The
+# builder stage below already runs `prisma generate` explicitly once the
+# full source is present, so skipping postinstall here is a no-op, not a
+# missing step.
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 FROM base AS builder
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN pnpm exec prisma generate
 RUN pnpm exec next build --webpack
+# This repo has no public/ directory (no static assets checked in yet) —
+# confirmed live: the runtime stage's COPY --from=builder .../public fails
+# outright if the source path doesn't exist at all. An empty directory
+# copies cleanly and costs nothing; real assets can be added later without
+# touching this Dockerfile.
+RUN mkdir -p public
 
 # Runtime image — only what's needed to run the standalone server.
 FROM node:22-slim AS runner

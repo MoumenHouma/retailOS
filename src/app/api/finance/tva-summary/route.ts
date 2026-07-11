@@ -6,6 +6,8 @@ import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
 import { FinancialReportQuerySchema } from "@/lib/validators/financial-reports";
 import { getTvaSummary } from "@/server/services/financial-reports";
+import { parseReportFormat, buildReportExportResponse } from "@/lib/report-response";
+import { formatDa } from "@/lib/currency";
 
 export async function GET(request: NextRequest) {
   const session = await auth();
@@ -16,6 +18,25 @@ export async function GET(request: NextRequest) {
     if (!parsed.success) return apiValidationError(parsed.error);
 
     const summary = await withTenant(session!.user.tenantId, (tx) => getTvaSummary(tx, parsed.data));
+
+    const format = parseReportFormat(searchParams.get("format"));
+    if (format) {
+      requirePermission(session, "reports:export");
+      const row = {
+        "TVA collectée": formatDa(summary.collected),
+        "TVA payée (achats)": formatDa(summary.paidPurchases),
+        "TVA payée (dépenses)": formatDa(summary.paidExpenses),
+        "Total TVA payée": formatDa(summary.paidTotal),
+        Net: formatDa(summary.net),
+      };
+      return buildReportExportResponse(
+        format,
+        [row],
+        Object.keys(row).map((key) => ({ key, label: key })),
+        { title: "Récapitulatif TVA", filenameBase: "recapitulatif-tva" },
+      );
+    }
+
     return apiSuccess(summary);
   } catch (error) {
     return mapServiceError(error);

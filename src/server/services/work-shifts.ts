@@ -31,9 +31,13 @@ export async function listShifts(tx: TransactionClient, query: ShiftListQuery) {
       : {}),
   };
 
+  // Phase 6 findMany audit: same optional-from/to gap as attendance.ts's
+  // listAttendance — employee-detail-view.tsx calls this with only
+  // employeeId, no date range. Safety-net cap, not UX pagination.
   return tx.workShift.findMany({
     where,
     include: { employee: { select: { id: true, firstName: true, lastName: true } } },
     orderBy: { startsAt: "asc" },
+    take: 500,
   });
 }

@@ -2,11 +2,27 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, TrendingUp, Truck } from "lucide-react";
+import { AlertTriangle, Download, TrendingUp, Truck } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatTile } from "@/components/ui/stat-tile";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+
+function ExportButtons({ baseUrl }: { baseUrl: string }) {
+  return (
+    <div className="flex gap-2">
+      {(["pdf", "xlsx", "csv"] as const).map((format) => (
+        <Button key={format} variant="outline" size="sm" asChild>
+          <a href={`${baseUrl}?format=${format}`}>
+            <Download className="h-4 w-4" />
+            {format.toUpperCase()}
+          </a>
+        </Button>
+      ))}
+    </div>
+  );
+}
 
 interface ReorderSuggestion {
   productId: string;
@@ -91,7 +107,10 @@ export function ProcurementReportsView() {
       </div>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">{t("reorder.title")}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">{t("reorder.title")}</h2>
+          <ExportButtons baseUrl="/api/procurement-reports/reorder-suggestions" />
+        </div>
         <div className="rounded-md border border-border">
           <Table>
             <TableHeader>
@@ -128,7 +147,10 @@ export function ProcurementReportsView() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">{t("spendBySupplier.title")}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">{t("spendBySupplier.title")}</h2>
+          <ExportButtons baseUrl="/api/procurement-reports/purchase-analytics" />
+        </div>
         <div className="rounded-md border border-border">
           <Table>
             <TableHeader>
@@ -186,7 +208,10 @@ export function ProcurementReportsView() {
       </section>
 
       <section className="flex flex-col gap-2">
-        <h2 className="text-lg font-semibold">{t("deliveryPerformance.title")}</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">{t("deliveryPerformance.title")}</h2>
+          <ExportButtons baseUrl="/api/procurement-reports/delivery-performance" />
+        </div>
         <div className="rounded-md border border-border">
           <Table>
             <TableHeader>

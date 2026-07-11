@@ -9,10 +9,17 @@ WORKDIR /app
 RUN corepack enable
 
 # Copy only manifest files first so this layer is cached across rebuilds.
+# --ignore-scripts: prisma/schema.prisma isn't copied in yet at this point
+# (only manifests, for layer caching), so package.json's
+# `postinstall: prisma generate` would fail on a from-scratch build —
+# confirmed live via the production Dockerfile hitting the identical issue.
+# `pnpm run prisma:generate` after COPY . . below covers it once the schema
+# is actually present.
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install --frozen-lockfile || pnpm install
+RUN pnpm install --frozen-lockfile --ignore-scripts || pnpm install --ignore-scripts
 
 COPY . .
+RUN pnpm exec prisma generate
 
 EXPOSE 3000
 

@@ -3,9 +3,11 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { Download } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
 
@@ -59,6 +61,16 @@ export function EmployeePerformanceView() {
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="performance-to">{t("to")}</Label>
           <Input id="performance-to" type="date" value={to} onChange={(event) => setTo(event.target.value)} />
+        </div>
+        <div className="flex gap-2">
+          {(["pdf", "xlsx", "csv"] as const).map((format) => (
+            <Button key={format} variant="outline" size="sm" asChild>
+              <a href={`/api/employee-performance?format=${format}&${params.toString()}`}>
+                <Download className="h-4 w-4" />
+                {format.toUpperCase()}
+              </a>
+            </Button>
+          ))}
         </div>
       </div>
 

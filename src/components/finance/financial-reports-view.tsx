@@ -66,6 +66,27 @@ async function fetchJson<T>(url: string): Promise<{ data: T }> {
   return response.json();
 }
 
+// Shared across every tab in this file — one Download button per format,
+// same pattern the report retrofit (buildReportExportResponse) established.
+function ExportButtons({ baseUrl, params }: { baseUrl: string; params: URLSearchParams }) {
+  return (
+    <div className="flex gap-2">
+      {(["pdf", "xlsx", "csv"] as const).map((format) => {
+        const exportParams = new URLSearchParams(params);
+        exportParams.set("format", format);
+        return (
+          <Button key={format} variant="outline" size="sm" asChild>
+            <a href={`${baseUrl}?${exportParams.toString()}`}>
+              <Download className="h-4 w-4" />
+              {format.toUpperCase()}
+            </a>
+          </Button>
+        );
+      })}
+    </div>
+  );
+}
+
 export function FinancialReportsView() {
   const t = useTranslations("financialReports");
   const [from, setFrom] = useState(startOfMonth());
@@ -118,7 +139,10 @@ export function FinancialReportsView() {
         </TabsList>
 
         <TabsContent value="balance-sheet" className="flex flex-col gap-4">
-          <p className="text-sm text-muted-foreground">{t("balanceSheet.description")}</p>
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">{t("balanceSheet.description")}</p>
+            <ExportButtons baseUrl="/api/finance/balance-sheet" params={new URLSearchParams()} />
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <StatTile label={t("balanceSheet.cash")} value={formatDa(balanceSheet?.assets.cash ?? 0)} icon={Wallet} />
             <StatTile
@@ -149,7 +173,10 @@ export function FinancialReportsView() {
         </TabsContent>
 
         <TabsContent value="cash-flow" className="flex flex-col gap-4">
-          <DateRangeFilter from={from} to={to} onFrom={setFrom} onTo={setTo} />
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <DateRangeFilter from={from} to={to} onFrom={setFrom} onTo={setTo} />
+            <ExportButtons baseUrl="/api/finance/cash-flow" params={periodParams} />
+          </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
             <StatTile label={t("cashFlow.cashIn")} value={formatDa(cashFlow?.cashIn.total ?? 0)} icon={TrendingUp} />
             <StatTile label={t("cashFlow.cashOut")} value={formatDa(cashFlow?.cashOut.total ?? 0)} icon={TrendingDown} />
@@ -178,12 +205,7 @@ export function FinancialReportsView() {
                 </SelectContent>
               </Select>
             </div>
-            <Button variant="outline" size="sm" asChild>
-              <a href={`/api/finance/tax-report?format=csv&${taxParams.toString()}`}>
-                <Download className="h-4 w-4" />
-                {t("taxReport.exportCsv")}
-              </a>
-            </Button>
+            <ExportButtons baseUrl="/api/finance/tax-report" params={taxParams} />
           </div>
           <div className="rounded-md border border-border">
             <Table>
@@ -219,7 +241,10 @@ export function FinancialReportsView() {
         </TabsContent>
 
         <TabsContent value="expense-analysis" className="flex flex-col gap-4">
-          <DateRangeFilter from={from} to={to} onFrom={setFrom} onTo={setTo} />
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <DateRangeFilter from={from} to={to} onFrom={setFrom} onTo={setTo} />
+            <ExportButtons baseUrl="/api/finance/expense-analysis" params={periodParams} />
+          </div>
           <div className="rounded-md border border-border">
             <Table>
               <TableHeader>
@@ -250,21 +275,24 @@ export function FinancialReportsView() {
         </TabsContent>
 
         <TabsContent value="margin-analysis" className="flex flex-col gap-4">
-          <div className="flex flex-wrap items-end gap-4">
-            <DateRangeFilter from={from} to={to} onFrom={setFrom} onTo={setTo} />
-            <div className="flex flex-col gap-1.5">
-              <Label>{t("marginAnalysis.groupBy")}</Label>
-              <Select value={marginGroupBy} onValueChange={(value) => setMarginGroupBy(value as typeof marginGroupBy)}>
-                <SelectTrigger className="w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="product">{t("marginAnalysis.groupByOptions.product")}</SelectItem>
-                  <SelectItem value="category">{t("marginAnalysis.groupByOptions.category")}</SelectItem>
-                  <SelectItem value="brand">{t("marginAnalysis.groupByOptions.brand")}</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div className="flex flex-wrap items-end gap-4">
+              <DateRangeFilter from={from} to={to} onFrom={setFrom} onTo={setTo} />
+              <div className="flex flex-col gap-1.5">
+                <Label>{t("marginAnalysis.groupBy")}</Label>
+                <Select value={marginGroupBy} onValueChange={(value) => setMarginGroupBy(value as typeof marginGroupBy)}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="product">{t("marginAnalysis.groupByOptions.product")}</SelectItem>
+                    <SelectItem value="category">{t("marginAnalysis.groupByOptions.category")}</SelectItem>
+                    <SelectItem value="brand">{t("marginAnalysis.groupByOptions.brand")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
+            <ExportButtons baseUrl="/api/finance/margin-analysis" params={marginParams} />
           </div>
           <div className="rounded-md border border-border">
             <Table>
