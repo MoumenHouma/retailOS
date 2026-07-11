@@ -120,74 +120,89 @@ export async function getSupplierCatalog(tx: TransactionClient, query: SupplierC
   return { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
-/** Spend by supplier and by category, aggregated from committed POs only. */
+interface BySupplierRow {
+  supplierId: string;
+  supplierName: string;
+  total: bigint;
+}
+interface ByCategoryRow {
+  categoryId: string | null;
+  categoryName: string;
+  total: bigint;
+}
+
+/**
+ * Spend by supplier and by category, aggregated from committed POs only.
+ * Previously: load every committed PO with a 2-level include (items ->
+ * product -> category), then `.reduce()` into two maps in JS. Two GROUP BYs
+ * instead — bySupplier sums PurchaseOrder.total directly, byCategory joins
+ * down to PurchaseOrderItem.total since category lives on Product, not PO.
+ */
 export async function getPurchaseAnalytics(tx: TransactionClient) {
-  const orders = await tx.purchaseOrder.findMany({
-    where: { status: { in: [...COMMITTED_PO_STATUSES] }, deletedAt: null },
-    include: {
-      supplier: { select: { id: true, name: true } },
-      items: { include: { product: { select: { categoryId: true, category: { select: { name: true } } } } } },
-    },
-  });
-
-  const bySupplier = new Map<string, { supplierId: string; supplierName: string; total: number }>();
-  const byCategory = new Map<string, { categoryId: string | null; categoryName: string; total: number }>();
-
-  for (const order of orders) {
-    const supplierEntry = bySupplier.get(order.supplierId) ?? {
-      supplierId: order.supplierId,
-      supplierName: order.supplier.name,
-      total: 0,
-    };
-    supplierEntry.total += order.total;
-    bySupplier.set(order.supplierId, supplierEntry);
-
-    for (const item of order.items) {
-      const categoryId = item.product.categoryId;
-      const key = categoryId ?? "__uncategorized__";
-      const categoryEntry = byCategory.get(key) ?? {
-        categoryId,
-        categoryName: item.product.category?.name ?? "Sans catégorie",
-        total: 0,
-      };
-      categoryEntry.total += item.total;
-      byCategory.set(key, categoryEntry);
-    }
-  }
+  const [bySupplier, byCategory] = await Promise.all([
+    tx.$queryRaw<BySupplierRow[]>`
+      SELECT po.supplier_id AS "supplierId", s.name AS "supplierName", SUM(po.total) AS total
+      FROM purchase_orders po
+      JOIN suppliers s ON s.id = po.supplier_id
+      WHERE po.status IN ('ordered', 'partially_received', 'received') AND po.deleted_at IS NULL
+      GROUP BY po.supplier_id, s.name
+      ORDER BY total DESC
+    `,
+    tx.$queryRaw<ByCategoryRow[]>`
+      SELECT p.category_id AS "categoryId", COALESCE(c.name, 'Sans catégorie') AS "categoryName", SUM(poi.total) AS total
+      FROM purchase_order_items poi
+      JOIN purchase_orders po ON po.id = poi.po_id
+      JOIN products p ON p.id = poi.product_id
+      LEFT JOIN product_categories c ON c.id = p.category_id
+      WHERE po.status IN ('ordered', 'partially_received', 'received') AND po.deleted_at IS NULL
+      GROUP BY p.category_id, c.name
+      ORDER BY total DESC
+    `,
+  ]);
 
   return {
-    bySupplier: [...bySupplier.values()].sort((a, b) => b.total - a.total),
-    byCategory: [...byCategory.values()].sort((a, b) => b.total - a.total),
+    bySupplier: bySupplier.map((row) => ({ ...row, total: Number(row.total) })),
+    byCategory: byCategory.map((row) => ({ ...row, total: Number(row.total) })),
   };
 }
 
-/** On-time rate per supplier: PurchaseDelivery.deliveredAt vs. the parent PO's expectedDeliveryDate. */
+interface DeliveryPerformanceRow {
+  supplierId: string;
+  supplierName: string;
+  onTimeCount: bigint;
+  totalCount: bigint;
+}
+
+/**
+ * On-time rate per supplier: PurchaseDelivery.deliveredAt vs. the parent
+ * PO's expectedDeliveryDate. Previously: load every delivered-with-an-
+ * expected-date delivery (2-level include: po -> supplier), tally two
+ * counters per supplier in JS. One GROUP BY with a FILTER clause instead.
+ */
 export async function getDeliveryPerformance(tx: TransactionClient) {
-  const deliveries = await tx.purchaseDelivery.findMany({
-    where: { deliveredAt: { not: null }, po: { expectedDeliveryDate: { not: null } } },
-    include: { po: { include: { supplier: { select: { id: true, name: true } } } } },
-  });
+  const rows = await tx.$queryRaw<DeliveryPerformanceRow[]>`
+    SELECT
+      po.supplier_id AS "supplierId",
+      s.name AS "supplierName",
+      COUNT(*) FILTER (WHERE pd.delivered_at <= po.expected_delivery_date) AS "onTimeCount",
+      COUNT(*) AS "totalCount"
+    FROM purchase_deliveries pd
+    JOIN purchase_orders po ON po.id = pd.po_id
+    JOIN suppliers s ON s.id = po.supplier_id
+    WHERE pd.delivered_at IS NOT NULL AND po.expected_delivery_date IS NOT NULL
+    GROUP BY po.supplier_id, s.name
+    ORDER BY "totalCount" DESC
+  `;
 
-  const bySupplier = new Map<
-    string,
-    { supplierId: string; supplierName: string; onTimeCount: number; totalCount: number }
-  >();
-
-  for (const delivery of deliveries) {
-    const entry = bySupplier.get(delivery.po.supplierId) ?? {
-      supplierId: delivery.po.supplierId,
-      supplierName: delivery.po.supplier.name,
-      onTimeCount: 0,
-      totalCount: 0,
+  return rows.map((row) => {
+    const onTimeCount = Number(row.onTimeCount);
+    const totalCount = Number(row.totalCount);
+    return {
+      supplierId: row.supplierId,
+      supplierName: row.supplierName,
+      onTimeCount,
+      totalCount,
+      onTimeRate: onTimeCount / totalCount,
     };
-    entry.totalCount += 1;
-    if (delivery.deliveredAt! <= delivery.po.expectedDeliveryDate!) {
-      entry.onTimeCount += 1;
-    }
-    bySupplier.set(delivery.po.supplierId, entry);
-  }
-
-  return [...bySupplier.values()]
-    .map((entry) => ({ ...entry, onTimeRate: entry.onTimeCount / entry.totalCount }))
-    .sort((a, b) => b.totalCount - a.totalCount);
+  });
 }

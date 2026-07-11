@@ -1,55 +1,68 @@
-import type { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { FinancialReportQuery, RevenueDashboardQuery } from "@/lib/validators/financial-reports";
 
 type TransactionClient = Prisma.TransactionClient;
 
 const COMMITTED_PO_STATUSES = ["ordered", "partially_received", "received"] as const;
 
-function bucketKey(date: Date, granularity: "daily" | "weekly" | "monthly"): string {
-  if (granularity === "monthly") {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-  }
-  if (granularity === "weekly") {
-    // ISO week start (Monday) as the bucket key, same "no date_trunc" JS
-    // aggregation style as procurement-reports.ts.
-    const weekStart = new Date(date);
-    const day = (weekStart.getDay() + 6) % 7; // 0 = Monday
-    weekStart.setDate(weekStart.getDate() - day);
-    return weekStart.toISOString().slice(0, 10);
-  }
-  return date.toISOString().slice(0, 10);
+// Both the Node process and the Postgres session run in UTC (verified: `date`
+// in the app container and `SHOW TIMEZONE` both report UTC) — date_trunc's
+// bucketing matches the old JS bucketKey's UTC-based day/week/month math
+// exactly, including week start on Monday (date_trunc('week', ...) is ISO
+// 8601, same as the old (getDay()+6)%7 computation). If either side's
+// timezone ever changes this needs `AT TIME ZONE 'UTC'` added explicitly.
+const GRANULARITY_TO_TRUNC_UNIT = {
+  daily: "day",
+  weekly: "week",
+  monthly: "month",
+} as const;
+const GRANULARITY_TO_FORMAT = {
+  daily: "YYYY-MM-DD",
+  weekly: "YYYY-MM-DD",
+  monthly: "YYYY-MM",
+} as const;
+
+interface RevenueDashboardRow {
+  period: string;
+  revenue: bigint;
+  tvaAmount: bigint;
+  total: bigint;
+  saleCount: bigint;
 }
 
 /** Revenue/TVA/sale-count buckets over completed sales, daily/weekly/monthly. */
 export async function getRevenueDashboard(tx: TransactionClient, query: RevenueDashboardQuery) {
   const { storeId, from, to, granularity } = query;
+  const truncUnit = GRANULARITY_TO_TRUNC_UNIT[granularity];
+  const format = GRANULARITY_TO_FORMAT[granularity];
 
-  const sales = await tx.sale.findMany({
-    where: {
-      status: "completed",
-      deletedAt: null,
-      createdAt: { gte: from, lte: to },
-      ...(storeId ? { storeId } : {}),
-    },
-    select: { createdAt: true, subtotal: true, tvaAmount: true, total: true },
-  });
+  const rows = await tx.$queryRaw<RevenueDashboardRow[]>`
+    SELECT
+      to_char(date_trunc(${truncUnit}, created_at), ${format}) AS period,
+      COALESCE(SUM(subtotal), 0)   AS "revenue",
+      COALESCE(SUM(tva_amount), 0) AS "tvaAmount",
+      COALESCE(SUM(total), 0)      AS "total",
+      COUNT(*)                     AS "saleCount"
+    FROM sales
+    WHERE status = 'completed'
+      AND deleted_at IS NULL
+      AND created_at >= ${from}
+      AND created_at <= ${to}
+      ${storeId ? Prisma.sql`AND store_id = ${storeId}::uuid` : Prisma.empty}
+    GROUP BY 1
+    ORDER BY 1
+  `;
 
-  const buckets = new Map<
-    string,
-    { period: string; revenue: number; tvaAmount: number; total: number; saleCount: number }
-  >();
-
-  for (const sale of sales) {
-    const key = bucketKey(sale.createdAt, granularity);
-    const entry = buckets.get(key) ?? { period: key, revenue: 0, tvaAmount: 0, total: 0, saleCount: 0 };
-    entry.revenue += sale.subtotal;
-    entry.tvaAmount += sale.tvaAmount;
-    entry.total += sale.total;
-    entry.saleCount += 1;
-    buckets.set(key, entry);
-  }
-
-  return [...buckets.values()].sort((a, b) => a.period.localeCompare(b.period));
+  // SUM/COUNT come back as bigint (Postgres numeric/int8) via node-postgres —
+  // these are all well within JS's safe integer range for a POS's sale
+  // volumes, so Number() is safe and matches the old code's plain numbers.
+  return rows.map((row) => ({
+    period: row.period,
+    revenue: Number(row.revenue),
+    tvaAmount: Number(row.tvaAmount),
+    total: Number(row.total),
+    saleCount: Number(row.saleCount),
+  }));
 }
 
 /**
@@ -67,34 +80,42 @@ export async function getProfitAndLoss(tx: TransactionClient, query: FinancialRe
     ...(storeId ? { storeId } : {}),
   };
 
-  // Independent reads — parallelized to stay under withTenant's 5s default
-  // transaction timeout, the same P2028 lesson Phase 4 Chunk C hit running
-  // these sequentially inside one interactive transaction. Phase 5's
-  // scenario-simulation.ts calls this under real load and hit it live.
-  const [sales, expenses] = await Promise.all([
-    tx.sale.findMany({
+  // SUM(subtotal)/SUM(amount) push down as Prisma `aggregate`; COGS is
+  // SUM(quantity * costPrice) — a per-row product of two columns, which
+  // `aggregate`/`groupBy` can't express (they only sum individual columns),
+  // hence the one raw query. Previously: load every completed sale's full
+  // item list into Node and `.reduce()` twice. Independent reads —
+  // parallelized to stay under withTenant's 5s default transaction timeout,
+  // the same P2028 lesson Phase 4 Chunk C hit running these sequentially.
+  // Phase 5's scenario-simulation.ts calls this under real load and hit it
+  // live.
+  const [revenueAgg, cogsRows, expensesAgg] = await Promise.all([
+    tx.sale.aggregate({
       where: {
         status: "completed",
         deletedAt: null,
         createdAt: { gte: from, lte: to },
         ...(storeId ? { storeId } : {}),
       },
-      select: {
-        subtotal: true,
-        items: { select: { quantity: true, costPrice: true } },
-      },
+      _sum: { subtotal: true },
     }),
-    tx.expense.findMany({ where: expenseWhere, select: { amount: true } }),
+    tx.$queryRaw<{ cogs: bigint }[]>`
+      SELECT COALESCE(SUM(si.quantity * COALESCE(si.cost_price, 0)), 0) AS cogs
+      FROM sale_items si
+      JOIN sales s ON s.id = si.sale_id
+      WHERE s.status = 'completed'
+        AND s.deleted_at IS NULL
+        AND s.created_at >= ${from}
+        AND s.created_at <= ${to}
+        ${storeId ? Prisma.sql`AND s.store_id = ${storeId}::uuid` : Prisma.empty}
+    `,
+    tx.expense.aggregate({ where: expenseWhere, _sum: { amount: true } }),
   ]);
 
-  const revenue = sales.reduce((sum, sale) => sum + sale.subtotal, 0);
-  const cogs = sales.reduce(
-    (sum, sale) =>
-      sum + sale.items.reduce((itemSum, item) => itemSum + item.quantity * (item.costPrice ?? 0), 0),
-    0,
-  );
+  const revenue = revenueAgg._sum.subtotal ?? 0;
+  const cogs = Number(cogsRows[0]?.cogs ?? 0);
   const grossMargin = revenue - cogs;
-  const operatingExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const operatingExpenses = expensesAgg._sum.amount ?? 0;
 
   return {
     revenue,
@@ -117,42 +138,42 @@ export async function getProfitAndLoss(tx: TransactionClient, query: FinancialRe
 export async function getTvaSummary(tx: TransactionClient, query: FinancialReportQuery) {
   const { storeId, from, to } = query;
 
-  const sales = await tx.sale.findMany({
-    where: {
-      status: "completed",
-      deletedAt: null,
-      createdAt: { gte: from, lte: to },
-      ...(storeId ? { storeId } : {}),
-    },
-    select: { tvaAmount: true },
-  });
-  const collected = sales.reduce((sum, sale) => sum + sale.tvaAmount, 0);
+  // paidExpenses' amount-minus-TTC-decomposition varies per row by tvaRate,
+  // so it can't be a plain `_sum` — one raw query, run alongside the two
+  // aggregates instead of 3 sequential findMany+reduce round-trips.
+  const [collectedAgg, paidPurchasesAgg, paidExpensesRows] = await Promise.all([
+    tx.sale.aggregate({
+      where: {
+        status: "completed",
+        deletedAt: null,
+        createdAt: { gte: from, lte: to },
+        ...(storeId ? { storeId } : {}),
+      },
+      _sum: { tvaAmount: true },
+    }),
+    tx.purchaseOrder.aggregate({
+      where: {
+        status: { in: [...COMMITTED_PO_STATUSES] },
+        deletedAt: null,
+        orderedAt: { gte: from, lte: to },
+        ...(storeId ? { storeId } : {}),
+      },
+      _sum: { tvaAmount: true },
+    }),
+    tx.$queryRaw<{ paidExpenses: number }[]>`
+      SELECT COALESCE(SUM(amount - amount / (1 + tva_rate / 100.0)), 0) AS "paidExpenses"
+      FROM expenses
+      WHERE deleted_at IS NULL
+        AND expense_date >= ${from}
+        AND expense_date <= ${to}
+        AND tva_rate > 0
+        ${storeId ? Prisma.sql`AND store_id = ${storeId}::uuid` : Prisma.empty}
+    `,
+  ]);
 
-  const purchaseOrders = await tx.purchaseOrder.findMany({
-    where: {
-      status: { in: [...COMMITTED_PO_STATUSES] },
-      deletedAt: null,
-      orderedAt: { gte: from, lte: to },
-      ...(storeId ? { storeId } : {}),
-    },
-    select: { tvaAmount: true },
-  });
-  const paidPurchases = purchaseOrders.reduce((sum, po) => sum + po.tvaAmount, 0);
-
-  const expenses = await tx.expense.findMany({
-    where: {
-      deletedAt: null,
-      expenseDate: { gte: from, lte: to },
-      tvaRate: { gt: 0 },
-      ...(storeId ? { storeId } : {}),
-    },
-    select: { amount: true, tvaRate: true },
-  });
-  const paidExpenses = expenses.reduce(
-    (sum, expense) => sum + (expense.amount - expense.amount / (1 + expense.tvaRate / 100)),
-    0,
-  );
-
+  const collected = collectedAgg._sum.tvaAmount ?? 0;
+  const paidPurchases = paidPurchasesAgg._sum.tvaAmount ?? 0;
+  const paidExpenses = Number(paidExpensesRows[0]?.paidExpenses ?? 0);
   const paidTotal = paidPurchases + paidExpenses;
 
   return {
