@@ -4,6 +4,33 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-11 — Performance audit follow-through (5 commits)
+
+Session resumed after an unplanned PC restart mid-work — nothing was lost (all edits were still on disk, uncommitted), but it meant re-verifying everything from scratch rather than trusting prior-session memory of "done." Worked through `retailos-performance-audit.md`'s priority list end to end, live-verifying every item rather than trusting `tsc`/dev-server-200s alone.
+
+**Quick wins (`2e8da43`):** Turbopack for dev (dropped `--webpack` — cold compiles went from the documented 20-70s down to ~1.7s), Prisma pool sizing (`connection_limit=20`/`5` — was silently defaulting to `num_cpus*2+1`), `getReorderSuggestions` wrapped in `unstable_cache` (60s TTL, tag-invalidated from every stock-mutating route), permission-catalog cache (300s TTL), `withTenant`'s transaction timeout bumped to 15s, rate-limiting collapsed to one Redis round-trip via a Lua script, `Cache-Control` headers on products/customers lists.
+
+**Real regression caught by the Turbopack switch, not the audit:** next-intl@3.26's plugin still targets Turbopack's pre-Next-16 config location (`experimental.turbo`), which Next 16 silently drops — every locale route 500'd. Fixed by setting `turbopack.resolveAlias` directly in `next.config.ts`.
+
+**Second real bug, in the first checkpoint's own committed code:** Next 16 made `revalidateTag`'s second "profile" arg required (runtime still works with just a deprecation warning, but fails `tsc`/`next build`). `invalidateStockCache` now passes `"max"`, matching the old immediate-revalidate behavior per Next's own migration guidance. Caught because a *second* `tsc` run (after further edits) surfaced it — the first run had somehow passed clean despite the same code already being present, a reminder that a clean incremental `tsc` isn't proof by itself.
+
+**SQL push-down (`8685153`, `9c73ca1`):** rewrote `getReorderSuggestions`, `getRevenueDashboard`, `getProfitAndLoss`, `getTvaSummary`, `getPurchaseAnalytics`, `getDeliveryPerformance` from "load every matching row into Node, `.reduce()`/`.filter()` in JS" into raw-SQL `GROUP BY`/Prisma `aggregate`. Verified numeric parity against real seeded data (123 sales, 16 committed POs, 13 deliveries) cross-checked with manual `psql` queries — every total matched exactly. `employee-performance.ts`/`commissions.ts` reviewed and left alone (already lean, or inherently row-by-row logic).
+
+**RecommendationsBell (no change, `743dc6a`'s task):** the audit claimed the Socket.io connection disconnects/reconnects on every dashboard navigation. Installed Playwright ad hoc (removed after) and measured it directly: only 2 token-fetch calls total across login + two navigations, zero extra — React Strict Mode's dev double-invoke, not a real remount. App Router's shared layout genuinely persists across next-intl `Link` navigation here. Didn't "fix" a non-problem.
+
+**POS catalog sync (`743dc6a`):** was 20 sequential paginated `/api/products` requests (2000 products, 3-join `include` each) on every POS mount + every 5 min, then a full Dexie clear+rebuild. New `GET /api/products/catalog-sync?updatedSince=<ISO>` — one lean flat `select`, delta-only once a watermark exists (including newly-inactive/soft-deleted rows, so the client evicts them). Watermark captured server-side *before* the query runs, so nothing committed mid-query is missed. Verified live: full sync, then an empty delta against its own watermark, then a real `PATCH` deactivation (not raw SQL — that doesn't touch Prisma's `@updatedAt`) correctly appearing in the next delta.
+
+**`completeSale` batching (`5dd3364`):** was up to 3 sequential DB calls per line item inside the transaction holding the store's sale-counter row lock. Batched the per-line bookkeeping — one raw `UPDATE...FROM (VALUES ...)` for every line's `batchId` assignment, one `createMany` for every line's stock movement — but deliberately left `consumeExpirableBatch`'s own FEFO allocation loop sequential (that's which-batch-in-which-order business logic, not the audit's "aggregate in JS" pattern, and batch count per product/store is naturally small). Verified live: a real 2-line sale decremented both stock levels correctly; a deliberately oversold line rolled the *whole* sale back with no partial writes, still surfacing the friendly `INSUFFICIENT_STOCK` 409 (not a raw 500). No expirable products exist in demo data, so the new batch-assignment SQL was verified separately against two real `sale_items` and two temporary `product_batches` rows inside a rolled-back transaction.
+
+**Production build actually run, not assumed.** `next build --webpack` (the prod script) succeeded cleanly — confirmed `/api/products/catalog-sync` resolves `ƒ` (Node.js/Dynamic), not Edge, same as every other API route. Hit the documented ~3.65GB Docker Desktop RAM ceiling running the build concurrently with the dev server (app container silently exited, clean code 0 — not an OOM stack trace, just resource starvation); building via a one-off `docker compose run` container after stopping the dev services fixed it. Same known constraint as the CmdStan/Prophet gap below, not a new issue.
+
+**Open items:**
+- Reorder query's `is_preferred DESC` supplier-tiebreak dedup was only exercised against a product with no supplier link at all — the multi-supplier-per-product path is unexercised (low risk, straightforward SQL, but noting it).
+- `invalidateStockCache`'s `revalidateTag` call was never confirmed to actually purge the cache (vs. just satisfying `tsc`) — 60s TTL is a safety net either way.
+- CmdStan/Prophet: still open, see 2026-07-11's earlier entry below — this session's build hit the same RAM ceiling from a different angle (concurrent dev+build, not a single heavy compile).
+
+---
+
 ## 2026-07-11 — Closing Phase 6's documented gaps
 
 Follow-up session closing the known-gaps list from the previous entry, one item at a time, each independently live-verified.
