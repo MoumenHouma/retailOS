@@ -1,4 +1,6 @@
 import { Client } from "minio";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import path from "node:path";
 
 // MinIO in dev, any S3-compatible endpoint in prod — same client either
 // way. The bucket itself is provisioned by the `minio-init` service in
@@ -28,6 +30,28 @@ function getMinioClient(): Client {
 
 export const STORAGE_BUCKET = process.env.S3_BUCKET!;
 
+// Desktop edition has no MinIO bundled (it's a single-PC install, not
+// worth a third sidecar for two file types) — writes/reads plain files
+// under STORAGE_FS_ROOT instead (Tauri sets this to
+// %APPDATA%\RetailOS\storage). Read lazily, same discipline as the S3
+// client above: this branch check must never throw at import time.
+function storageDriver(): "s3" | "fs" {
+  return process.env.STORAGE_DRIVER === "fs" ? "fs" : "s3";
+}
+
+// objectName is always server-generated (e.g. `invoices/${tenantId}/${id}.pdf`,
+// `reports/${tenantId}/${scheduledReportId}/${filename}`), never taken
+// directly from user input — but resolve-and-verify anyway rather than
+// trust that invariant forever.
+function resolveFsPath(objectName: string): string {
+  const root = path.resolve(process.env.STORAGE_FS_ROOT ?? "");
+  const resolved = path.resolve(root, objectName);
+  if (resolved !== root && !resolved.startsWith(root + path.sep)) {
+    throw new Error(`Invalid storage object name: ${objectName}`);
+  }
+  return resolved;
+}
+
 export async function uploadPdf(objectName: string, buffer: Buffer): Promise<void> {
   await uploadObject(objectName, buffer, "application/pdf");
 }
@@ -36,12 +60,21 @@ export async function uploadPdf(objectName: string, buffer: Buffer): Promise<voi
 // pdf/xlsx/csv — uploadPdf stays as the existing invoice-PDF call sites'
 // thin wrapper around this.
 export async function uploadObject(objectName: string, buffer: Buffer, contentType: string): Promise<void> {
+  if (storageDriver() === "fs") {
+    const filePath = resolveFsPath(objectName);
+    await mkdir(path.dirname(filePath), { recursive: true });
+    await writeFile(filePath, buffer);
+    return;
+  }
   await getMinioClient().putObject(STORAGE_BUCKET, objectName, buffer, buffer.length, {
     "Content-Type": contentType,
   });
 }
 
 export async function getPdfBuffer(objectName: string): Promise<Buffer> {
+  if (storageDriver() === "fs") {
+    return readFile(resolveFsPath(objectName));
+  }
   const stream = await getMinioClient().getObject(STORAGE_BUCKET, objectName);
   const chunks: Buffer[] = [];
   for await (const chunk of stream) {
