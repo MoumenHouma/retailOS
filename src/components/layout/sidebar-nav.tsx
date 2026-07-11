@@ -10,13 +10,20 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function SidebarNav() {
+export function SidebarNav({ edition = "web" }: { edition?: "web" | "desktop" }) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      items: group.items.filter((item) => !(edition === "desktop" && item.desktopHidden)),
+    }))
+    .filter((group) => group.items.length > 0);
+
   return (
     <nav className="flex flex-col gap-4 text-sm">
-      {navGroups.map((group, index) => (
+      {visibleGroups.map((group, index) => (
         <div key={group.labelKey ?? `group-${index}`} className="flex flex-col gap-1">
           {group.labelKey && (
             <span className="px-3 pt-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">

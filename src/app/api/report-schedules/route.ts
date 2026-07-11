@@ -4,6 +4,7 @@ import { withTenant } from "@/lib/prisma";
 import { requirePermission } from "@/lib/permissions";
 import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
+import { isDesktopEdition, desktopNotAvailableResponse } from "@/lib/edition";
 import { ScheduledReportCreateSchema } from "@/lib/validators/reports";
 import { createScheduledReport, listScheduledReports } from "@/server/services/scheduled-reports";
 import { registerReportSchedule } from "@/server/queue/queues";
@@ -20,6 +21,12 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // Registers a BullMQ cron job — no Redis/worker bundled in the desktop
+  // edition. The GET (list) handler above is a plain Prisma read and stays
+  // available — a shop can still see previously-created schedules, it just
+  // can't register new cron-driven ones without the worker.
+  if (isDesktopEdition()) return desktopNotAvailableResponse();
+
   const session = await auth();
   try {
     requirePermission(session, "reports:customize");

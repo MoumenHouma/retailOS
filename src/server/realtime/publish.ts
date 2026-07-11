@@ -1,4 +1,4 @@
-import { redisConnection } from "@/server/queue/queues";
+import { getRedisConnection } from "@/server/queue/queues";
 
 const EVENTS_CHANNEL = "ai:events";
 
@@ -14,7 +14,7 @@ export async function publishTenantEvent(
   event: string,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  await redisConnection.publish(EVENTS_CHANNEL, JSON.stringify({ tenantId, event, payload }));
+  await getRedisConnection().publish(EVENTS_CHANNEL, JSON.stringify({ tenantId, event, payload }));
 }
 
 export { EVENTS_CHANNEL };

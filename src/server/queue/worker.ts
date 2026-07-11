@@ -5,7 +5,7 @@
  * `mcdaQueue`/`simulationQueue` later.
  */
 import { Worker, type Job } from "bullmq";
-import { bullmqConnection, type ForecastJobData, type ReportJobData } from "@/server/queue/queues";
+import { getBullmqConnection, type ForecastJobData, type ReportJobData } from "@/server/queue/queues";
 import { withTenant } from "@/lib/prisma";
 import { exportSalesHistory } from "@/server/services/forecasting";
 import { publishTenantEvent } from "@/server/realtime/publish";
@@ -113,7 +113,7 @@ async function processForecastJob(job: Job<ForecastJobData>) {
 }
 
 const forecastWorker = new Worker<ForecastJobData>("forecast", processForecastJob, {
-  connection: bullmqConnection,
+  connection: getBullmqConnection(),
   // Prophet fitting is CPU-bound inside the single python-ai container —
   // a handful of concurrent HTTP calls is enough without saturating it.
   concurrency: 3,
@@ -168,7 +168,7 @@ async function processReportJob(job: Job<ReportJobData>) {
 }
 
 const reportWorker = new Worker<ReportJobData>("report", processReportJob, {
-  connection: bullmqConnection,
+  connection: getBullmqConnection(),
   concurrency: 2,
 });
 

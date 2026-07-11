@@ -1,6 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { randomUUID } from "crypto";
-import { forecastQueue, type ForecastJobData } from "@/server/queue/queues";
+import { getForecastQueue, type ForecastJobData } from "@/server/queue/queues";
 
 type TransactionClient = Prisma.TransactionClient;
 
@@ -95,7 +95,7 @@ export async function triggerForecastRun(
       });
     }
   }
-  await forecastQueue.addBulk(jobs);
+  await getForecastQueue().addBulk(jobs);
 
   return { jobBatchId, jobCount: jobs.length };
 }
@@ -110,7 +110,7 @@ export async function getForecastBatchStatus(
   tenantId: string,
   jobBatchId: string,
 ): Promise<{ queued: number; active: number; completed: number; failed: number; total: number }> {
-  const jobs = await forecastQueue.getJobs(["waiting", "active", "completed", "failed", "delayed"]);
+  const jobs = await getForecastQueue().getJobs(["waiting", "active", "completed", "failed", "delayed"]);
   const batchJobs = jobs.filter(
     (job) => job.data.jobBatchId === jobBatchId && job.data.tenantId === tenantId,
   );

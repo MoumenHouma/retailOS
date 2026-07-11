@@ -29,6 +29,12 @@ export type NavItem = {
   href: string;
   labelKey: string;
   icon: LucideIcon;
+  // Hidden in the desktop edition (RETAILOS_EDITION=desktop) — reserved for
+  // items whose underlying feature depends on Redis/BullMQ/python-ai/MinIO,
+  // none of which are bundled there. Per-item, not per-group: e.g.
+  // supplier-ranking lives in the "AI" nav group for UX grouping but is pure
+  // synchronous MCDA scoring with no queue/Redis dependency, so it stays.
+  desktopHidden?: boolean;
 };
 
 export type NavGroup = {
@@ -91,8 +97,11 @@ export const navGroups: NavGroup[] = [
   {
     labelKey: "groups.ai",
     items: [
-      { href: "/ai-dashboard", labelKey: "aiDashboard", icon: LayoutDashboard },
-      { href: "/ai-forecasts", labelKey: "aiForecasts", icon: TrendingUp },
+      { href: "/ai-dashboard", labelKey: "aiDashboard", icon: LayoutDashboard, desktopHidden: true },
+      { href: "/ai-forecasts", labelKey: "aiForecasts", icon: TrendingUp, desktopHidden: true },
+      // Pure synchronous MCDA scoring (src/server/services/supplier-mcda.ts)
+      // — no Redis/BullMQ/python-ai dependency despite the "AI" grouping,
+      // so this one stays available in the desktop edition.
       { href: "/supplier-ranking", labelKey: "supplierRanking", icon: Truck },
     ],
   },
@@ -104,7 +113,8 @@ export const navGroups: NavGroup[] = [
       { href: "/procurement-reports", labelKey: "procurementReports", icon: BarChart3 },
       { href: "/financial-reports", labelKey: "financialReports", icon: BarChart3 },
       { href: "/employee-performance", labelKey: "employeePerformance", icon: BarChart3 },
-      { href: "/report-schedules", labelKey: "reportSchedules", icon: CalendarClock },
+      // BullMQ cron + email — not bundled in the desktop edition.
+      { href: "/report-schedules", labelKey: "reportSchedules", icon: CalendarClock, desktopHidden: true },
     ],
   },
 ];

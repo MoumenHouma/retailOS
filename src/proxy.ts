@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { routing } from "@/i18n/routing";
-import { redisConnection } from "@/server/queue/queues";
+import { isDesktopEdition } from "@/lib/edition";
 
 // NOTE: combining next-auth v5's `auth()` HOC with next-intl's middleware
 // here (the pattern both projects officially document) crashes the Edge
@@ -37,7 +37,14 @@ return c
 `;
 
 async function checkRateLimit(key: string, limit: number): Promise<boolean> {
-  const count = (await redisConnection.eval(
+  // Dynamic, not static, import — queues.ts's Redis client is lazily
+  // constructed on first real use (see its own comment), but this file is
+  // still the trigger for that first use. A desktop build never reaches
+  // this function at all (see the short-circuit in rateLimit() below), so
+  // this dynamic import means the desktop edition never even loads
+  // ioredis/bullmq's module graph, let alone attempts a connection.
+  const { getRedisConnection } = await import("@/server/queue/queues");
+  const count = (await getRedisConnection().eval(
     INCR_AND_EXPIRE_SCRIPT,
     1,
     key,
@@ -47,6 +54,11 @@ async function checkRateLimit(key: string, limit: number): Promise<boolean> {
 }
 
 async function rateLimit(request: NextRequest): Promise<NextResponse | null> {
+  // A single local trusted user has no need for rate limiting, and there's
+  // no Redis bundled in the desktop edition to back it with — skip cleanly
+  // rather than relying on a fail-open exception path.
+  if (isDesktopEdition()) return null;
+
   const path = request.nextUrl.pathname;
   const isAuthRoute = path.startsWith("/api/auth");
   const limit = isAuthRoute ? AUTH_LIMIT : DEFAULT_LIMIT;

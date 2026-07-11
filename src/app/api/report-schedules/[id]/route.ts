@@ -4,11 +4,15 @@ import { withTenant } from "@/lib/prisma";
 import { requirePermission } from "@/lib/permissions";
 import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
+import { isDesktopEdition, desktopNotAvailableResponse } from "@/lib/edition";
 import { ScheduledReportUpdateSchema } from "@/lib/validators/reports";
 import { updateScheduledReport, softDeleteScheduledReport } from "@/server/services/scheduled-reports";
 import { registerReportSchedule, unregisterReportSchedule } from "@/server/queue/queues";
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  // Registers/unregisters a BullMQ cron job — not bundled in desktop edition.
+  if (isDesktopEdition()) return desktopNotAvailableResponse();
+
   const session = await auth();
   try {
     requirePermission(session, "reports:customize");
@@ -30,6 +34,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  if (isDesktopEdition()) return desktopNotAvailableResponse();
+
   const session = await auth();
   try {
     requirePermission(session, "reports:customize");

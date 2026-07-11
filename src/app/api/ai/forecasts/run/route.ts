@@ -4,10 +4,15 @@ import { withTenant } from "@/lib/prisma";
 import { requirePermission } from "@/lib/permissions";
 import { apiSuccess, apiValidationError } from "@/lib/api-response";
 import { mapServiceError } from "@/lib/service-errors";
+import { isDesktopEdition, desktopNotAvailableResponse } from "@/lib/edition";
 import { TriggerForecastSchema } from "@/lib/validators/ai";
 import { triggerForecastRun } from "@/server/services/forecasting";
 
 export async function POST(request: NextRequest) {
+  // Enqueues a BullMQ job — no Redis/worker/python-ai bundled in the
+  // desktop edition, so this would otherwise hang trying to connect.
+  if (isDesktopEdition()) return desktopNotAvailableResponse();
+
   const session = await auth();
   try {
     requirePermission(session, "ai:run_forecast");
