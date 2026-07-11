@@ -1,5 +1,5 @@
-import type { Prisma } from "@prisma/client";
-import { recordStockMovement } from "./stock";
+import { Prisma } from "@prisma/client";
+import { recordStockMovements } from "./stock";
 import { InvalidReferenceError } from "./products";
 import { SessionClosedError } from "./pos-sessions";
 import { getEffectivePrices } from "./customer-pricing";
@@ -175,10 +175,11 @@ async function consumeExpirableBatch(
 
 /**
  * The only entry point for creating a completed Sale. One withTenant
- * transaction: Sale + SaleItem[] + SalePayment[], then a SALE_OUT stock
- * movement per line via the existing recordStockMovement (the same "only
- * path that writes stock_movements" used by inventory adjustments) — so an
- * oversold line rolls the whole sale back.
+ * transaction: Sale + SaleItem[] + SalePayment[], then one batched SALE_OUT
+ * stock movement per line via recordStockMovements (the same "only path
+ * that writes stock_movements" used by inventory adjustments, just its bulk
+ * sibling) — so an oversold line still rolls the whole sale back, same as
+ * every other stock movement.
  */
 export async function completeSale(tx: TransactionClient, input: CompleteSaleInput) {
   if (input.items.length === 0) {
@@ -240,6 +241,18 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
     include: { items: true, payments: true },
   });
 
+  // consumeExpirableBatch's own findMany+update loop is left as sequential
+  // per-line-item awaits deliberately — it's the FEFO allocation logic
+  // itself (which batch, in which order, gets how much), and batch count
+  // per product/store is naturally small (not a "load everything" scale
+  // problem). What *was* a real N-round-trips-per-line cost is batched
+  // below instead: one raw UPDATE for every line's batchId assignment (was
+  // up to N sequential `saleItem.update`s) and one `createMany` for every
+  // line's stock movement (was up to N sequential `recordStockMovement`
+  // creates) — collected here, applied once after the loop.
+  const stockMovements: Parameters<typeof recordStockMovements>[1] = [];
+  const batchAssignments: { saleItemId: string; batchId: string }[] = [];
+
   for (const [i, item] of itemsData.entries()) {
     const product = productById.get(item.productId);
     const saleItem = sale.items[i];
@@ -252,11 +265,11 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
         quantity: item.quantity,
       });
       if (batchId && saleItem) {
-        await tx.saleItem.update({ where: { id: saleItem.id }, data: { batchId } });
+        batchAssignments.push({ saleItemId: saleItem.id, batchId });
       }
     }
 
-    await recordStockMovement(tx, {
+    stockMovements.push({
       productId: item.productId,
       storeId: input.storeId,
       movementType: "SALE_OUT",
@@ -267,6 +280,19 @@ export async function completeSale(tx: TransactionClient, input: CompleteSaleInp
       batchId,
     });
   }
+
+  if (batchAssignments.length > 0) {
+    await tx.$executeRaw`
+      UPDATE sale_items AS si
+      SET batch_id = v.batch_id::uuid
+      FROM (VALUES ${Prisma.join(
+        batchAssignments.map((a) => Prisma.sql`(${a.saleItemId}::uuid, ${a.batchId}::uuid)`),
+      )}) AS v(id, batch_id)
+      WHERE si.id = v.id
+    `;
+  }
+
+  await recordStockMovements(tx, stockMovements);
 
   // Phase 4 Chunk B touch: customer-side bookkeeping on a completed sale —
   // aggregate stats (DATABASE.md §10.1's totalPurchases/totalSpent/

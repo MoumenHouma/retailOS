@@ -60,6 +60,29 @@ export async function recordStockMovement(tx: TransactionClient, input: RecordSt
   }
 }
 
+/**
+ * Bulk sibling of recordStockMovement for completeSale's per-line-item loop
+ * (was up to N sequential creates, one per sale line). `fn_apply_stock_movement`
+ * is a per-row AFTER INSERT trigger, so createMany still fires it once per
+ * inserted row and still rolls back the whole multi-row INSERT (and, since
+ * this runs inside the caller's withTenant transaction, the whole sale) the
+ * same way a single oversold `create` would.
+ */
+export async function recordStockMovements(tx: TransactionClient, inputs: RecordStockMovementInput[]) {
+  if (inputs.length === 0) return;
+  try {
+    await tx.stockMovement.createMany({ data: inputs });
+  } catch (error) {
+    const message = (error as { message?: string })?.message ?? "";
+    if (message.includes("negative on-hand quantity")) {
+      throw new InsufficientStockError(
+        "This movement would result in negative stock — not enough on-hand quantity.",
+      );
+    }
+    throw error;
+  }
+}
+
 interface AdjustStockInput {
   productId: string;
   storeId: string;
