@@ -2,12 +2,67 @@ import type { Prisma } from "@prisma/client";
 import type {
   BulkProductActionInput,
   CreateProductInput,
+  ProductCatalogSyncQuery,
   ProductSearchQuery,
   UpdateProductInput,
 } from "@/lib/validators/products";
 import { addBarcode } from "./barcodes";
 
 type TransactionClient = Prisma.TransactionClient;
+
+// Safety cap — a runaway catalog can't force an unbounded response even
+// on the very first (no updatedSince) sync.
+const CATALOG_SYNC_MAX_ROWS = 10_000;
+
+export interface ProductCatalogSyncRow {
+  id: string;
+  name: string;
+  barcode: string | null;
+  sellingPrice: number;
+  tvaRate: number;
+  isActive: boolean;
+  deleted: boolean;
+}
+
+/**
+ * Feeds the POS's offline Dexie cache (use-product-catalog-sync.ts /
+ * product-cache-sync.ts). Previously that hook paginated the full,
+ * `include`-heavy `searchProducts` 20 times (2000 products, 100/page) on
+ * every POS mount and every 5 minutes, clearing and rebuilding the whole
+ * local table regardless of what actually changed. This is a single lean
+ * flat `select` (no joins) and, once `updatedSince` is provided, only rows
+ * that changed since — including ones that became inactive or were soft-
+ * deleted, so the client can evict them instead of just never refreshing.
+ * The caller captures its own "now" *before* calling this (see the route)
+ * and uses that as next sync's watermark, so nothing committed mid-query
+ * is missed.
+ */
+export async function getProductCatalogSync(
+  tx: TransactionClient,
+  query: ProductCatalogSyncQuery,
+): Promise<ProductCatalogSyncRow[]> {
+  const { updatedSince } = query;
+
+  const where: Prisma.ProductWhereInput = updatedSince
+    ? { updatedAt: { gt: updatedSince } }
+    : { deletedAt: null, isActive: true };
+
+  const rows = await tx.product.findMany({
+    where,
+    select: {
+      id: true,
+      name: true,
+      barcode: true,
+      sellingPrice: true,
+      tvaRate: true,
+      isActive: true,
+      deletedAt: true,
+    },
+    take: CATALOG_SYNC_MAX_ROWS,
+  });
+
+  return rows.map(({ deletedAt, ...row }) => ({ ...row, deleted: deletedAt !== null }));
+}
 
 export class InvalidReferenceError extends Error {
   constructor(field: string) {

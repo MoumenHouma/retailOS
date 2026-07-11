@@ -75,6 +75,11 @@ export const ProductSearchQuerySchema = z.object({
 });
 export type ProductSearchQuery = z.infer<typeof ProductSearchQuerySchema>;
 
+export const ProductCatalogSyncQuerySchema = z.object({
+  updatedSince: z.coerce.date().optional(),
+});
+export type ProductCatalogSyncQuery = z.infer<typeof ProductCatalogSyncQuerySchema>;
+
 export const AddBarcodeSchema = z.object({
   barcode: z.string().min(1).max(20),
   barcodeType: z.enum(["EAN13", "CODE128", "QR", "INTERNAL"]).default("EAN13"),

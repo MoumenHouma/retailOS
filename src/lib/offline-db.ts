@@ -38,15 +38,30 @@ export interface LocalQueuedSale {
   conflictMessage?: string;
 }
 
+interface SyncMetaEntry {
+  key: string;
+  value: string;
+}
+
 class OfflineDb extends Dexie {
   localProducts!: Table<LocalProduct, string>;
   queuedSales!: Table<LocalQueuedSale, string>;
+  syncMeta!: Table<SyncMetaEntry, string>;
 
   constructor() {
     super("retailos-pos-offline");
     this.version(1).stores({
       localProducts: "id, name, barcode",
       queuedSales: "localId, status, createdAt",
+    });
+    // v2: delta product-catalog sync (product-cache-sync.ts) needs somewhere
+    // to persist its watermark between syncs. Dexie upgrades existing
+    // browsers' IndexedDB in place — no data loss, localProducts/queuedSales
+    // schemas are untouched.
+    this.version(2).stores({
+      localProducts: "id, name, barcode",
+      queuedSales: "localId, status, createdAt",
+      syncMeta: "key",
     });
   }
 }
