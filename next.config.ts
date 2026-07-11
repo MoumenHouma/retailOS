@@ -31,12 +31,24 @@ const nextConfig: NextConfig = {
   // but needs per-request header generation via middleware; documented
   // trade-off, not an oversight. connect-src includes NEXT_PUBLIC_REALTIME_URL
   // so the Socket.io client (src/hooks/use-ai-notifications.ts) isn't blocked.
+  //
+  // 'unsafe-eval' is added to script-src in dev only: Turbopack/React's dev
+  // runtime uses eval() for HMR and component-stack reconstruction (surfaced
+  // as a hard page-load error — "eval() is not supported... make sure
+  // unsafe-eval is included" — once dev switched off --webpack, since
+  // Turbopack's dev runtime hits this path harder/earlier than webpack's
+  // did). Production never needs it — React explicitly documents it never
+  // calls eval() outside dev mode — so prod keeps the strict policy.
   async headers() {
     const realtimeUrl = process.env.NEXT_PUBLIC_REALTIME_URL ?? "http://localhost:4001";
     const realtimeWsUrl = realtimeUrl.replace(/^http/, "ws");
+    const scriptSrc =
+      process.env.NODE_ENV === "production"
+        ? "script-src 'self' 'unsafe-inline'"
+        : "script-src 'self' 'unsafe-inline' 'unsafe-eval'";
     const csp = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline'",
+      scriptSrc,
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
