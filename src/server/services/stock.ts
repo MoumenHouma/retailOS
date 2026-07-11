@@ -12,7 +12,11 @@ type TransactionClient = Prisma.TransactionClient;
  * (would invalidate on a rollback) and has no tenantId in scope.
  */
 export function invalidateStockCache(tenantId: string) {
-  revalidateTag(`stock:${tenantId}`);
+  // Next 16 requires a second "profile" arg on revalidateTag ("max" = the
+  // old single-arg immediate-revalidate behavior; omitting it still works
+  // at runtime but only with a deprecation warning, and fails `tsc`/`next
+  // build`'s type check).
+  revalidateTag(`stock:${tenantId}`, "max");
 }
 
 export class InsufficientStockError extends Error {

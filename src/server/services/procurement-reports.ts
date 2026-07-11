@@ -8,6 +8,18 @@ type TransactionClient = Prisma.TransactionClient;
 // POs aren't money actually spent yet.
 const COMMITTED_PO_STATUSES = ["ordered", "partially_received", "received"] as const;
 
+interface ReorderSuggestionRow {
+  productId: string;
+  productName: string;
+  storeId: string;
+  storeName: string;
+  quantityOnHand: number;
+  minStockLevel: number;
+  supplierId: string | null;
+  supplierName: string | null;
+  suggestedQuantity: number | null;
+}
+
 /**
  * Threshold on Product.minStockLevel, not reorderPoint/safetyStock — both
  * stay null until Phase 5's optimization engine exists (see the schema
@@ -17,37 +29,44 @@ const COMMITTED_PO_STATUSES = ["ordered", "partially_received", "received"] as c
  * link at all (nothing to suggest ordering from).
  *
  * Comparing StockLevel.quantityOnHand against Product.minStockLevel is a
- * cross-column comparison Prisma can't express in `where` — filtered in JS,
- * same pattern getStockLevels already uses for isLowStock.
+ * cross-column comparison Prisma can't express in a typed `where` — done in
+ * raw SQL instead (was previously: load every StockLevel for the tenant with
+ * a 4-level include, then `.filter()` in JS). RLS still applies: this runs
+ * on the same tenant-scoped connection/transaction as every other query in
+ * `tx`, so `SET LOCAL app.current_tenant_id` already constrains every table
+ * touched here — no manual tenant_id filter needed.
  */
 export async function getReorderSuggestions(tx: TransactionClient) {
-  const levels = await tx.stockLevel.findMany({
-    include: {
-      product: {
-        include: {
-          supplierProducts: { include: { supplier: true } },
-        },
-      },
-      store: { select: { name: true } },
-    },
-  });
-
-  return levels
-    .filter((level) => level.quantityOnHand <= level.product.minStockLevel)
-    .map((level) => {
-      const preferred =
-        level.product.supplierProducts.find((sp) => sp.isPreferred) ?? level.product.supplierProducts[0];
-      return {
-        productId: level.productId,
-        productName: level.product.name,
-        storeId: level.storeId,
-        storeName: level.store.name,
-        quantityOnHand: level.quantityOnHand,
-        minStockLevel: level.product.minStockLevel,
-        supplier: preferred ? { id: preferred.supplier.id, name: preferred.supplier.name } : null,
-        suggestedQuantity: preferred?.minOrderQuantity ?? null,
-      };
-    });
+  return tx.$queryRaw<ReorderSuggestionRow[]>`
+    SELECT DISTINCT ON (sl.id)
+      sl.product_id       AS "productId",
+      p.name               AS "productName",
+      sl.store_id          AS "storeId",
+      st.name              AS "storeName",
+      sl.quantity_on_hand  AS "quantityOnHand",
+      p.min_stock_level    AS "minStockLevel",
+      sup.id               AS "supplierId",
+      sup.name             AS "supplierName",
+      spd.min_order_quantity AS "suggestedQuantity"
+    FROM stock_levels sl
+    JOIN products p ON p.id = sl.product_id AND p.deleted_at IS NULL
+    JOIN stores st ON st.id = sl.store_id
+    LEFT JOIN supplier_products spd ON spd.product_id = p.id
+    LEFT JOIN suppliers sup ON sup.id = spd.supplier_id
+    WHERE sl.quantity_on_hand <= p.min_stock_level
+    ORDER BY sl.id, spd.is_preferred DESC NULLS LAST, spd.updated_at DESC NULLS LAST
+  `.then((rows) =>
+    rows.map((row) => ({
+      productId: row.productId,
+      productName: row.productName,
+      storeId: row.storeId,
+      storeName: row.storeName,
+      quantityOnHand: row.quantityOnHand,
+      minStockLevel: row.minStockLevel,
+      supplier: row.supplierId ? { id: row.supplierId, name: row.supplierName! } : null,
+      suggestedQuantity: row.suggestedQuantity,
+    })),
+  );
 }
 
 /**
