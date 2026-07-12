@@ -18,8 +18,13 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 **Testing gotcha worth remembering:** postgres.exe refuses to start from an elevated process ("running as administrator is not permitted") — launching the installed app from an elevated shell fails bootstrap at `wait_ready`; launch via `explorer.exe` (or any non-elevated parent) instead.
 
+**Same-evening follow-up (user testing live, 2 more commits):**
+- **Register route provisioned no permissions or units (`177f50e`)** — first real desktop registration succeeded, logged in, then every permission-gated page showed "Vous n'avez pas la permission". The permission catalog + role→permission wiring lived *only* in `prisma/seed.ts`, so only seeded demo tenants ever had working RBAC — any register-created tenant (web included, always, not just desktop) got roles granting nothing; and on the desktop's never-seeded DB even the global `permissions` table was empty. Extracted the catalog to `src/lib/permission-catalog.ts`, shared by seed + register (which now upserts the catalog and wires role permissions + default units in its transaction). Existing desktop tenant backfilled directly (44 perms on BUSINESS_OWNER, 4 units); verified live — fresh session carries all 44, previously-denied pages 200.
+- **"Lots of cmd windows" (`8a75e50`)** — DETACHED_PROCESS left the postmaster with no console for EXEC_BACKEND children to inherit, so Windows popped a visible console per postgres backend (one per DB connection). CREATE_NO_WINDOW instead: private hidden console, children inherit invisibly, same ctrl-event isolation. Verified live: only visible window is the app itself.
+- **Debug gotcha:** a `next build` killed mid-run (RAM starvation — the build was run concurrently with the installed app, which also silently killed the app's node sidecar, same starvation pattern as 2026-07-11's entry) left `.next` corrupted; every later build failed instantly with `uncaughtException TypeError: Cannot read properties of undefined (reading 'length')` and Next hides the frames ("ignore-listed"). Bisect proved code innocent; `rm -rf .next` fixed it. Don't build while the desktop app is running on this machine.
+
 **Open items:**
-- First-run `/fr/register` flow not yet exercised (no tenant created in the packaged app yet) — next session should walk the register → login → POS path in the real window.
+- Register → login → POS walked in the real window up to permission-gated pages rendering; a real POS sale in the packaged app still unexercised.
 - `app/public` (empty dir) is still dropped by NSIS — harmless today (repo has no static assets), will silently vanish the day real files land there *if the dir is empty at stage time*; the staging script already creates it, so only genuinely empty installs are affected.
 - The 2026-07-11 perf-audit open items (reorder multi-supplier tiebreak, `revalidateTag` purge confirmation, CmdStan) all still stand.
 
