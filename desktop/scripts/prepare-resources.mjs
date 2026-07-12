@@ -25,14 +25,22 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = path.resolve(fileURLToPath(import.meta.url), "../../..");
-// Overridable only for the Docker-based dev verification of this script:
-// node_modules/.pnpm lives in a named Docker volume (fast), but this repo's
-// own directory is bind-mounted from the Windows host — writing tens of
-// thousands of small files across that boundary is drastically slower than
-// Docker's own storage driver. The real Tauri build runs this script
-// directly on Windows with no Docker involved, so this override won't be
-// needed there.
-const outRoot = process.env.DESKTOP_RESOURCES_ROOT ?? path.join(repoRoot, "desktop/src-tauri/resources");
+// Default staging root differs by reason, not just by platform:
+//  - Windows: confirmed live that makensis (a legacy 32-bit tool with no
+//    long-path support) fails with "failed opening file" on real,
+//    non-excludable runtime files (e.g. next/dist/compiled/*.js) once
+//    nested under this repo's own path -- pnpm's .pnpm folder names plus
+//    this repo's own directory depth push well past Windows' 260-char
+//    MAX_PATH. Staging at a short drive-root path buys back ~60 chars,
+//    which is the difference between building and not building.
+//  - Docker verification of this script (task #8): node_modules/.pnpm
+//    lives in a named Docker volume (fast), but this repo's own directory
+//    is bind-mounted from the Windows host -- writing tens of thousands of
+//    small files across that boundary is drastically slower than Docker's
+//    own storage driver, so that path is set via this same override.
+const defaultOutRoot =
+  process.platform === "win32" ? "C:\\retailos-dist" : path.join(repoRoot, "desktop/src-tauri/resources");
+const outRoot = process.env.DESKTOP_RESOURCES_ROOT ?? defaultOutRoot;
 const appOut = path.join(outRoot, "app");
 const newNodeModules = path.join(appOut, "node_modules");
 
@@ -172,5 +180,13 @@ copy(path.join(repoRoot, "node_modules/.pnpm"), path.join(newNodeModules, ".pnpm
 copy(path.join(repoRoot, "node_modules/prisma"), path.join(newNodeModules, "prisma"));
 copy(path.join(repoRoot, "prisma/schema.prisma"), path.join(appOut, "prisma/schema.prisma"));
 copy(path.join(repoRoot, "prisma/migrations"), path.join(appOut, "prisma/migrations"));
+
+// Bundled as a Tauri resource (see tauri.conf.json's bundle.resources) so
+// the installed app can run it without reaching into the source tree,
+// which a real install won't have.
+copy(
+  path.join(repoRoot, "desktop/scripts/bootstrap-sql"),
+  path.join(outRoot, "bootstrap-sql"),
+);
 
 console.log(`\nDone.\n  app: ${appOut}`);

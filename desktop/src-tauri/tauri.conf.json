@@ -24,6 +24,11 @@
   "bundle": {
     "active": true,
     "targets": ["nsis"],
-    "externalBin": ["binaries/node"]
+    "externalBin": ["binaries/node"],
+    "resources": {
+      "resources/pg": "pg",
+      "C:\\retailos-dist\\app": "app",
+      "C:\\retailos-dist\\bootstrap-sql": "bootstrap-sql"
+    }
   }
 }
