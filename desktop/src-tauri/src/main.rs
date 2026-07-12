@@ -162,7 +162,8 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
     health::wait_ready(cfg.node_port, Duration::from_secs(30))?;
 
     if let Some(window) = app.get_webview_window("main") {
-        let url = format!("http://127.0.0.1:{}", cfg.node_port).parse()?;
+        // "localhost" to match HOSTNAME in server.rs (see comment there).
+        let url = format!("http://localhost:{}", cfg.node_port).parse()?;
         window.navigate(url)?;
     }
 
