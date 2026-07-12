@@ -33,6 +33,28 @@ pub fn is_initialized(pgdata_dir: &Path) -> bool {
     pgdata_dir.join("PG_VERSION").exists()
 }
 
+// Every helper below used to run via .status(), which inherits stdio from
+// this process -- a windows_subsystem="windows" GUI app with no console,
+// so the child's own error output (the actually useful part -- prisma's
+// specific migration error, psql's specific SQL error) went nowhere.
+// Confirmed live: a real "prisma migrate deploy exited with exit code: 1"
+// failure reached the user with zero detail on *why*. Running via
+// .output() and folding stdout+stderr into the bail! message means it
+// lands in logs/bootstrap.log automatically, through the existing
+// error-to-file logging in main.rs.
+fn run_capturing(mut cmd: Command, label: &str) -> Result<()> {
+    let output = cmd.output().with_context(|| format!("spawning {label}"))?;
+    if !output.status.success() {
+        bail!(
+            "{label} exited with {}\nstdout: {}\nstderr: {}",
+            output.status,
+            String::from_utf8_lossy(&output.stdout).trim(),
+            String::from_utf8_lossy(&output.stderr).trim()
+        );
+    }
+    Ok(())
+}
+
 // initdb reads the superuser password from a file, not argv or an env var,
 // so it never shows up in a process listing (`ps`/Task Manager command
 // line column) while it runs.
@@ -43,8 +65,8 @@ pub fn initdb(paths: &PgPaths, superuser_password: &str) -> Result<()> {
     std::fs::create_dir_all(&paths.pgdata_dir)?;
     let pwfile = paths.pgdata_dir.with_extension("pwfile.tmp");
     std::fs::write(&pwfile, superuser_password)?;
-    let result = Command::new(paths.exe("initdb"))
-        .arg("-D")
+    let mut cmd = Command::new(paths.exe("initdb"));
+    cmd.arg("-D")
         .arg(&paths.pgdata_dir)
         .arg("-U")
         .arg("postgres")
@@ -52,14 +74,10 @@ pub fn initdb(paths: &PgPaths, superuser_password: &str) -> Result<()> {
         .arg("--pwfile")
         .arg(&pwfile)
         .arg("-E")
-        .arg("UTF8")
-        .status();
+        .arg("UTF8");
+    let result = run_capturing(cmd, "initdb");
     std::fs::remove_file(&pwfile).ok();
-    let status = result.context("spawning initdb")?;
-    if !status.success() {
-        bail!("initdb exited with {status}");
-    }
-    Ok(())
+    result
 }
 
 // postgres.exe refuses to run under a token where BUILTIN\Administrators
@@ -148,21 +166,16 @@ pub fn ensure_database(paths: &PgPaths, port: u16, superuser_password: &str, db_
     if database_exists(paths, port, superuser_password, db_name, Duration::from_secs(15))? {
         return Ok(());
     }
-    let status = Command::new(paths.exe("createdb"))
-        .arg("-h")
+    let mut cmd = Command::new(paths.exe("createdb"));
+    cmd.arg("-h")
         .arg("127.0.0.1")
         .arg("-p")
         .arg(port.to_string())
         .arg("-U")
         .arg("postgres")
         .arg(db_name)
-        .env("PGPASSWORD", superuser_password)
-        .status()
-        .context("spawning createdb")?;
-    if !status.success() {
-        bail!("createdb exited with {status}");
-    }
-    Ok(())
+        .env("PGPASSWORD", superuser_password);
+    run_capturing(cmd, "createdb")
 }
 
 // Idempotent (safe to run every launch, not just first run) — see
@@ -175,8 +188,8 @@ pub fn run_bootstrap_sql(
     db_name: &str,
     sql_file: &Path,
 ) -> Result<()> {
-    let status = Command::new(paths.exe("psql"))
-        .arg("-h")
+    let mut cmd = Command::new(paths.exe("psql"));
+    cmd.arg("-h")
         .arg("127.0.0.1")
         .arg("-p")
         .arg(port.to_string())
@@ -190,13 +203,8 @@ pub fn run_bootstrap_sql(
         .arg("ON_ERROR_STOP=1")
         .arg("-f")
         .arg(sql_file)
-        .env("PGPASSWORD", superuser_password)
-        .status()
-        .context("spawning psql for bootstrap SQL")?;
-    if !status.success() {
-        bail!("bootstrap SQL exited with {status}");
-    }
-    Ok(())
+        .env("PGPASSWORD", superuser_password);
+    run_capturing(cmd, "bootstrap SQL")
 }
 
 // Also safe on every launch — `migrate deploy` is a documented no-op when
@@ -204,16 +212,11 @@ pub fn run_bootstrap_sql(
 // ship new ones without a separate "run migrations" step.
 pub fn run_migrate_deploy(node_exe: &Path, app_dir: &Path, database_url: &str) -> Result<()> {
     let prisma_entry = app_dir.join("node_modules/prisma/build/index.js");
-    let status = Command::new(node_exe)
-        .arg(&prisma_entry)
+    let mut cmd = Command::new(node_exe);
+    cmd.arg(&prisma_entry)
         .arg("migrate")
         .arg("deploy")
         .current_dir(app_dir)
-        .env("DATABASE_URL", database_url)
-        .status()
-        .context("spawning prisma migrate deploy")?;
-    if !status.success() {
-        bail!("prisma migrate deploy exited with {status}");
-    }
-    Ok(())
+        .env("DATABASE_URL", database_url);
+    run_capturing(cmd, "prisma migrate deploy")
 }
