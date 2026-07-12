@@ -1,0 +1,22 @@
+[package]
+name = "retailos-desktop"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# Task #9 (bundled Postgres bootstrap) is built and tested here as a plain
+# binary crate first — no `tauri` dependency yet. The Tauri shell (task
+# #10) will depend on this same postgres module, not duplicate it.
+[[bin]]
+name = "bootstrap-test"
+path = "src/bin/bootstrap_test.rs"
+
+[dependencies]
+anyhow = "1"
+rand = "0.8"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[lib]
+name = "retailos_desktop"
+path = "src/lib.rs"
