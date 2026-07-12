@@ -4,6 +4,12 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-13 — Month-of-activity simulation for the desktop tenant
+
+`scripts/simulate-month.ts` (`ebab789`, reusable — refuses to run on a tenant that already has products): 27-product catalog across 6 categories/3 suppliers, initial stocking + 5 low-stock-driven restock cycles (real POs → deliveries → PURCHASE_IN movements), 472 backdated sales over 30 days with a coded weekly rhythm (Friday dips, Saturday peaks, 85% cash with rounded-up change), 8 registered customers on ~18% of sales with aggregates maintained, 9 operating expenses. Verified through the app's own endpoints against the packaged desktop DB: P&L (622,265 DA revenue HT, net −7,992 DA — small realistic loss, rent+salaries heavy), TVA summary (collected vs deductible on purchases), daily sales buckets showing the rhythm, 27 products listed. Zero negative stock (trigger would have rejected; script buys before it sells). Store sale/PO counters handed back so live POS continues the sequence.
+
+---
+
 ## 2026-07-12 — Desktop edition (Tauri): packaging arc + the launch finally works end-to-end
 
 **Covers the whole day's desktop-edition work (13 commits, `7dc56d2`..`b3c466c`), written at the end of it — the two working sessions before this one both ended in unplanned PC restarts and never wrote their log entries.** Summary of the arc from commit history: `RETAILOS_EDITION` gating for Redis/BullMQ-only features (#1), a local-filesystem storage driver replacing MinIO (#2), the resource-prep script (#3), bundled-Postgres bootstrap in Rust (#4), wiring Node + Postgres sidecars through Tauri (#5), then a string of real-launch fixes: sidecar log deadlock + first-run tenant redirect (#11), installer resource/node resolution + Windows MAX_PATH staging (#12), Postgres process-group crash (first attempt), `ensure_database()` crash-recovery race, and child-process output capture into `bootstrap.log`.
