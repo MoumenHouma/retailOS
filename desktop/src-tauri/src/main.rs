@@ -3,7 +3,7 @@
 use retailos_desktop::config::Config;
 use retailos_desktop::postgres::{self, PgPaths};
 use retailos_desktop::state::ManagedProcesses;
-use retailos_desktop::{health, server};
+use retailos_desktop::{health, logging, server};
 use std::path::PathBuf;
 #[cfg(debug_assertions)]
 use std::process::Command;
@@ -176,7 +176,19 @@ fn main() {
             let handle = app.handle().clone();
             std::thread::spawn(move || {
                 if let Err(err) = bootstrap_and_run(&handle) {
+                    // eprintln! alone is invisible here -- this is a
+                    // windows_subsystem="windows" process with no console,
+                    // so a bootstrap failure otherwise leaves the loading
+                    // screen stuck forever with zero way to diagnose it
+                    // short of attaching a debugger. Confirmed live this
+                    // was exactly what made an ensure_database() race
+                    // (fixed in postgres.rs) so hard to track down.
                     eprintln!("bootstrap failed: {err:?}");
+                    let log_dir = app_data_dir().join("logs");
+                    if let Ok(mut f) = logging::open_log(&log_dir, "bootstrap.log") {
+                        use std::io::Write;
+                        let _ = writeln!(f, "bootstrap failed: {err:?}");
+                    }
                 }
             });
             Ok(())

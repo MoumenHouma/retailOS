@@ -102,22 +102,50 @@ pub fn wait_ready(port: u16, timeout: Duration) -> Result<()> {
     bail!("postgres did not become ready on port {port} within {timeout:?}");
 }
 
+// wait_ready() only proves the TCP port is open, not that postgres is
+// actually accepting SQL connections -- confirmed live: right after an
+// unclean-shutdown crash recovery, the port accepts connections but the
+// server rejects queries with "l'etat de restauration coherent n'a pas
+// encore ete atteint" for a brief window. The existence check below used
+// to treat that failure the same as "database not found" (only looked at
+// stdout, never the psql exit status), so it fell through to createdb,
+// which then failed for a different reason -- the database already
+// existed -- and that failure was fatal, silently killing bootstrap with
+// no visible error (this is a GUI-subsystem process; eprintln goes
+// nowhere). Retrying the check until psql itself actually succeeds closes
+// the race at its source.
+fn database_exists(paths: &PgPaths, port: u16, superuser_password: &str, db_name: &str, timeout: Duration) -> Result<bool> {
+    let deadline = Instant::now() + timeout;
+    loop {
+        let output = Command::new(paths.exe("psql"))
+            .arg("-h")
+            .arg("127.0.0.1")
+            .arg("-p")
+            .arg(port.to_string())
+            .arg("-U")
+            .arg("postgres")
+            .arg("-d")
+            .arg("postgres")
+            .arg("-tAc")
+            .arg(format!("SELECT 1 FROM pg_database WHERE datname='{db_name}'"))
+            .env("PGPASSWORD", superuser_password)
+            .output()
+            .context("spawning psql to check database existence")?;
+        if output.status.success() {
+            return Ok(String::from_utf8_lossy(&output.stdout).trim() == "1");
+        }
+        if Instant::now() >= deadline {
+            bail!(
+                "checking database existence timed out: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+        std::thread::sleep(Duration::from_millis(200));
+    }
+}
+
 pub fn ensure_database(paths: &PgPaths, port: u16, superuser_password: &str, db_name: &str) -> Result<()> {
-    let output = Command::new(paths.exe("psql"))
-        .arg("-h")
-        .arg("127.0.0.1")
-        .arg("-p")
-        .arg(port.to_string())
-        .arg("-U")
-        .arg("postgres")
-        .arg("-d")
-        .arg("postgres")
-        .arg("-tAc")
-        .arg(format!("SELECT 1 FROM pg_database WHERE datname='{db_name}'"))
-        .env("PGPASSWORD", superuser_password)
-        .output()
-        .context("checking database existence")?;
-    if String::from_utf8_lossy(&output.stdout).trim() == "1" {
+    if database_exists(paths, port, superuser_password, db_name, Duration::from_secs(15))? {
         return Ok(());
     }
     let status = Command::new(paths.exe("createdb"))
