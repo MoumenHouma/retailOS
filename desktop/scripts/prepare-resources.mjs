@@ -15,11 +15,9 @@ import {
   lstatSync,
   mkdirSync,
   readdirSync,
-  readlinkSync,
+  readFileSync,
   realpathSync,
   rmSync,
-  statSync,
-  symlinkSync,
 } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -56,91 +54,49 @@ function run(cmd, args) {
   execFileSync(`${cmd} ${args.join(" ")}`, { cwd: repoRoot, stdio: "inherit", shell: true });
 }
 
-// Fully resolves a symlink/junction (recursively) into real file content —
-// only used as a last-resort fallback below, for a link that points
-// somewhere pnpm's own store convention doesn't explain.
-function copyDereferenced(src, dest) {
-  const real = realpathSync(src);
-  const stat = statSync(real);
-  if (stat.isDirectory()) {
-    mkdirSync(dest, { recursive: true });
-    for (const entry of readdirSync(real)) {
-      copyDereferenced(path.join(real, entry), path.join(dest, entry));
-    }
-  } else {
-    mkdirSync(path.dirname(dest), { recursive: true });
-    copyFileSync(real, dest);
-  }
-}
-
-// pnpm links packages very differently by platform, and both forms embed
-// an *absolute* path that breaks the moment this tree is copied anywhere
-// else:
-//   - Linux: relative symlinks for most internal links (travel fine
-//     as-is), but Next's standalone tracer *and* pnpm itself still embed
-//     a handful of absolute ones (confirmed live: `next -> /app/.next/
-//     standalone/node_modules/.pnpm/next@.../node_modules/next`,
-//     `.pnpm/next@X/node_modules/@swc/helpers -> /app/node_modules/
-//     .pnpm/@swc+helpers@.../node_modules/@swc/helpers`).
-//   - Windows: pnpm uses NTFS *junctions* for every directory-level link
-//     throughout the whole .pnpm store (confirmed live via
-//     `Get-Item ... | Select LinkType`) — and junctions can only ever
-//     store absolute targets, that's an OS constraint, not a pnpm choice.
-//     Copying via fs.cpSync tries to recurse into the junction's target
-//     directory instead of preserving it, which collides with that same
-//     physical directory being visited again via its own real top-level
-//     .pnpm entry ("EPIPE, file in use by another process" — confirmed
-//     live).
+// Tauri's NSIS bundler silently drops reparse points (symlinks/junctions)
+// and empty directories when it packages bundle.resources -- confirmed
+// live: a staged tree with a correct `node_modules/prisma` junction (and
+// correct internal .pnpm peer-dep junctions below it) installs with both
+// gone, breaking `require()` at the first module that resolves through
+// either one. Recreating pnpm's link structure in the staged tree (the
+// previous approach here) stages something that looks right and then
+// doesn't survive packaging. The only tree guaranteed to survive is one
+// with zero reparse points, so every symlink/junction gets fully
+// dereferenced into real files up front.
 //
-// Both cases are the same underlying shape: an absolute path containing a
-// ".pnpm" segment. Rewriting that segment onward against the *new* tree's
-// node_modules/.pnpm (copied wholesale, right below) fixes both platforms
-// uniformly, with no peer-dependency enumeration needed at any depth —
-// the whole store travels together and is already internally consistent.
-function rewriteIntoNewPnpm(target) {
-  const parts = target.split(path.sep);
-  const idx = parts.lastIndexOf(".pnpm");
-  if (idx === -1) return null;
-  return path.join(newNodeModules, ".pnpm", ...parts.slice(idx + 1));
-}
-
-function copyTree(src, dest) {
+// pnpm's store has genuine self-referencing peer-dep cycles (e.g.
+// A/node_modules/B -> .pnpm/B/node_modules/B, whose own node_modules
+// links back to .pnpm/A/node_modules/A) -- `visiting` tracks realpaths
+// currently being materialized on the current recursion stack so a link
+// back to an ancestor is skipped instead of recursing forever. Distinct
+// references to the same shared dependency from different branches still
+// get copied more than once (real duplicate files, not links) -- that's
+// wasted disk space, not a correctness problem for the small, already
+// build-pruned trees this is used on below (.next/standalone, static,
+// public, bootstrap-sql). Confirmed NOT acceptable for the *whole* pnpm
+// store (see the dedicated hoisted install further down instead): naively
+// dereferencing every symlink in node_modules/.pnpm exploded a ~300MB
+// store into 3.9GB / 252k files, which is itself enough to make cargo's
+// resource-change scan (tauri-build's build.rs watches bundle.resources)
+// hang for 10+ minutes before compilation even starts.
+function copyTree(src, dest, visiting = new Set()) {
   const stat = lstatSync(src);
   if (stat.isSymbolicLink()) {
-    const target = readlinkSync(src);
-    mkdirSync(path.dirname(dest), { recursive: true });
-    // Defensive, not just tidy: pnpm's own store has package entries that
-    // self-reference (a package's node_modules can contain a link back to
-    // itself), which combined with recursing through *other* junctions
-    // that happen to lead to the same physical location can mean this
-    // exact destination gets reached more than once — confirmed live via
-    // EEXIST. Regenerated build output, always safe to overwrite.
-    rmSync(dest, { recursive: true, force: true });
-    if (path.isAbsolute(target)) {
-      const rewritten = rewriteIntoNewPnpm(target);
-      if (rewritten === null) {
-        copyDereferenced(src, dest);
-        return;
-      }
-      const isDir = (() => {
-        try {
-          return statSync(target).isDirectory();
-        } catch {
-          return true;
-        }
-      })();
-      symlinkSync(rewritten, dest, process.platform === "win32" ? (isDir ? "junction" : "file") : undefined);
-    } else {
-      // Relative symlink — travels correctly as-is since the whole
-      // subtree it's relative to moves together.
-      symlinkSync(target, dest);
+    const real = realpathSync(src);
+    if (visiting.has(real)) {
+      // Cycle back to an ancestor already being materialized -- skip.
+      return;
     }
+    visiting.add(real);
+    copyTree(real, dest, visiting);
+    visiting.delete(real);
     return;
   }
   if (stat.isDirectory()) {
     mkdirSync(dest, { recursive: true });
     for (const entry of readdirSync(src)) {
-      copyTree(path.join(src, entry), path.join(dest, entry));
+      copyTree(path.join(src, entry), path.join(dest, entry), visiting);
     }
     return;
   }
@@ -172,12 +128,62 @@ if (existsSync(path.join(repoRoot, "public"))) {
   mkdirSync(path.join(appOut, "public"), { recursive: true });
 }
 // output: "standalone"'s trace doesn't include Prisma's native engine —
-// confirmed against Dockerfile:46. Without this the server crashes on its
-// first query with a missing-query-engine error, not a clean failure.
-copy(path.join(repoRoot, "node_modules/.pnpm"), path.join(newNodeModules, ".pnpm"));
-// The `prisma` CLI (used by the Tauri host to run `migrate deploy` against
-// the bundled Postgres on first run / every launch — task #9).
-copy(path.join(repoRoot, "node_modules/prisma"), path.join(newNodeModules, "prisma"));
+// confirmed against Dockerfile:46 (which gets away with copying the whole
+// node_modules/.pnpm store because Docker's COPY preserves symlinks as-is;
+// there's no NSIS step downstream to drop them). On Windows this needs a
+// tree with zero symlinks/junctions (see copyTree's header above) *and*
+// small enough that cargo's resource scan and NSIS packaging don't choke —
+// a real `pnpm install --node-linker=hoisted` into a scratch dir gives a
+// flat, link-free node_modules directly from pnpm's own local store (no
+// re-download: same lockfile-pinned versions already cached from the
+// `pnpm build` above), instead of hand-dereferencing the entire store.
+//
+// `--prod` covers @prisma/client + its engine deps (the `dependencies`
+// entry), but the `prisma` CLI itself (used by the Tauri host to run
+// `migrate deploy` against the bundled Postgres — task #9) is a
+// devDependency, so it's added explicitly, pinned to the exact version
+// pinned in this repo's own package.json so the CLI matches the schema
+// it was authored against.
+const depsRoot = path.join(outRoot, "deps");
+rmSync(depsRoot, { recursive: true, force: true });
+mkdirSync(depsRoot, { recursive: true });
+copyFileSync(path.join(repoRoot, "package.json"), path.join(depsRoot, "package.json"));
+copyFileSync(path.join(repoRoot, "pnpm-lock.yaml"), path.join(depsRoot, "pnpm-lock.yaml"));
+// --ignore-scripts: this scratch dir has no prisma/schema.prisma (same
+// reason the Dockerfile's deps stage uses it) -- the root package.json's
+// `postinstall: prisma generate` would fail here otherwise. Not needed
+// anyway: this install only exists to obtain physical package files
+// (prisma CLI + @prisma/client's engine deps), not to regenerate client
+// code -- the real generated client already came from the `pnpm build`
+// above and travels via the .next/standalone copy.
+execFileSync(`pnpm install --prod --node-linker=hoisted --frozen-lockfile --ignore-scripts`, {
+  cwd: depsRoot,
+  stdio: "inherit",
+  shell: true,
+});
+const rootPkg = JSON.parse(readFileSync(path.join(repoRoot, "package.json"), "utf8"));
+const prismaVersion = rootPkg.devDependencies?.prisma;
+if (!prismaVersion) throw new Error("Expected a pinned `prisma` devDependency in package.json");
+execFileSync(`pnpm add --prod --node-linker=hoisted --ignore-scripts prisma@${prismaVersion}`, {
+  cwd: depsRoot,
+  stdio: "inherit",
+  shell: true,
+});
+// The generated client (node_modules/.prisma/client — JS + the Windows
+// query-engine binary) exists only inside the repo's .pnpm store, where
+// `prisma generate` put it; it is NOT part of any published package this
+// scratch install can produce, and `output: "standalone"`'s trace doesn't
+// carry it either (confirmed live: installed app crashed with
+// `Cannot find module '.prisma/client/default'` on its first DB-touching
+// route). Generate it here, directly into the hoisted tree, so it travels
+// with the copy below as plain real files.
+copyFileSync(path.join(repoRoot, "prisma/schema.prisma"), path.join(depsRoot, "schema.prisma"));
+execFileSync(`pnpm exec prisma generate --schema=schema.prisma`, {
+  cwd: depsRoot,
+  stdio: "inherit",
+  shell: true,
+});
+copy(path.join(depsRoot, "node_modules"), newNodeModules);
 copy(path.join(repoRoot, "prisma/schema.prisma"), path.join(appOut, "prisma/schema.prisma"));
 copy(path.join(repoRoot, "prisma/migrations"), path.join(appOut, "prisma/migrations"));
 
