@@ -1,6 +1,7 @@
+use crate::logging::open_log;
 use anyhow::{Context, Result};
 use std::path::Path;
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command};
 
 // src/lib/prisma.ts reads *both* DATABASE_URL (superuser, `prismaSuperuser`)
 // and DATABASE_APP_URL (RLS-restricted `app_user`, the normal `withTenant`
@@ -15,7 +16,10 @@ pub fn spawn_node_server(
     database_app_url: &str,
     nextauth_secret: &str,
     storage_root: &Path,
+    log_dir: &Path,
 ) -> Result<Child> {
+    let out = open_log(log_dir, "node.log")?;
+    let err = open_log(log_dir, "node.log")?;
     Command::new(node_exe)
         .arg(app_dir.join("server.js"))
         .current_dir(app_dir)
@@ -33,8 +37,8 @@ pub fn spawn_node_server(
         // requests with "UntrustedHost" unless the exact Host header is
         // pre-trusted — 127.0.0.1 on a non-default port trips this.
         .env("AUTH_TRUST_HOST", "true")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stdout(out)
+        .stderr(err)
         .spawn()
         .context("spawning node server.js")
 }

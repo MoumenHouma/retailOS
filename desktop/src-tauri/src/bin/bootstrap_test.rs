@@ -50,7 +50,7 @@ fn main() -> Result<()> {
     postgres::initdb(&paths, &cfg.superuser_password)?;
 
     println!("[2/5] starting postgres...");
-    let mut child = postgres::start(&paths, cfg.pg_port)?;
+    let mut child = postgres::start(&paths, cfg.pg_port, &test_root.join("logs"))?;
 
     let result = (|| -> Result<()> {
         println!("      waiting for ready...");

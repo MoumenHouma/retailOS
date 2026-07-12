@@ -45,8 +45,10 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
         pgdata_dir: data_dir.join("pgdata"),
     };
 
+    let log_dir = data_dir.join("logs");
+
     postgres::initdb(&paths, &cfg.superuser_password)?;
-    let pg_child = postgres::start(&paths, cfg.pg_port)?;
+    let pg_child = postgres::start(&paths, cfg.pg_port, &log_dir)?;
     app.state::<ManagedProcesses>().postgres.lock().unwrap().replace(pg_child);
 
     postgres::wait_ready(cfg.pg_port, Duration::from_secs(15))?;
@@ -82,6 +84,7 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
         &app_user_url,
         &cfg.nextauth_secret,
         &storage_root,
+        &log_dir,
     )?;
     app.state::<ManagedProcesses>().node.lock().unwrap().replace(node_child);
 

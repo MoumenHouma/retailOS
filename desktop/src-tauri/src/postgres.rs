@@ -1,7 +1,8 @@
+use crate::logging::open_log;
 use anyhow::{bail, Context, Result};
 use std::net::TcpStream;
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command};
 use std::time::{Duration, Instant};
 
 pub struct PgPaths {
@@ -60,7 +61,9 @@ pub fn initdb(paths: &PgPaths, superuser_password: &str) -> Result<()> {
 // entirely, where every process (including this one) keeps an enabled
 // Administrators SID — unverified whether that actually needs handling
 // here until task #13's clean-VM pass hits it for real.
-pub fn start(paths: &PgPaths, port: u16) -> Result<Child> {
+pub fn start(paths: &PgPaths, port: u16, log_dir: &Path) -> Result<Child> {
+    let out = open_log(log_dir, "postgres.log")?;
+    let err = open_log(log_dir, "postgres.log")?;
     Command::new(paths.exe("postgres"))
         .arg("-D")
         .arg(&paths.pgdata_dir)
@@ -68,8 +71,8 @@ pub fn start(paths: &PgPaths, port: u16) -> Result<Child> {
         .arg(port.to_string())
         .arg("-h")
         .arg("127.0.0.1")
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
+        .stdout(out)
+        .stderr(err)
         .spawn()
         .context("spawning postgres")
 }
