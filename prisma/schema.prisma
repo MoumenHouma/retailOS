@@ -9,7 +9,12 @@
 // - Monetary values (introduced in later phases) are always Int in centimes.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "windows" added for the desktop-edition Tauri build: builds run in a
+  // Linux Docker container, but the packaged app runs on Windows — without
+  // this the query-engine binary bundled into node_modules/.pnpm would be
+  // linux-only and the desktop server would crash on its first query.
+  binaryTargets = ["native", "windows"]
 }
 
 datasource db {
