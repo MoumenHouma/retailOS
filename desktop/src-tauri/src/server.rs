@@ -4,12 +4,13 @@ use std::os::windows::process::CommandExt;
 use std::path::Path;
 use std::process::{Child, Command};
 
-// No console for the node sidecar — same reasoning as postgres.rs's
-// DETACHED_PROCESS (see the comment there): a console-subsystem child of
-// a GUI parent otherwise gets a fresh conhost, whose console-wide ctrl
-// events are a proven kill vector, and stdout/stderr already go to
-// node.log anyway.
-const DETACHED_PROCESS: u32 = 0x0000_0008;
+// Private hidden console for the node sidecar — same reasoning as
+// postgres.rs's CREATE_NO_WINDOW (see the comment there): a
+// console-subsystem child of a GUI parent otherwise gets a fresh
+// *visible* conhost, and a fully detached one would push that same
+// visible-console problem onto any child node itself spawns.
+// stdout/stderr go to node.log either way.
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 // src/lib/prisma.ts reads *both* DATABASE_URL (superuser, `prismaSuperuser`)
 // and DATABASE_APP_URL (RLS-restricted `app_user`, the normal `withTenant`
@@ -58,7 +59,7 @@ pub fn spawn_node_server(
         // requests with "UntrustedHost" unless the exact Host header is
         // pre-trusted — 127.0.0.1 on a non-default port trips this.
         .env("AUTH_TRUST_HOST", "true")
-        .creation_flags(DETACHED_PROCESS)
+        .creation_flags(CREATE_NO_WINDOW)
         .stdout(out)
         .stderr(err)
         .spawn()

@@ -18,20 +18,22 @@ use std::time::{Duration, Instant};
 // aimed at -- or generated within -- our process's group can't reach it.
 const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
 // CREATE_NEW_PROCESS_GROUP alone turned out not to be enough: a new
-// process *group* still attaches to a console, and console-wide events
-// (CTRL_CLOSE when a conhost dies, CTRL_C broadcast to group 0) ignore
-// group boundaries. Confirmed live in the packaged app: 0xC000013A kept
-// recurring at irregular intervals (5s to 5min after startup), killing
-// the replication launcher or even a backend mid-query, while a postmaster
-// started via pg_ctl -- which detaches from the console entirely -- ran
-// on the same machine, same pgdata, with zero crashes. DETACHED_PROCESS
-// gives postgres no console at all, so no console event can ever reach
-// it. (CREATE_NEW_PROCESS_GROUP is kept alongside: with no console it
-// costs nothing, and it still isolates the group id.)
-const DETACHED_PROCESS: u32 = 0x0000_0008;
-// For short-lived helpers (initdb/createdb/psql, prisma via node): no
-// console window flash, and no shared console for stray ctrl events;
-// stdio is fully captured via .output() so nothing is lost.
+// process *group* still attaches to the parent's console, and
+// console-wide events (CTRL_CLOSE when a conhost dies, CTRL_C broadcast
+// to group 0) ignore group boundaries. Confirmed live in the packaged
+// app: 0xC000013A kept recurring at irregular intervals (5s to 5min
+// after startup), killing the replication launcher or even a backend
+// mid-query, while a postmaster started via pg_ctl ran on the same
+// machine, same pgdata, with zero crashes.
+//
+// The fix is CREATE_NO_WINDOW -- a *private, hidden* console for the
+// postmaster: no other process shares it (so no stray ctrl events), and
+// every EXEC_BACKEND child inherits it invisibly. DETACHED_PROCESS (no
+// console at all) was tried first and did stop the crashes, but with no
+// console to inherit, Windows allocated a fresh *visible* console window
+// for every postgres backend -- one cmd-style window per connection,
+// confirmed live by the user's own launch ("it opens lots of cmd
+// windows"). CREATE_NO_WINDOW keeps the isolation without the popups.
 const CREATE_NO_WINDOW: u32 = 0x0800_0000;
 
 pub struct PgPaths {
@@ -119,7 +121,7 @@ pub fn start(paths: &PgPaths, port: u16, log_dir: &Path) -> Result<Child> {
         .arg(port.to_string())
         .arg("-h")
         .arg("127.0.0.1")
-        .creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS)
+        .creation_flags(CREATE_NEW_PROCESS_GROUP | CREATE_NO_WINDOW)
         .stdout(out)
         .stderr(err)
         .spawn()
