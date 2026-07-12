@@ -10,7 +10,8 @@ use std::path::Path;
 // directory and NextAuth sessions stay valid across restarts.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Config {
-    pub port: u16,
+    pub pg_port: u16,
+    pub node_port: u16,
     pub superuser_password: String,
     pub app_user_password: String,
     pub nextauth_secret: String,
@@ -33,7 +34,8 @@ impl Config {
             return Ok(cfg);
         }
         let cfg = Config {
-            port: 55432,
+            pg_port: 55432,
+            node_port: 3100,
             superuser_password: random_secret(32),
             app_user_password: random_secret(32),
             nextauth_secret: random_secret(48),

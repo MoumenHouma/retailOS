@@ -1,0 +1,29 @@
+{
+  "productName": "RetailOS",
+  "version": "0.1.0",
+  "identifier": "com.retailos.desktop",
+  "build": {
+    "frontendDist": "dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "RetailOS",
+        "width": 1280,
+        "height": 800,
+        "minWidth": 1024,
+        "minHeight": 640,
+        "resizable": true,
+        "url": "index.html"
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "externalBin": ["binaries/node"]
+  }
+}

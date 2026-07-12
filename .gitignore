@@ -47,3 +47,5 @@ next-env.d.ts
 desktop/src-tauri/target/
 desktop/src-tauri/resources/
 desktop/src-tauri/binaries/
+# tauri-build's own capabilities/permissions JSON schemas, regenerated every build
+desktop/src-tauri/gen/

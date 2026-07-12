@@ -39,7 +39,7 @@ fn main() -> Result<()> {
     println!("pgdata    = {}", pgdata.display());
 
     let cfg = Config::load_or_create(&config_path)?;
-    println!("port = {}", cfg.port);
+    println!("port = {}", cfg.pg_port);
 
     let paths = PgPaths {
         bin_dir: pg_bin,
@@ -50,20 +50,20 @@ fn main() -> Result<()> {
     postgres::initdb(&paths, &cfg.superuser_password)?;
 
     println!("[2/5] starting postgres...");
-    let mut child = postgres::start(&paths, cfg.port)?;
+    let mut child = postgres::start(&paths, cfg.pg_port)?;
 
     let result = (|| -> Result<()> {
         println!("      waiting for ready...");
-        postgres::wait_ready(cfg.port, Duration::from_secs(15))?;
+        postgres::wait_ready(cfg.pg_port, Duration::from_secs(15))?;
 
         println!("[3/5] ensure database...");
-        postgres::ensure_database(&paths, cfg.port, &cfg.superuser_password, "retailos")?;
+        postgres::ensure_database(&paths, cfg.pg_port, &cfg.superuser_password, "retailos")?;
 
         println!("[4/5] bootstrap sql...");
         let sql_file = desktop_dir.join("scripts/bootstrap-sql/01-roles.sql");
         postgres::run_bootstrap_sql(
             &paths,
-            cfg.port,
+            cfg.pg_port,
             &cfg.superuser_password,
             &cfg.app_user_password,
             "retailos",
@@ -74,7 +74,7 @@ fn main() -> Result<()> {
         let node_exe = which_node()?;
         let database_url = format!(
             "postgresql://postgres:{}@127.0.0.1:{}/retailos",
-            cfg.superuser_password, cfg.port
+            cfg.superuser_password, cfg.pg_port
         );
         postgres::run_migrate_deploy(&node_exe, repo_root, &database_url)?;
 

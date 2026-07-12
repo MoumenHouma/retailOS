@@ -10,7 +10,7 @@
 // node_modules/.pnpm, not node_modules/@prisma/client).
 import { execFileSync } from "node:child_process";
 import {
-  cpSync,
+  copyFileSync,
   existsSync,
   lstatSync,
   mkdirSync,
@@ -34,77 +34,115 @@ const repoRoot = path.resolve(fileURLToPath(import.meta.url), "../../..");
 // needed there.
 const outRoot = process.env.DESKTOP_RESOURCES_ROOT ?? path.join(repoRoot, "desktop/src-tauri/resources");
 const appOut = path.join(outRoot, "app");
+const newNodeModules = path.join(appOut, "node_modules");
 
 function run(cmd, args) {
   console.log(`$ ${cmd} ${args.join(" ")}`);
-  execFileSync(cmd, args, { cwd: repoRoot, stdio: "inherit" });
+  // shell: true — on Windows, pnpm resolves to a .cmd shim; execFileSync
+  // can't launch that directly without shell interpretation (confirmed
+  // live: plain execFileSync("pnpm", ...) fails with ENOENT there, even
+  // though `pnpm` is genuinely on PATH). Harmless on POSIX (just runs
+  // through /bin/sh -c). Args are fixed literals from this file, never
+  // user input — folded into one string (not passed alongside shell:true)
+  // to avoid Node's unescaped-argument-concatenation warning.
+  execFileSync(`${cmd} ${args.join(" ")}`, { cwd: repoRoot, stdio: "inherit", shell: true });
+}
+
+// Fully resolves a symlink/junction (recursively) into real file content —
+// only used as a last-resort fallback below, for a link that points
+// somewhere pnpm's own store convention doesn't explain.
+function copyDereferenced(src, dest) {
+  const real = realpathSync(src);
+  const stat = statSync(real);
+  if (stat.isDirectory()) {
+    mkdirSync(dest, { recursive: true });
+    for (const entry of readdirSync(real)) {
+      copyDereferenced(path.join(real, entry), path.join(dest, entry));
+    }
+  } else {
+    mkdirSync(path.dirname(dest), { recursive: true });
+    copyFileSync(real, dest);
+  }
+}
+
+// pnpm links packages very differently by platform, and both forms embed
+// an *absolute* path that breaks the moment this tree is copied anywhere
+// else:
+//   - Linux: relative symlinks for most internal links (travel fine
+//     as-is), but Next's standalone tracer *and* pnpm itself still embed
+//     a handful of absolute ones (confirmed live: `next -> /app/.next/
+//     standalone/node_modules/.pnpm/next@.../node_modules/next`,
+//     `.pnpm/next@X/node_modules/@swc/helpers -> /app/node_modules/
+//     .pnpm/@swc+helpers@.../node_modules/@swc/helpers`).
+//   - Windows: pnpm uses NTFS *junctions* for every directory-level link
+//     throughout the whole .pnpm store (confirmed live via
+//     `Get-Item ... | Select LinkType`) — and junctions can only ever
+//     store absolute targets, that's an OS constraint, not a pnpm choice.
+//     Copying via fs.cpSync tries to recurse into the junction's target
+//     directory instead of preserving it, which collides with that same
+//     physical directory being visited again via its own real top-level
+//     .pnpm entry ("EPIPE, file in use by another process" — confirmed
+//     live).
+//
+// Both cases are the same underlying shape: an absolute path containing a
+// ".pnpm" segment. Rewriting that segment onward against the *new* tree's
+// node_modules/.pnpm (copied wholesale, right below) fixes both platforms
+// uniformly, with no peer-dependency enumeration needed at any depth —
+// the whole store travels together and is already internally consistent.
+function rewriteIntoNewPnpm(target) {
+  const parts = target.split(path.sep);
+  const idx = parts.lastIndexOf(".pnpm");
+  if (idx === -1) return null;
+  return path.join(newNodeModules, ".pnpm", ...parts.slice(idx + 1));
+}
+
+function copyTree(src, dest) {
+  const stat = lstatSync(src);
+  if (stat.isSymbolicLink()) {
+    const target = readlinkSync(src);
+    mkdirSync(path.dirname(dest), { recursive: true });
+    // Defensive, not just tidy: pnpm's own store has package entries that
+    // self-reference (a package's node_modules can contain a link back to
+    // itself), which combined with recursing through *other* junctions
+    // that happen to lead to the same physical location can mean this
+    // exact destination gets reached more than once — confirmed live via
+    // EEXIST. Regenerated build output, always safe to overwrite.
+    rmSync(dest, { recursive: true, force: true });
+    if (path.isAbsolute(target)) {
+      const rewritten = rewriteIntoNewPnpm(target);
+      if (rewritten === null) {
+        copyDereferenced(src, dest);
+        return;
+      }
+      const isDir = (() => {
+        try {
+          return statSync(target).isDirectory();
+        } catch {
+          return true;
+        }
+      })();
+      symlinkSync(rewritten, dest, process.platform === "win32" ? (isDir ? "junction" : "file") : undefined);
+    } else {
+      // Relative symlink — travels correctly as-is since the whole
+      // subtree it's relative to moves together.
+      symlinkSync(target, dest);
+    }
+    return;
+  }
+  if (stat.isDirectory()) {
+    mkdirSync(dest, { recursive: true });
+    for (const entry of readdirSync(src)) {
+      copyTree(path.join(src, entry), path.join(dest, entry));
+    }
+    return;
+  }
+  mkdirSync(path.dirname(dest), { recursive: true });
+  copyFileSync(src, dest);
 }
 
 function copy(src, dest) {
   if (!existsSync(src)) throw new Error(`Expected build output missing: ${src}`);
-  mkdirSync(path.dirname(dest), { recursive: true });
-  cpSync(src, dest, { recursive: true });
-}
-
-// Next's standalone tracer embeds *absolute-path* symlinks for the
-// top-level packages it traces directly into node_modules (e.g.
-// `next -> /app/.next/standalone/node_modules/.pnpm/next@.../node_modules/next`,
-// `@prisma/client -> .../node_modules/.pnpm/@prisma+client@.../node_modules/@prisma/client`)
-// — confirmed live, for plain packages, scoped (@scope/pkg) ones, and
-// dot-namespaced ones (Prisma's generated `.prisma/client`) alike. Copying
-// that tree to any other absolute path (a different Docker container, or
-// the real Windows Tauri resource dir) leaves those symlinks dangling and
-// `node server.js` fails with "Cannot find module 'next'" and similar.
-//
-// Earlier attempt fully dereferenced each one (real files, no symlink) —
-// but that only resolves the package's *own* files, not its private peer
-// deps (pnpm keeps a package's peers as siblings in the same virtual-store
-// node_modules folder, e.g. `@swc/helpers` next to `next`, and this nests
-// arbitrarily deep: @react-pdf/renderer needs @react-pdf/font needs
-// is-url, each one more level pnpm resolves the same way). Chasing every
-// transitive peer by hand doesn't terminate.
-//
-// Correct fix: rewrite the symlink as an equivalent *relative* one
-// pointing into node_modules/.pnpm, which is copied wholesale (symlinks
-// preserved) later in this script. The whole store travels together and
-// is already internally self-consistent (this is exactly what the
-// already-proven Dockerfile COPY pattern relies on) — no peer enumeration
-// needed at any depth.
-function fixAbsoluteSymlink(entryPath, nodeModulesDir) {
-  if (!lstatSync(entryPath).isSymbolicLink()) return;
-  if (!path.isAbsolute(readlinkSync(entryPath))) return;
-  const real = realpathSync(entryPath);
-  const parts = real.split(path.sep);
-  const idx = parts.lastIndexOf(".pnpm");
-  if (idx === -1) throw new Error(`Absolute symlink target has no .pnpm segment: ${entryPath} -> ${real}`);
-  const realInNewTree = path.join(nodeModulesDir, ".pnpm", ...parts.slice(idx + 1));
-  const relTarget = path.relative(path.dirname(entryPath), realInNewTree);
-  rmSync(entryPath, { recursive: true, force: true });
-  symlinkSync(relTarget, entryPath);
-}
-
-// Checked one level deep for every directory entry, not just `@scope`
-// ones — Prisma's generated client is reached via a *dot*-prefixed
-// namespace (`node_modules/.prisma/client -> .../node_modules/
-// .pnpm/@prisma+client@.../node_modules/.prisma/client`), the same
-// pattern as `@scope/pkg`, confirmed live via the same
-// "Cannot find module '.prisma/client/default'" failure mode.
-// `scanDir` is the folder whose entries get checked (could be the top-level
-// node_modules, or a package variant's own private one inside .pnpm);
-// `pnpmRoot` is always the *top-level* node_modules — the one whose .pnpm
-// subfolder is the real, single copy every relative symlink must point
-// back into, regardless of which directory is currently being scanned.
-function fixAbsoluteSymlinks(scanDir, pnpmRoot) {
-  for (const entry of readdirSync(scanDir)) {
-    const entryPath = path.join(scanDir, entry);
-    if (lstatSync(entryPath).isSymbolicLink()) {
-      fixAbsoluteSymlink(entryPath, pnpmRoot);
-    } else if (statSync(entryPath).isDirectory()) {
-      for (const nested of readdirSync(entryPath)) {
-        fixAbsoluteSymlink(path.join(entryPath, nested), pnpmRoot);
-      }
-    }
-  }
+  copyTree(src, dest);
 }
 
 run("pnpm", ["exec", "prisma", "generate"]);
@@ -128,35 +166,11 @@ if (existsSync(path.join(repoRoot, "public"))) {
 // output: "standalone"'s trace doesn't include Prisma's native engine —
 // confirmed against Dockerfile:46. Without this the server crashes on its
 // first query with a missing-query-engine error, not a clean failure.
-copy(path.join(repoRoot, "node_modules/.pnpm"), path.join(appOut, "node_modules/.pnpm"));
+copy(path.join(repoRoot, "node_modules/.pnpm"), path.join(newNodeModules, ".pnpm"));
 // The `prisma` CLI (used by the Tauri host to run `migrate deploy` against
-// the bundled Postgres on first run / every launch — task #9). pnpm's own
-// node_modules/prisma is a *relative* symlink into node_modules/.pnpm
-// (confirmed: `.pnpm/prisma@6.2.1/node_modules/prisma`), so copying it
-// alongside the .pnpm copy above — both plain, symlink-preserving copies —
-// resolves correctly with no duplication of the whole store.
-copy(path.join(repoRoot, "node_modules/prisma"), path.join(appOut, "node_modules/prisma"));
+// the bundled Postgres on first run / every launch — task #9).
+copy(path.join(repoRoot, "node_modules/prisma"), path.join(newNodeModules, "prisma"));
 copy(path.join(repoRoot, "prisma/schema.prisma"), path.join(appOut, "prisma/schema.prisma"));
 copy(path.join(repoRoot, "prisma/migrations"), path.join(appOut, "prisma/migrations"));
-
-// Run after the .pnpm copy above (not before): these are now relative
-// symlinks pointing into it, so their target only needs to exist by the
-// time the server actually runs, not at copy time — but keeping this last
-// documents that dependency clearly.
-const topNodeModules = path.join(appOut, "node_modules");
-fixAbsoluteSymlinks(topNodeModules, topNodeModules);
-// pnpm doesn't only produce absolute symlinks at the top level — a package
-// variant's own private node_modules folder inside .pnpm can *also* embed
-// an absolute cross-reference to a shared, non-variant dependency (e.g.
-// `.pnpm/next@X.../node_modules/@swc/helpers ->
-// /app/node_modules/.pnpm/@swc+helpers@0.5.15/node_modules/@swc/helpers`)
-// — confirmed live, this is pnpm's own doing, not just Next's tracer. So
-// every package's private node_modules folder needs the same check, not
-// just the outermost one.
-const pnpmDir = path.join(topNodeModules, ".pnpm");
-for (const pkgDir of readdirSync(pnpmDir)) {
-  const pkgNodeModules = path.join(pnpmDir, pkgDir, "node_modules");
-  if (existsSync(pkgNodeModules)) fixAbsoluteSymlinks(pkgNodeModules, topNodeModules);
-}
 
 console.log(`\nDone.\n  app: ${appOut}`);

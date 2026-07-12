@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>RetailOS</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: system-ui, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+    </style>
+  </head>
+  <body>
+    <p id="status">Starting RetailOS…</p>
+    <script>
+      window.__retailosSetStatus = function (text) {
+        document.getElementById("status").textContent = text;
+      };
+    </script>
+  </body>
+</html>
