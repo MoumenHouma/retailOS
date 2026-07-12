@@ -1,9 +1,22 @@
 use crate::logging::open_log;
 use anyhow::{bail, Context, Result};
 use std::net::TcpStream;
+use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command};
 use std::time::{Duration, Instant};
+
+// postgres.exe on Windows runs every backend/background worker (including
+// the logical replication launcher, always started even unused) as a
+// freshly-spawned copy of itself (EXEC_BACKEND -- Windows has no fork()).
+// Without this flag those workers share our own process's console/job
+// group, and confirmed live: ~6s after a clean startup, the logical
+// replication launcher dies with exception 0xC000013A
+// (STATUS_CONTROL_C_EXIT), taking the whole postmaster down with it, even
+// with zero external interference. CREATE_NEW_PROCESS_GROUP detaches
+// postgres (and everything it spawns) into its own group so a signal
+// aimed at -- or generated within -- our process's group can't reach it.
+const CREATE_NEW_PROCESS_GROUP: u32 = 0x0000_0200;
 
 pub struct PgPaths {
     pub bin_dir: PathBuf,
@@ -71,6 +84,7 @@ pub fn start(paths: &PgPaths, port: u16, log_dir: &Path) -> Result<Child> {
         .arg(port.to_string())
         .arg("-h")
         .arg("127.0.0.1")
+        .creation_flags(CREATE_NEW_PROCESS_GROUP)
         .stdout(out)
         .stderr(err)
         .spawn()
