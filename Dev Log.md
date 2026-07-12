@@ -4,6 +4,27 @@ Running log of work sessions on RetailOS. Newest entries at the top. See [[ROADM
 
 ---
 
+## 2026-07-12 — Desktop edition (Tauri): packaging arc + the launch finally works end-to-end
+
+**Covers the whole day's desktop-edition work (13 commits, `7dc56d2`..`b3c466c`), written at the end of it — the two working sessions before this one both ended in unplanned PC restarts and never wrote their log entries.** Summary of the arc from commit history: `RETAILOS_EDITION` gating for Redis/BullMQ-only features (#1), a local-filesystem storage driver replacing MinIO (#2), the resource-prep script (#3), bundled-Postgres bootstrap in Rust (#4), wiring Node + Postgres sidecars through Tauri (#5), then a string of real-launch fixes: sidecar log deadlock + first-run tenant redirect (#11), installer resource/node resolution + Windows MAX_PATH staging (#12), Postgres process-group crash (first attempt), `ensure_database()` crash-recovery race, and child-process output capture into `bootstrap.log`.
+
+**This session resumed after the second PC restart** (mid-staging-run; the uncommitted `prepare-resources.mjs` rewrite survived on disk, same lesson as 2026-07-11: uncommitted edits survive, prior-session claims need re-verification). Three distinct launch-blocking bugs found and fixed by actually installing and launching the packaged app after every change:
+
+1. **NSIS drops reparse points (`c17637f`).** Tauri's NSIS bundler silently drops junctions/symlinks and empty dirs from `bundle.resources` — a staged pnpm tree that's correct on disk installs with every link gone, and bootstrap dies at `prisma migrate deploy` with MODULE_NOT_FOUND. Fix: `copyTree` fully dereferences (cycle-safe — pnpm's store has real self-referencing peer-dep cycles), and the `.pnpm` store copy became a `pnpm install --node-linker=hoisted` scratch install (naive dereference of the store exploded 300MB into 3.9GB/252k files and hung cargo's resource scan 10+ min). **Second bug hidden under the first:** the generated Prisma client (`.prisma/client` + Windows query engine) only ever existed inside the repo's `.pnpm` store — neither the hoisted install (`--ignore-scripts`, no schema) nor Next's standalone trace carries it, so first DB-touching route crashed with `Cannot find module '.prisma/client/default'`. Fix: run `prisma generate` into the scratch tree so it travels as real files.
+2. **Every page route hung 30s then 500'd, APIs fine (`b3c466c`).** Next's router treats a middleware rewrite as an *external* proxy when the rewrite's host doesn't match its own notion of self — which is always `localhost` — so with `HOSTNAME=127.0.0.1`, every next-intl page rewrite got re-proxied to `http://localhost:<port>`, which Windows resolves to `::1` first, where nothing listens: hang until the 30s `proxyTimeout`, then 500. API routes are never rewritten, hence the maddening "APIs work, pages don't" split. Fix: `localhost` consistently across server bind, window URL, `NEXTAUTH_URL`, and the Rust readiness probe. Isolated by running the staged standalone tree directly against the bundled Postgres — outside Tauri entirely — proving it wasn't the host's fault.
+3. **Postgres kept dying with `0xC000013A` — the fix commit `6a85308` was insufficient (`b3c466c`).** `CREATE_NEW_PROCESS_GROUP` isolates the signal *group* but the child still attaches to a console, and console-wide ctrl events ignore group boundaries; the crash recurred at irregular intervals (5s to 5min — once killing a backend mid-`SELECT COUNT(*) FROM tenants`, taking the whole postmaster down). Decisive evidence: a `pg_ctl`-started postmaster on the same machine/pgdata ran crash-free for 8+ minutes while the host-spawned one kept dying. Fix: `DETACHED_PROCESS` (no console at all) for postgres and node, `CREATE_NO_WINDOW` for the short-lived helpers. 10-minute health-probing soak after the fix: zero crashes, app healthy throughout.
+
+**Verified end-to-end on the real installed app** (`C:\RetailOS-final-check`, fresh NSIS install each time): bootstrap completes (initdb → postgres → migrate deploy → node), `/api/health/ready` returns `{"ok":true,"db":true}`, page routes render in ~0.1s, first-run redirect lands on `/fr/register` as designed.
+
+**Testing gotcha worth remembering:** postgres.exe refuses to start from an elevated process ("running as administrator is not permitted") — launching the installed app from an elevated shell fails bootstrap at `wait_ready`; launch via `explorer.exe` (or any non-elevated parent) instead.
+
+**Open items:**
+- First-run `/fr/register` flow not yet exercised (no tenant created in the packaged app yet) — next session should walk the register → login → POS path in the real window.
+- `app/public` (empty dir) is still dropped by NSIS — harmless today (repo has no static assets), will silently vanish the day real files land there *if the dir is empty at stage time*; the staging script already creates it, so only genuinely empty installs are affected.
+- The 2026-07-11 perf-audit open items (reorder multi-supplier tiebreak, `revalidateTag` purge confirmation, CmdStan) all still stand.
+
+---
+
 ## 2026-07-11 — Performance audit follow-through (5 commits)
 
 Session resumed after an unplanned PC restart mid-work — nothing was lost (all edits were still on disk, uncommitted), but it meant re-verifying everything from scratch rather than trusting prior-session memory of "done." Worked through `retailos-performance-audit.md`'s priority list end to end, live-verifying every item rather than trusting `tsc`/dev-server-200s alone.
