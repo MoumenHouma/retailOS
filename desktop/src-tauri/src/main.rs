@@ -102,6 +102,22 @@ fn app_resource_dir(app: &tauri::AppHandle) -> PathBuf {
     simplify_verbatim(app.path().resource_dir().expect("resource_dir"))
 }
 
+// Pushes a status string into the splash's `window.__retailosSetStatus` hook
+// (desktop/src-tauri/dist/index.html) via eval — cheaper than a new command +
+// shared state + poll loop given the hook already exists and already does
+// the right thing on the JS side. Status text is a static literal at every
+// call site, but JSON-encode it anyway rather than hand-splice a string into
+// the eval'd script.
+fn set_status(app: &tauri::AppHandle, text: &str) {
+    if let Some(window) = app.get_webview_window("main") {
+        let script = format!(
+            "window.__retailosSetStatus && window.__retailosSetStatus({});",
+            serde_json::to_string(text).unwrap_or_else(|_| "\"...\"".into())
+        );
+        let _ = window.eval(&script);
+    }
+}
+
 fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
     let pg_root = pg_resource_dir(app);
     let app_root = app_resource_dir(app);
@@ -118,13 +134,16 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
 
     let log_dir = data_dir.join("logs");
 
+    set_status(app, "Préparation de la base de données…");
     postgres::initdb(&paths, &cfg.superuser_password)?;
+    set_status(app, "Démarrage de la base de données…");
     let pg_child = postgres::start(&paths, cfg.pg_port, &log_dir)?;
     app.state::<ManagedProcesses>().postgres.lock().unwrap().replace(pg_child);
 
     postgres::wait_ready(cfg.pg_port, Duration::from_secs(15))?;
     postgres::ensure_database(&paths, cfg.pg_port, &cfg.superuser_password, "retailos")?;
 
+    set_status(app, "Configuration initiale…");
     let sql_file = app_root.join("bootstrap-sql/01-roles.sql");
     postgres::run_bootstrap_sql(
         &paths,
@@ -140,6 +159,7 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
         cfg.superuser_password, cfg.pg_port
     );
     let node_exe = which_node(app);
+    set_status(app, "Mise à jour de la base de données…");
     postgres::run_migrate_deploy(&node_exe, &app_dir, &superuser_url)?;
 
     let app_user_url = format!(
@@ -147,6 +167,7 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
         cfg.app_user_password, cfg.pg_port
     );
     let storage_root = data_dir.join("storage");
+    set_status(app, "Démarrage du serveur…");
     let node_child = server::spawn_node_server(
         &node_exe,
         &app_dir,
@@ -159,6 +180,7 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
     )?;
     app.state::<ManagedProcesses>().node.lock().unwrap().replace(node_child);
 
+    set_status(app, "Vérification du serveur…");
     health::wait_ready(cfg.node_port, Duration::from_secs(30))?;
 
     if let Some(window) = app.get_webview_window("main") {
@@ -173,6 +195,10 @@ fn bootstrap_and_run(app: &tauri::AppHandle) -> anyhow::Result<()> {
 fn main() {
     tauri::Builder::default()
         .manage(ManagedProcesses::default())
+        .invoke_handler(tauri::generate_handler![retailos_desktop::menu::set_app_menu])
+        .on_menu_event(|app, event| {
+            retailos_desktop::menu::emit_navigate(app, event.id().as_ref());
+        })
         .setup(|app| {
             let handle = app.handle().clone();
             std::thread::spawn(move || {
@@ -184,6 +210,7 @@ fn main() {
                     // short of attaching a debugger. Confirmed live this
                     // was exactly what made an ensure_database() race
                     // (fixed in postgres.rs) so hard to track down.
+                    set_status(&handle, "Une erreur est survenue. Consultez les journaux.");
                     eprintln!("bootstrap failed: {err:?}");
                     let log_dir = app_data_dir().join("logs");
                     if let Ok(mut f) = logging::open_log(&log_dir, "bootstrap.log") {

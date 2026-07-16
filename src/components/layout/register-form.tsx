@@ -4,7 +4,7 @@ import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 
-export function RegisterForm({ locale }: { locale: string }) {
+export function RegisterForm({ locale, isDesktop = false }: { locale: string; isDesktop?: boolean }) {
   const t = useTranslations("auth.register");
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +37,8 @@ export function RegisterForm({ locale }: { locale: string }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-4">
-      <h1 className="text-xl font-semibold">{t("title")}</h1>
+      <h1 className="text-xl font-semibold">{t(isDesktop ? "titleDesktop" : "title")}</h1>
+      {isDesktop && <p className="text-sm text-muted-foreground">{t("subtitleDesktop")}</p>}
       {error && <p className="text-sm text-destructive">{error}</p>}
       {(
         [

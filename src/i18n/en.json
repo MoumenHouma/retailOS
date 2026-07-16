@@ -67,6 +67,8 @@
     },
     "register": {
       "title": "Create your business account",
+      "titleDesktop": "Set up your RetailOS install",
+      "subtitleDesktop": "Your data stays stored locally on this computer.",
       "businessName": "Business name",
       "nif": "Tax ID (NIF)",
       "nis": "Statistical ID (NIS)",

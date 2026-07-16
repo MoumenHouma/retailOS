@@ -1,4 +1,5 @@
 import { RegisterForm } from "@/components/layout/register-form";
+import { isDesktopEdition } from "@/lib/edition";
 
 export default async function RegisterPage({
   params,
@@ -9,7 +10,7 @@ export default async function RegisterPage({
 
   return (
     <main className="flex min-h-screen items-center justify-center p-8">
-      <RegisterForm locale={locale} />
+      <RegisterForm locale={locale} isDesktop={isDesktopEdition()} />
     </main>
   );
 }

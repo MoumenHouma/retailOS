@@ -67,6 +67,8 @@
     },
     "register": {
       "title": "Créer votre entreprise",
+      "titleDesktop": "Configurer votre installation RetailOS",
+      "subtitleDesktop": "Vos données restent stockées localement sur cet ordinateur.",
       "businessName": "Nom de l'entreprise",
       "nif": "NIF",
       "nis": "NIS",
