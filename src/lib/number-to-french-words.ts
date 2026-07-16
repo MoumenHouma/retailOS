@@ -32,7 +32,13 @@ function twoDigitsToWords(n: number): string {
   const tensWord = TENS[tensDigit] ?? "";
 
   // 70-79 and 90-99 are built on 60/80 + a teen (soixante-quinze, quatre-vingt-treize).
+  // 71 is the one exception: "soixante et onze" takes "et" like 61's
+  // "soixante et un", unlike 91's "quatre-vingt-onze" (quatre-vingt is
+  // already a compound, so it never takes "et").
   if (tensDigit === 7 || tensDigit === 9) {
+    if (tensDigit === 7 && remainder === 1) {
+      return `${tensWord} et ${ONES[11]}`;
+    }
     return `${tensWord}-${ONES[10 + remainder] ?? ""}`;
   }
 
