@@ -38,6 +38,12 @@
   --input: oklch(0.9 0.01 258);
   --ring: oklch(0.42 0.17 258);
 
+  --chart-1: oklch(0.55 0.18 258);
+  --chart-2: oklch(0.6 0.13 190);
+  --chart-3: oklch(0.68 0.16 40);
+  --chart-4: oklch(0.55 0.18 300);
+  --chart-5: oklch(0.62 0.15 130);
+
   --font-heading: var(--font-lexend);
   --font-body: var(--font-source-sans);
   --font-arabic: var(--font-cairo);
@@ -76,6 +82,12 @@
   --border: oklch(0.3 0.02 258);
   --input: oklch(0.3 0.02 258);
   --ring: oklch(0.68 0.16 258);
+
+  --chart-1: oklch(0.65 0.18 258);
+  --chart-2: oklch(0.68 0.13 190);
+  --chart-3: oklch(0.72 0.16 40);
+  --chart-4: oklch(0.65 0.18 300);
+  --chart-5: oklch(0.68 0.15 130);
 }
 
 @theme inline {
@@ -108,6 +120,12 @@
   --color-input: var(--input);
   --color-ring: var(--ring);
 
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);
   --font-arabic: var(--font-arabic);
@@ -137,5 +155,16 @@ html[lang="ar"] {
   h5,
   h6 {
     font-family: var(--font-heading);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

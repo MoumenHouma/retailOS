@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DetailPageSkeleton } from "@/components/ui/page-skeleton";
 
 interface TransferItem {
   id: string;
@@ -69,7 +70,7 @@ export function StockTransferDetailView({ id }: { id: string }) {
     }
   }
 
-  if (isLoading) return <p className="text-muted-foreground">{t("loading")}</p>;
+  if (isLoading) return <DetailPageSkeleton statTiles={0} />;
   if (isError || !transfer) return <p className="text-destructive">{t("loadError")}</p>;
 
   const sendItems = transfer.items.map((item) => ({ itemId: item.id }));

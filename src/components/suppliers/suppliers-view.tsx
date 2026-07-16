@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { SupplierFormDialog, type SupplierEditData } from "@/components/suppliers/supplier-form-dialog";
 import { LinkedProductsDialog } from "@/components/suppliers/linked-products-dialog";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 interface Supplier {
   id: string;
@@ -132,8 +133,8 @@ export function SuppliersView() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative flex-1 min-w-52">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
@@ -194,6 +195,7 @@ export function SuppliersView() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {isLoading && <TableRowsSkeleton columns={7} />}
             {isError && (
               <TableRow>
                 <TableCell colSpan={7} className="text-center text-destructive">

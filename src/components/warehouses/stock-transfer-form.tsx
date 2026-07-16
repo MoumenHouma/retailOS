@@ -173,7 +173,13 @@ export function StockTransferForm() {
                       />
                     </TableCell>
                     <TableCell>
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeLine(line.productId)}>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeLine(line.productId)}
+                        aria-label={t("removeLine")}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

@@ -16,6 +16,9 @@ import { LoyaltyRedeemDialog } from "@/components/customers/loyalty-redeem-dialo
 import { CreateDebtDialog } from "@/components/customers/create-debt-dialog";
 import { RecordDebtPaymentDialog } from "@/components/customers/record-debt-payment-dialog";
 import { SetCustomerPriceDialog } from "@/components/customers/set-customer-price-dialog";
+import { fetchJsonData } from "@/lib/fetch-json";
+import { DetailPageSkeleton } from "@/components/ui/page-skeleton";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 interface CustomerDetail extends CustomerEditData {
   loyaltyPoints: number;
@@ -64,12 +67,6 @@ async function fetchCustomer(id: string): Promise<CustomerDetail> {
   return body.data;
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 export function CustomerDetailView({ id }: { id: string }) {
   const t = useTranslations("customers");
   const tDebts = useTranslations("customerDebts");
@@ -84,19 +81,19 @@ export function CustomerDetailView({ id }: { id: string }) {
 
   const purchaseHistoryQuery = useQuery({
     queryKey: ["customer-purchase-history", id],
-    queryFn: () => fetchJson<SaleRow[]>(`/api/customers/${id}/purchase-history`),
+    queryFn: () => fetchJsonData<SaleRow[]>(`/api/customers/${id}/purchase-history`),
   });
   const loyaltyQuery = useQuery({
     queryKey: ["customer-loyalty", id],
-    queryFn: () => fetchJson<LoyaltyTransaction[]>(`/api/customers/${id}/loyalty`),
+    queryFn: () => fetchJsonData<LoyaltyTransaction[]>(`/api/customers/${id}/loyalty`),
   });
   const debtsQuery = useQuery({
     queryKey: ["customer-debts", id],
-    queryFn: () => fetchJson<DebtRow[]>(`/api/customers/${id}/debts`),
+    queryFn: () => fetchJsonData<DebtRow[]>(`/api/customers/${id}/debts`),
   });
   const pricesQuery = useQuery({
     queryKey: ["customer-prices", id],
-    queryFn: () => fetchJson<CustomerPriceRow[]>(`/api/customers/${id}/prices`),
+    queryFn: () => fetchJsonData<CustomerPriceRow[]>(`/api/customers/${id}/prices`),
   });
 
   async function handleRemovePrice(priceId: string) {
@@ -111,7 +108,7 @@ export function CustomerDetailView({ id }: { id: string }) {
   }
 
   if (isLoading || !customer) {
-    return <div className="p-6 text-muted-foreground">{t("loading")}</div>;
+    return <DetailPageSkeleton />;
   }
 
   const purchaseHistory = purchaseHistoryQuery.data?.data ?? [];
@@ -203,6 +200,7 @@ export function CustomerDetailView({ id }: { id: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {purchaseHistoryQuery.isLoading && <TableRowsSkeleton columns={4} rows={4} />}
                 {!purchaseHistoryQuery.isLoading && purchaseHistory.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground">
@@ -246,6 +244,7 @@ export function CustomerDetailView({ id }: { id: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {loyaltyQuery.isLoading && <TableRowsSkeleton columns={4} rows={4} />}
                   {!loyaltyQuery.isLoading && loyaltyTransactions.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={4} className="text-center text-muted-foreground">
@@ -293,6 +292,7 @@ export function CustomerDetailView({ id }: { id: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {debtsQuery.isLoading && <TableRowsSkeleton columns={6} rows={4} />}
                   {!debtsQuery.isLoading && debts.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center text-muted-foreground">
@@ -347,6 +347,7 @@ export function CustomerDetailView({ id }: { id: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {pricesQuery.isLoading && <TableRowsSkeleton columns={3} rows={4} />}
                   {!pricesQuery.isLoading && prices.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={3} className="text-center text-muted-foreground">
@@ -359,7 +360,12 @@ export function CustomerDetailView({ id }: { id: string }) {
                       <TableCell className="font-medium">{row.product.name}</TableCell>
                       <TableCell className="text-right tabular-nums">{formatDa(row.price)}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => handleRemovePrice(row.id)}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleRemovePrice(row.id)}
+                          aria-label={tPricing("delete.confirm")}
+                        >
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </TableCell>

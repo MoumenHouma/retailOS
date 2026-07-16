@@ -25,6 +25,8 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { StockAdjustmentDialog } from "@/components/inventory/stock-adjustment-dialog";
+import { fetchJson } from "@/lib/fetch-json";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 interface StockLevelRow {
   id: string;
@@ -63,12 +65,6 @@ interface Paginated<T> {
 
 const ALL = "__all__";
 const PAGE_SIZE = 20;
-
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
 
 const MOVEMENT_TYPES = [
   "PURCHASE_IN",
@@ -227,6 +223,7 @@ export function InventoryView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {levelsQuery.isLoading && <TableRowsSkeleton columns={6} />}
                 {levelsQuery.isError && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-destructive">
@@ -342,6 +339,7 @@ export function InventoryView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {movementsQuery.isLoading && <TableRowsSkeleton columns={6} />}
                 {movementsQuery.isError && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center text-destructive">
@@ -416,6 +414,7 @@ export function InventoryView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {batchesQuery.isLoading && <TableRowsSkeleton columns={5} />}
                 {batchesQuery.isError && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-destructive">

@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+import { fetchJsonData } from "@/lib/fetch-json";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 interface RevenueBucket {
   period: string;
@@ -44,12 +46,6 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 export function FinancialDashboardView() {
   const t = useTranslations("financialDashboard");
   const [from, setFrom] = useState(startOfMonth());
@@ -61,15 +57,15 @@ export function FinancialDashboardView() {
 
   const revenueQuery = useQuery({
     queryKey: ["finance-revenue-dashboard", from, to, granularity],
-    queryFn: () => fetchJson<RevenueBucket[]>(`/api/finance/revenue-dashboard?${revenueParams.toString()}`),
+    queryFn: () => fetchJsonData<RevenueBucket[]>(`/api/finance/revenue-dashboard?${revenueParams.toString()}`),
   });
   const plQuery = useQuery({
     queryKey: ["finance-profit-loss", from, to],
-    queryFn: () => fetchJson<ProfitAndLoss>(`/api/finance/profit-loss?${params.toString()}`),
+    queryFn: () => fetchJsonData<ProfitAndLoss>(`/api/finance/profit-loss?${params.toString()}`),
   });
   const tvaQuery = useQuery({
     queryKey: ["finance-tva-summary", from, to],
-    queryFn: () => fetchJson<TvaSummary>(`/api/finance/tva-summary?${params.toString()}`),
+    queryFn: () => fetchJsonData<TvaSummary>(`/api/finance/tva-summary?${params.toString()}`),
   });
 
   const revenueBuckets = revenueQuery.data?.data ?? [];
@@ -107,19 +103,36 @@ export function FinancialDashboardView() {
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("profitAndLoss.title")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          <StatTile label={t("profitAndLoss.revenue")} value={formatDa(pl?.revenue ?? 0)} icon={TrendingUp} />
-          <StatTile label={t("profitAndLoss.cogs")} value={formatDa(pl?.cogs ?? 0)} icon={TrendingDown} />
-          <StatTile label={t("profitAndLoss.grossMargin")} value={formatDa(pl?.grossMargin ?? 0)} icon={Wallet} />
+          <StatTile
+            label={t("profitAndLoss.revenue")}
+            value={formatDa(pl?.revenue ?? 0)}
+            icon={TrendingUp}
+            loading={plQuery.isLoading}
+          />
+          <StatTile
+            label={t("profitAndLoss.cogs")}
+            value={formatDa(pl?.cogs ?? 0)}
+            icon={TrendingDown}
+            loading={plQuery.isLoading}
+          />
+          <StatTile
+            label={t("profitAndLoss.grossMargin")}
+            value={formatDa(pl?.grossMargin ?? 0)}
+            icon={Wallet}
+            loading={plQuery.isLoading}
+          />
           <StatTile
             label={t("profitAndLoss.operatingExpenses")}
             value={formatDa(pl?.operatingExpenses ?? 0)}
             icon={Receipt}
+            loading={plQuery.isLoading}
           />
           <StatTile
             label={t("profitAndLoss.netProfit")}
             value={formatDa(pl?.netProfit ?? 0)}
             icon={TrendingUp}
             tone={(pl?.netProfit ?? 0) < 0 ? "destructive" : "default"}
+            loading={plQuery.isLoading}
           />
         </div>
       </section>
@@ -127,10 +140,30 @@ export function FinancialDashboardView() {
       <section className="flex flex-col gap-2">
         <h2 className="text-lg font-semibold">{t("tvaSummary.title")}</h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          <StatTile label={t("tvaSummary.collected")} value={formatDa(tva?.collected ?? 0)} icon={TrendingUp} />
-          <StatTile label={t("tvaSummary.paidPurchases")} value={formatDa(tva?.paidPurchases ?? 0)} icon={TrendingDown} />
-          <StatTile label={t("tvaSummary.paidExpenses")} value={formatDa(tva?.paidExpenses ?? 0)} icon={TrendingDown} />
-          <StatTile label={t("tvaSummary.net")} value={formatDa(tva?.net ?? 0)} icon={Wallet} />
+          <StatTile
+            label={t("tvaSummary.collected")}
+            value={formatDa(tva?.collected ?? 0)}
+            icon={TrendingUp}
+            loading={tvaQuery.isLoading}
+          />
+          <StatTile
+            label={t("tvaSummary.paidPurchases")}
+            value={formatDa(tva?.paidPurchases ?? 0)}
+            icon={TrendingDown}
+            loading={tvaQuery.isLoading}
+          />
+          <StatTile
+            label={t("tvaSummary.paidExpenses")}
+            value={formatDa(tva?.paidExpenses ?? 0)}
+            icon={TrendingDown}
+            loading={tvaQuery.isLoading}
+          />
+          <StatTile
+            label={t("tvaSummary.net")}
+            value={formatDa(tva?.net ?? 0)}
+            icon={Wallet}
+            loading={tvaQuery.isLoading}
+          />
         </div>
       </section>
 
@@ -148,6 +181,7 @@ export function FinancialDashboardView() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {revenueQuery.isLoading && <TableRowsSkeleton columns={5} rows={4} />}
               {!revenueQuery.isLoading && revenueBuckets.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center text-muted-foreground">

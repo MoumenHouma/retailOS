@@ -203,7 +203,12 @@ export function ZonesTab() {
                   <TableCell className="font-medium">{zone.name}</TableCell>
                   <TableCell>{zone.code}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(zone.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(zone.id)}
+                      aria-label={t("delete.confirm")}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>

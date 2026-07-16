@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export function StatTile({
@@ -7,11 +8,13 @@ export function StatTile({
   value,
   icon: Icon,
   tone = "default",
+  loading = false,
 }: {
   label: string;
   value: string | number;
   icon: LucideIcon;
   tone?: "default" | "warning" | "destructive";
+  loading?: boolean;
 }) {
   return (
     <Card>
@@ -26,8 +29,12 @@ export function StatTile({
         >
           <Icon className="h-4 w-4" />
         </div>
-        <div className="flex flex-col">
-          <span className="text-2xl font-semibold tabular-nums leading-tight">{value}</span>
+        <div className="flex flex-col gap-1">
+          {loading ? (
+            <Skeleton className="h-7 w-20" />
+          ) : (
+            <span className="text-2xl font-semibold tabular-nums leading-tight">{value}</span>
+          )}
           <span className="text-xs text-muted-foreground">{label}</span>
         </div>
       </CardContent>

@@ -280,6 +280,7 @@ export function PurchaseOrderForm({
                           variant="ghost"
                           size="icon"
                           onClick={() => removeLine(line.productId)}
+                          aria-label={t("removeLine")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

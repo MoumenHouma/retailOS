@@ -162,7 +162,7 @@ export function ForecastsTab() {
                 type="monotone"
                 dataKey="predictedUpper"
                 stroke="none"
-                fill="var(--color-chart-1, #6366f1)"
+                fill="var(--color-chart-1)"
                 fillOpacity={0.12}
                 isAnimationActive={false}
               />
@@ -170,14 +170,14 @@ export function ForecastsTab() {
                 type="monotone"
                 dataKey="predictedLower"
                 stroke="none"
-                fill="var(--color-background, #fff)"
+                fill="var(--color-background)"
                 fillOpacity={1}
                 isAnimationActive={false}
               />
               <Line
                 type="monotone"
                 dataKey="predictedQuantity"
-                stroke="var(--color-chart-1, #6366f1)"
+                stroke="var(--color-chart-1)"
                 strokeWidth={2}
                 dot={false}
               />

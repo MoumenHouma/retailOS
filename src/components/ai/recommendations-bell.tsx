@@ -66,7 +66,7 @@ export function RecommendationsBell({ canView }: { canView: boolean }) {
   return (
     <DropdownMenu onOpenChange={(open) => open && markAllRead()}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("title")}>
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <Badge variant="destructive" className="absolute -right-1 -top-1 h-4 min-w-4 px-1 text-[10px]">

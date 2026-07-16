@@ -8,6 +8,7 @@ import { StatTile } from "@/components/ui/stat-tile";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 function ExportButtons({ baseUrl }: { baseUrl: string }) {
   return (
@@ -53,26 +54,20 @@ interface DeliveryPerformanceEntry {
   onTimeRate: number;
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 export function ProcurementReportsView() {
   const t = useTranslations("procurementReports");
 
   const reorderQuery = useQuery({
     queryKey: ["procurement-reorder-suggestions"],
-    queryFn: () => fetchJson<ReorderSuggestion[]>("/api/procurement-reports/reorder-suggestions"),
+    queryFn: () => fetchJsonData<ReorderSuggestion[]>("/api/procurement-reports/reorder-suggestions"),
   });
   const analyticsQuery = useQuery({
     queryKey: ["procurement-purchase-analytics"],
-    queryFn: () => fetchJson<PurchaseAnalytics>("/api/procurement-reports/purchase-analytics"),
+    queryFn: () => fetchJsonData<PurchaseAnalytics>("/api/procurement-reports/purchase-analytics"),
   });
   const deliveryQuery = useQuery({
     queryKey: ["procurement-delivery-performance"],
-    queryFn: () => fetchJson<DeliveryPerformanceEntry[]>("/api/procurement-reports/delivery-performance"),
+    queryFn: () => fetchJsonData<DeliveryPerformanceEntry[]>("/api/procurement-reports/delivery-performance"),
   });
 
   const reorderSuggestions = reorderQuery.data?.data ?? [];

@@ -238,7 +238,12 @@ export function BinsTab() {
                   <TableCell className="font-medium">{bin.code}</TableCell>
                   <TableCell className="text-muted-foreground">{bin.notes ?? "—"}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(bin.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDelete(bin.id)}
+                      aria-label={t("delete.confirm")}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>

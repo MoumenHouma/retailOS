@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreateRoleDialog } from "@/components/employees/create-role-dialog";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 interface Permission {
   id: string;
@@ -55,12 +56,6 @@ interface Store {
   name: string;
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 export function RolesView() {
   const t = useTranslations("roles");
   const queryClient = useQueryClient();
@@ -68,13 +63,13 @@ export function RolesView() {
   const [assignUserId, setAssignUserId] = useState("");
   const [assignStoreId, setAssignStoreId] = useState<string>("__all__");
 
-  const rolesQuery = useQuery({ queryKey: ["roles"], queryFn: () => fetchJson<Role[]>("/api/roles") });
+  const rolesQuery = useQuery({ queryKey: ["roles"], queryFn: () => fetchJsonData<Role[]>("/api/roles") });
   const catalogQuery = useQuery({
     queryKey: ["permission-catalog"],
-    queryFn: () => fetchJson<PermissionModule[]>("/api/permissions"),
+    queryFn: () => fetchJsonData<PermissionModule[]>("/api/permissions"),
   });
-  const usersQuery = useQuery({ queryKey: ["roles-users"], queryFn: () => fetchJson<TenantUser[]>("/api/roles/users") });
-  const storesQuery = useQuery({ queryKey: ["stores"], queryFn: () => fetchJson<Store[]>("/api/stores") });
+  const usersQuery = useQuery({ queryKey: ["roles-users"], queryFn: () => fetchJsonData<TenantUser[]>("/api/roles/users") });
+  const storesQuery = useQuery({ queryKey: ["stores"], queryFn: () => fetchJsonData<Store[]>("/api/stores") });
 
   const roles = rolesQuery.data?.data ?? [];
   const catalog = catalogQuery.data?.data ?? [];
@@ -268,6 +263,7 @@ export function RolesView() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleRevoke(selectedRole.id, userRole.id)}
+                          aria-label={t("assign.revoke")}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>

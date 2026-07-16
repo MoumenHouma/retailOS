@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 interface BalanceSheet {
   assets: { cash: number; accountsReceivable: number; inventoryValue: number; total: number };
@@ -60,12 +61,6 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 // Shared across every tab in this file — one Download button per format,
 // same pattern the report retrofit (buildReportExportResponse) established.
 function ExportButtons({ baseUrl, params }: { baseUrl: string; params: URLSearchParams }) {
@@ -100,23 +95,23 @@ export function FinancialReportsView() {
 
   const balanceSheetQuery = useQuery({
     queryKey: ["finance-balance-sheet"],
-    queryFn: () => fetchJson<BalanceSheet>("/api/finance/balance-sheet"),
+    queryFn: () => fetchJsonData<BalanceSheet>("/api/finance/balance-sheet"),
   });
   const cashFlowQuery = useQuery({
     queryKey: ["finance-cash-flow", from, to],
-    queryFn: () => fetchJson<CashFlow>(`/api/finance/cash-flow?${periodParams.toString()}`),
+    queryFn: () => fetchJsonData<CashFlow>(`/api/finance/cash-flow?${periodParams.toString()}`),
   });
   const taxReportQuery = useQuery({
     queryKey: ["finance-tax-report", from, to, taxBucket],
-    queryFn: () => fetchJson<TaxReportBucket[]>(`/api/finance/tax-report?${taxParams.toString()}`),
+    queryFn: () => fetchJsonData<TaxReportBucket[]>(`/api/finance/tax-report?${taxParams.toString()}`),
   });
   const expenseAnalysisQuery = useQuery({
     queryKey: ["finance-expense-analysis", from, to],
-    queryFn: () => fetchJson<ExpenseCategoryRollup[]>(`/api/finance/expense-analysis?${periodParams.toString()}`),
+    queryFn: () => fetchJsonData<ExpenseCategoryRollup[]>(`/api/finance/expense-analysis?${periodParams.toString()}`),
   });
   const marginAnalysisQuery = useQuery({
     queryKey: ["finance-margin-analysis", from, to, marginGroupBy],
-    queryFn: () => fetchJson<MarginAnalysisEntry[]>(`/api/finance/margin-analysis?${marginParams.toString()}`),
+    queryFn: () => fetchJsonData<MarginAnalysisEntry[]>(`/api/finance/margin-analysis?${marginParams.toString()}`),
   });
 
   const balanceSheet = balanceSheetQuery.data?.data;

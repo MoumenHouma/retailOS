@@ -224,7 +224,12 @@ function NewQuoteDialog({ onCreated }: { onCreated: () => void }) {
                       />
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => removeLine(line.productId)}>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeLine(line.productId)}
+                        aria-label={t("removeLine")}
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>

@@ -245,7 +245,7 @@ export function SupplierRankingView() {
               <XAxis dataKey="evaluatedAt" tick={{ fontSize: 12 }} />
               <YAxis tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="score" stroke="var(--color-chart-1, #6366f1)" strokeWidth={2} />
+              <Line type="monotone" dataKey="score" stroke="var(--color-chart-1)" strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
         </div>
