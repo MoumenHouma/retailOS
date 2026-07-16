@@ -13,6 +13,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { formatDa } from "@/lib/currency";
 import { EmployeeFormDialog, type EmployeeEditData } from "@/components/employees/employee-form-dialog";
 import { CreateShiftDialog } from "@/components/employees/create-shift-dialog";
+import { fetchJsonData } from "@/lib/fetch-json";
+import { DetailPageSkeleton } from "@/components/ui/page-skeleton";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 interface EmployeeDetail extends EmployeeEditData {
   isActive: boolean;
@@ -50,12 +53,6 @@ async function fetchEmployee(id: string): Promise<EmployeeDetail> {
   return body.data;
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 export function EmployeeDetailView({ id }: { id: string }) {
   const t = useTranslations("employees");
   const tSchedules = useTranslations("workSchedules");
@@ -73,15 +70,15 @@ export function EmployeeDetailView({ id }: { id: string }) {
 
   const shiftsQuery = useQuery({
     queryKey: ["employee-shifts", id],
-    queryFn: () => fetchJson<ShiftRow[]>(`/api/work-shifts?employeeId=${id}`),
+    queryFn: () => fetchJsonData<ShiftRow[]>(`/api/work-shifts?employeeId=${id}`),
   });
   const attendanceQuery = useQuery({
     queryKey: ["employee-attendance", id],
-    queryFn: () => fetchJson<AttendanceRow[]>(`/api/attendance?employeeId=${id}`),
+    queryFn: () => fetchJsonData<AttendanceRow[]>(`/api/attendance?employeeId=${id}`),
   });
   const commissionsQuery = useQuery({
     queryKey: ["employee-commissions", id],
-    queryFn: () => fetchJson<CommissionRow[]>(`/api/commissions?employeeId=${id}`),
+    queryFn: () => fetchJsonData<CommissionRow[]>(`/api/commissions?employeeId=${id}`),
   });
 
   async function handleCancelShift(shiftId: string) {
@@ -95,7 +92,7 @@ export function EmployeeDetailView({ id }: { id: string }) {
   }
 
   if (isLoading || !employee) {
-    return <div className="p-6 text-muted-foreground">{t("loading")}</div>;
+    return <DetailPageSkeleton statTiles={0} />;
   }
 
   const shifts = shiftsQuery.data?.data ?? [];
@@ -190,6 +187,9 @@ export function EmployeeDetailView({ id }: { id: string }) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {shiftsQuery.isLoading && (
+                    <TableRowsSkeleton columns={canSchedule ? 5 : 4} rows={4} />
+                  )}
                   {!shiftsQuery.isLoading && shifts.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={canSchedule ? 5 : 4} className="text-center text-muted-foreground">
@@ -236,6 +236,7 @@ export function EmployeeDetailView({ id }: { id: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {attendanceQuery.isLoading && <TableRowsSkeleton columns={4} rows={4} />}
                 {!attendanceQuery.isLoading && attendance.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center text-muted-foreground">
@@ -273,6 +274,7 @@ export function EmployeeDetailView({ id }: { id: string }) {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {commissionsQuery.isLoading && <TableRowsSkeleton columns={5} rows={4} />}
                 {!commissionsQuery.isLoading && commissions.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center text-muted-foreground">

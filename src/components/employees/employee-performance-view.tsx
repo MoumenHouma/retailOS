@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 interface PerformanceRow {
   employeeId: string;
@@ -31,12 +32,6 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 export function EmployeePerformanceView() {
   const t = useTranslations("employeePerformance");
   const [from, setFrom] = useState(startOfMonth());
@@ -45,7 +40,7 @@ export function EmployeePerformanceView() {
   const params = new URLSearchParams({ from, to });
   const performanceQuery = useQuery({
     queryKey: ["employee-performance", from, to],
-    queryFn: () => fetchJson<PerformanceRow[]>(`/api/employee-performance?${params.toString()}`),
+    queryFn: () => fetchJsonData<PerformanceRow[]>(`/api/employee-performance?${params.toString()}`),
   });
   const rows = performanceQuery.data?.data ?? [];
 

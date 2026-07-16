@@ -33,6 +33,8 @@ import { BrandsTab } from "@/components/products/brands-tab";
 import { UnitsTab } from "@/components/products/units-tab";
 import { formatDa } from "@/lib/currency";
 import { flattenCategories, type CategoryNode } from "@/lib/categories";
+import { fetchJson } from "@/lib/fetch-json";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 interface Product {
   id: string;
@@ -81,12 +83,6 @@ type SortOption =
 
 const ALL = "__all__";
 const PAGE_SIZE = 20;
-
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
 
 async function fetchProducts(params: {
   q: string;
@@ -198,8 +194,8 @@ export function ProductsView() {
             )}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+            <div className="relative flex-1 min-w-52">
               <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 value={search}
@@ -302,6 +298,7 @@ export function ProductsView() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {isLoading && <TableRowsSkeleton columns={8} />}
                 {isError && (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center text-destructive">

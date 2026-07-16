@@ -91,8 +91,8 @@ export function ScenarioSimulator() {
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(value: number) => formatDa(value)} />
-                <Bar dataKey="baseline" fill="var(--color-muted-foreground, #94a3b8)" />
-                <Bar dataKey="projected" fill="var(--color-chart-1, #6366f1)" />
+                <Bar dataKey="baseline" fill="var(--color-muted-foreground)" />
+                <Bar dataKey="projected" fill="var(--color-chart-1)" />
               </BarChart>
             </ResponsiveContainer>
           </div>

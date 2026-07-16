@@ -14,6 +14,7 @@ import { StatTile } from "@/components/ui/stat-tile";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BackfillAttendanceDialog } from "@/components/employees/backfill-attendance-dialog";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 interface Store {
   id: string;
@@ -36,12 +37,6 @@ interface AttendanceRow {
   employee: { id: string; firstName: string; lastName: string };
 }
 
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
-}
-
 function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
@@ -59,7 +54,7 @@ export function AttendanceView() {
   // refetch racing the store-picker's async default on mount.
   const storesQuery = useQuery({
     queryKey: ["stores"],
-    queryFn: () => fetchJson<Store[]>("/api/stores"),
+    queryFn: () => fetchJsonData<Store[]>("/api/stores"),
     staleTime: 60_000,
   });
   const stores = storesQuery.data?.data ?? [];
@@ -67,14 +62,14 @@ export function AttendanceView() {
 
   const employeesQuery = useQuery({
     queryKey: ["employees-all"],
-    queryFn: () => fetchJson<EmployeeOption[]>("/api/employees?pageSize=100"),
+    queryFn: () => fetchJsonData<EmployeeOption[]>("/api/employees?pageSize=100"),
   });
   const employees = employeesQuery.data?.data ?? [];
 
   const params = new URLSearchParams({ storeId: effectiveStoreId, from: date, to: date });
   const attendanceQuery = useQuery({
     queryKey: ["attendance", effectiveStoreId, date],
-    queryFn: () => fetchJson<AttendanceRow[]>(`/api/attendance?${params.toString()}`),
+    queryFn: () => fetchJsonData<AttendanceRow[]>(`/api/attendance?${params.toString()}`),
     enabled: !!effectiveStoreId,
   });
   const records = attendanceQuery.data?.data ?? [];

@@ -66,6 +66,7 @@ export function CartPanel() {
                           size="icon"
                           className="h-11 w-11"
                           onClick={() => setQuantity(line.productId, line.quantity - 1)}
+                          aria-label={t("decreaseQuantity")}
                         >
                           <Minus className="h-4 w-4" />
                         </Button>
@@ -76,6 +77,7 @@ export function CartPanel() {
                           size="icon"
                           className="h-11 w-11"
                           onClick={() => setQuantity(line.productId, line.quantity + 1)}
+                          aria-label={t("increaseQuantity")}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>

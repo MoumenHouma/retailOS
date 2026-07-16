@@ -32,6 +32,7 @@ import { formatDa } from "@/lib/currency";
 import { cartTotals, usePosCartStore } from "@/stores/pos-cart-store";
 import { useOfflineSync } from "@/hooks/use-offline-sync";
 import { useProductCatalogSync } from "@/hooks/use-product-catalog-sync";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface PosSessionData {
   id: string;
@@ -119,7 +120,18 @@ export function PosView() {
   }
 
   if (isLoading) {
-    return <p className="p-6 text-muted-foreground">{t("session.loading")}</p>;
+    return (
+      <div className="flex h-screen flex-col">
+        <header className="flex shrink-0 items-center justify-between border-b border-border px-6 py-3">
+          <Skeleton className="h-6 w-40" />
+          <Skeleton className="h-8 w-24" />
+        </header>
+        <div className="grid flex-1 grid-cols-1 gap-4 overflow-hidden p-4 lg:grid-cols-3">
+          <Skeleton className="h-full w-full lg:col-span-2" />
+          <Skeleton className="h-full w-full" />
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
@@ -128,14 +140,14 @@ export function PosView() {
 
   return (
     <div className="flex h-screen flex-col">
-      <header className="flex shrink-0 items-center justify-between border-b border-border px-6 py-3">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3 sm:px-6">
         <div>
           <h1 className="text-lg font-semibold">{t("title")}</h1>
           <p className="text-xs text-muted-foreground">
             {t("session.cashierLabel")}: {authSession?.user.name} — {session.terminalName}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <OfflineSyncPanel
             isOnline={isOnline}
             pendingCount={pendingCount}
@@ -148,8 +160,8 @@ export function PosView() {
         </div>
       </header>
 
-      <div className="grid flex-1 grid-cols-3 overflow-hidden">
-        <div className="col-span-2 flex flex-col gap-4 overflow-hidden border-e border-border p-4">
+      <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-3">
+        <div className="flex flex-col gap-4 overflow-hidden border-border p-4 lg:col-span-2 lg:border-e">
           <ProductSearch isOnline={isOnline} />
           <Separator />
           <div className="flex-1 overflow-hidden">
@@ -157,7 +169,7 @@ export function PosView() {
           </div>
         </div>
 
-        <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-4 overflow-y-auto p-4">
           <CustomerPicker />
 
           <div className="flex gap-2">

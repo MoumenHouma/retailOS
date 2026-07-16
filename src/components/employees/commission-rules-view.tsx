@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CommissionRuleFormDialog } from "@/components/employees/commission-rule-form-dialog";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 interface CommissionRule {
   id: string;
@@ -21,12 +22,6 @@ interface CommissionRule {
   rateValue: number;
   isActive: boolean;
   targetEmployee: { id: string; firstName: string; lastName: string } | null;
-}
-
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
 }
 
 function startOfMonth(): string {
@@ -46,7 +41,7 @@ export function CommissionRulesView() {
 
   const rulesQuery = useQuery({
     queryKey: ["commission-rules"],
-    queryFn: () => fetchJson<CommissionRule[]>("/api/commission-rules"),
+    queryFn: () => fetchJsonData<CommissionRule[]>("/api/commission-rules"),
   });
   const rules = rulesQuery.data?.data ?? [];
 
@@ -144,7 +139,12 @@ export function CommissionRulesView() {
                 </TableCell>
                 <TableCell className="text-right">
                   {rule.isActive && (
-                    <Button variant="ghost" size="icon" onClick={() => handleDeactivate(rule.id)}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeactivate(rule.id)}
+                      aria-label={t("deactivate.confirm")}
+                    >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   )}

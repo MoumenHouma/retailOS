@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDa } from "@/lib/currency";
+import { TableRowsSkeleton } from "@/components/ui/table-skeleton";
 
 type PoStatus =
   | "draft"
@@ -101,8 +102,8 @@ export function PurchaseOrdersView() {
         }
       />
 
-      <div className="flex flex-wrap items-center gap-2">
-        <div className="relative flex-1 min-w-[200px]">
+      <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+        <div className="relative flex-1 min-w-52">
           <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={search}
@@ -150,6 +151,7 @@ export function PurchaseOrdersView() {
             </TableRow>
           </TableHeader>
           <TableBody>
+            {isLoading && <TableRowsSkeleton columns={6} />}
             {isError && (
               <TableRow>
                 <TableCell colSpan={6} className="text-center text-destructive">

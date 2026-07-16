@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { CreateShiftDialog } from "@/components/employees/create-shift-dialog";
+import { fetchJsonData } from "@/lib/fetch-json";
 
 interface Store {
   id: string;
@@ -31,12 +32,6 @@ interface ShiftRow {
   endsAt: string;
   status: string;
   employee: { id: string; firstName: string; lastName: string };
-}
-
-async function fetchJson<T>(url: string): Promise<{ data: T }> {
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Failed to fetch ${url}`);
-  return response.json();
 }
 
 function startOfWeek(date: Date): Date {
@@ -69,7 +64,7 @@ export function WorkSchedulesView() {
   // empty grid/select before the second fetch resolves.
   const storesQuery = useQuery({
     queryKey: ["stores"],
-    queryFn: () => fetchJson<Store[]>("/api/stores"),
+    queryFn: () => fetchJsonData<Store[]>("/api/stores"),
     staleTime: 60_000,
   });
   const stores = storesQuery.data?.data ?? [];
@@ -98,7 +93,7 @@ export function WorkSchedulesView() {
   });
   const shiftsQuery = useQuery({
     queryKey: ["work-shifts", effectiveStoreId, weekStartInput],
-    queryFn: () => fetchJson<ShiftRow[]>(`/api/work-shifts?${shiftsParams.toString()}`),
+    queryFn: () => fetchJsonData<ShiftRow[]>(`/api/work-shifts?${shiftsParams.toString()}`),
     enabled: !!effectiveStoreId,
   });
   const shifts = shiftsQuery.data?.data ?? [];

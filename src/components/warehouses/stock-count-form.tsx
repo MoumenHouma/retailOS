@@ -115,7 +115,13 @@ export function StockCountForm() {
             {products.map((product) => (
               <li key={product.id} className="flex items-center justify-between px-3 py-2 text-sm">
                 <span>{product.name}</span>
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeProduct(product.id)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeProduct(product.id)}
+                  aria-label={t("removeProduct")}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </li>

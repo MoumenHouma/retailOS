@@ -209,7 +209,12 @@ export function WarehousesTab() {
                 <TableCell>{warehouse.store.name}</TableCell>
                 <TableCell>{warehouse.address ?? "—"}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" onClick={() => handleDelete(warehouse.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handleDelete(warehouse.id)}
+                    aria-label={t("delete.confirm")}
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>

@@ -21,6 +21,7 @@ import { formatDa } from "@/lib/currency";
 import { PurchaseOrderForm } from "@/components/purchasing/purchase-order-form";
 import { ReceiveDeliveryDialog } from "@/components/purchasing/receive-delivery-dialog";
 import { PurchaseReturnDialog } from "@/components/purchasing/purchase-return-dialog";
+import { DetailPageSkeleton } from "@/components/ui/page-skeleton";
 
 interface PurchaseOrderItem {
   id: string;
@@ -136,7 +137,7 @@ export function PurchaseOrderDetailView({ id }: { id: string }) {
     }
   }
 
-  if (isLoading) return <p className="text-muted-foreground">{t("loading")}</p>;
+  if (isLoading) return <DetailPageSkeleton statTiles={0} />;
   if (isError || !purchaseOrder) return <p className="text-destructive">{t("loadError")}</p>;
 
   const editable = purchaseOrder.status === "draft" || purchaseOrder.status === "pending_approval";

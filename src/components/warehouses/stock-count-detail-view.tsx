@@ -9,6 +9,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { DetailPageSkeleton } from "@/components/ui/page-skeleton";
 
 interface CountItem {
   id: string;
@@ -83,7 +84,7 @@ export function StockCountDetailView({ id }: { id: string }) {
     }
   }
 
-  if (isLoading) return <p className="text-muted-foreground">{t("loading")}</p>;
+  if (isLoading) return <DetailPageSkeleton statTiles={0} />;
   if (isError || !count) return <p className="text-destructive">{t("loadError")}</p>;
 
   const editable = count.status === "in_progress";
